@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Search, TrendingUp, Play, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { artists } from "@/lib/mock-data";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/tracks";
 
@@ -93,30 +92,6 @@ function DiscoverPage() {
         </div>
       </section>
 
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Artists to follow</h2>
-        <div className="space-y-2">
-          {artists.map((a) => (
-            <div key={a.id} className="flex items-center gap-3 rounded-xl bg-surface/50 p-2.5">
-              <img
-                src={a.avatar}
-                alt={a.name}
-                width={48}
-                height={48}
-                loading="lazy"
-                className="h-12 w-12 rounded-full object-cover"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">{a.name}</p>
-                <p className="truncate text-xs text-muted-foreground">{a.followers} followers</p>
-              </div>
-              <button className="rounded-full bg-gradient-primary px-4 py-1.5 text-xs font-bold shadow-glow">
-                Follow
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
