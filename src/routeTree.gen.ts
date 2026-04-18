@@ -9,12 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UploadRouteImport } from './routes/upload'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as BecomeArtistRouteImport } from './routes/become-artist'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
+const UploadRoute = UploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -35,6 +44,21 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BecomeArtistRoute = BecomeArtistRouteImport.update({
+  id: '/become-artist',
+  path: '/become-artist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,44 +67,95 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/become-artist': typeof BecomeArtistRoute
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
   '/profile': typeof ProfileRoute
+  '/upload': typeof UploadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/become-artist': typeof BecomeArtistRoute
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
   '/profile': typeof ProfileRoute
+  '/upload': typeof UploadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/become-artist': typeof BecomeArtistRoute
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
   '/profile': typeof ProfileRoute
+  '/upload': typeof UploadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/discover' | '/library' | '/profile'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/become-artist'
+    | '/chat'
+    | '/discover'
+    | '/library'
+    | '/profile'
+    | '/upload'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/discover' | '/library' | '/profile'
-  id: '__root__' | '/' | '/chat' | '/discover' | '/library' | '/profile'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/become-artist'
+    | '/chat'
+    | '/discover'
+    | '/library'
+    | '/profile'
+    | '/upload'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/become-artist'
+    | '/chat'
+    | '/discover'
+    | '/library'
+    | '/profile'
+    | '/upload'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
+  BecomeArtistRoute: typeof BecomeArtistRoute
   ChatRoute: typeof ChatRoute
   DiscoverRoute: typeof DiscoverRoute
   LibraryRoute: typeof LibraryRoute
   ProfileRoute: typeof ProfileRoute
+  UploadRoute: typeof UploadRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/upload': {
+      id: '/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof UploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -109,6 +184,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/become-artist': {
+      id: '/become-artist'
+      path: '/become-artist'
+      fullPath: '/become-artist'
+      preLoaderRoute: typeof BecomeArtistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -121,10 +217,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
+  BecomeArtistRoute: BecomeArtistRoute,
   ChatRoute: ChatRoute,
   DiscoverRoute: DiscoverRoute,
   LibraryRoute: LibraryRoute,
   ProfileRoute: ProfileRoute,
+  UploadRoute: UploadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
