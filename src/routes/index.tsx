@@ -1,9 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Search, Play, Loader2 } from "lucide-react";
+import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StoriesRow } from "@/components/feed/StoriesRow";
-import { PostCard } from "@/components/feed/PostCard";
-import { posts } from "@/lib/mock-data";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/tracks";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -14,12 +12,12 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const { playTrack } = usePlayer();
-  const { user } = useAuth();
+  const { user, isArtist, isAdmin } = useAuth();
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchTracksWithArtists(20).then((t) => {
+    fetchTracksWithArtists(50).then((t) => {
       setTracks(t);
       setLoading(false);
     });
@@ -53,20 +51,53 @@ function HomePage() {
         </div>
       </header>
 
+      {/* Primary CTA — Add my music */}
+      <div className="mb-5 flex flex-wrap gap-2">
+        {isArtist ? (
+          <Link
+            to="/upload"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-primary px-4 py-3 text-sm font-bold shadow-glow"
+          >
+            <Upload className="h-4 w-4" /> Ajouter ma musique
+          </Link>
+        ) : user ? (
+          <Link
+            to="/become-artist"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-primary px-4 py-3 text-sm font-bold shadow-glow"
+          >
+            <Music className="h-4 w-4" /> Devenir artiste
+          </Link>
+        ) : (
+          <Link
+            to="/auth"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-primary px-4 py-3 text-sm font-bold shadow-glow"
+          >
+            <Music className="h-4 w-4" /> Rejoindre Pulse
+          </Link>
+        )}
+        {isAdmin && (
+          <Link
+            to="/admin"
+            className="flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-3 text-xs font-bold"
+          >
+            <ShieldCheck className="h-3.5 w-3.5" /> Admin
+          </Link>
+        )}
+      </div>
+
       <section className="mb-5">
         <StoriesRow />
       </section>
 
-      {/* Real uploaded tracks */}
       <section className="mb-5">
         <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Fresh uploads</h2>
         {loading ? (
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         ) : tracks.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No uploads yet — be the first artist!</p>
+          <p className="text-xs text-muted-foreground">Aucun morceau pour le moment — sois le premier artiste !</p>
         ) : (
           <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 scrollbar-hide">
-            {tracks.slice(0, 10).map((t) => (
+            {tracks.slice(0, 12).map((t) => (
               <button
                 key={t.id}
                 onClick={() => playTrack(toPlayable(t), queue)}
@@ -93,10 +124,35 @@ function HomePage() {
         )}
       </section>
 
-      <section className="space-y-4">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Toute la musique</h2>
+        {!loading && tracks.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Le feed sera rempli dès que des artistes uploadent leur musique.</p>
+        ) : (
+          <div className="space-y-2">
+            {tracks.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => playTrack(toPlayable(t), queue)}
+                className="flex w-full items-center gap-3 rounded-xl bg-surface/50 p-2 text-left transition hover:bg-surface"
+              >
+                <img
+                  src={t.coverUrl}
+                  alt={t.title}
+                  width={48}
+                  height={48}
+                  loading="lazy"
+                  className="h-12 w-12 rounded-lg object-cover"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">{t.title}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{t.artistName}</span>
+                </span>
+                <Play className="h-4 w-4 fill-current text-primary-glow" />
+              </button>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

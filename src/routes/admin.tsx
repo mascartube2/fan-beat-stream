@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
-import { Loader2, Check, X, ShieldCheck } from "lucide-react";
+import { Loader2, Check, X, ShieldCheck, Upload as UploadIcon, Trash2 } from "lucide-react";
+import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -19,30 +20,51 @@ type Request = {
   display_name?: string;
 };
 
+type ArtistOption = { user_id: string; display_name: string };
+
 function AdminPage() {
   const { isAdmin, loading: authLoading, user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
+  const [artists, setArtists] = useState<ArtistOption[]>([]);
+  const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  // Upload form state
+  const [selectedArtist, setSelectedArtist] = useState<string>("");
+  const [title, setTitle] = useState("");
+  const [audio, setAudio] = useState<File | null>(null);
+  const [cover, setCover] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState<string | null>(null);
+  const [uploadErr, setUploadErr] = useState<string | null>(null);
+
   const load = async () => {
     setLoading(true);
-    const { data: reqs } = await supabase
-      .from("artist_requests")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (!reqs) {
-      setRequests([]);
-      setLoading(false);
-      return;
-    }
-    const ids = [...new Set(reqs.map((r) => r.user_id))];
+    const [{ data: reqs }, { data: artistRoles }, allTracks] = await Promise.all([
+      supabase.from("artist_requests").select("*").order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("user_id").eq("role", "artist"),
+      fetchTracksWithArtists(200),
+    ]);
+
+    const allUserIds = new Set<string>();
+    (reqs ?? []).forEach((r) => allUserIds.add(r.user_id));
+    (artistRoles ?? []).forEach((r) => allUserIds.add(r.user_id));
+
     const { data: profiles } = await supabase
       .from("profiles")
       .select("user_id, display_name")
-      .in("user_id", ids);
+      .in("user_id", [...allUserIds]);
     const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
-    setRequests(reqs.map((r) => ({ ...r, display_name: nameMap.get(r.user_id) })) as Request[]);
+
+    setRequests(((reqs ?? []) as Request[]).map((r) => ({ ...r, display_name: nameMap.get(r.user_id) })));
+    setArtists(
+      (artistRoles ?? []).map((r) => ({
+        user_id: r.user_id,
+        display_name: nameMap.get(r.user_id) ?? "Unknown",
+      })),
+    );
+    setTracks(allTracks);
     setLoading(false);
   };
 
@@ -88,6 +110,72 @@ function AdminPage() {
     setBusyId(null);
   };
 
+  const deleteTrack = async (t: TrackWithArtist) => {
+    if (!confirm(`Supprimer "${t.title}" ?`)) return;
+    setBusyId(t.id);
+    await supabase.storage.from("audio-tracks").remove([t.audio_path]);
+    if (t.cover_path) await supabase.storage.from("track-covers").remove([t.cover_path]);
+    await supabase.from("tracks").delete().eq("id", t.id);
+    await load();
+    setBusyId(null);
+  };
+
+  const adminUpload = async (e: FormEvent) => {
+    e.preventDefault();
+    setUploadErr(null);
+    if (!selectedArtist) return setUploadErr("Choisis un artiste.");
+    if (!audio) return setUploadErr("Choisis un fichier audio.");
+    setUploading(true);
+    try {
+      const audioExt = audio.name.split(".").pop() ?? "mp3";
+      const audioPath = `${selectedArtist}/${crypto.randomUUID()}.${audioExt}`;
+      setUploadMsg("Upload audio…");
+      const { error: aErr } = await supabase.storage
+        .from("audio-tracks")
+        .upload(audioPath, audio, { contentType: audio.type, upsert: false });
+      if (aErr) throw aErr;
+
+      let coverPath: string | null = null;
+      if (cover) {
+        const coverExt = cover.name.split(".").pop() ?? "jpg";
+        coverPath = `${selectedArtist}/${crypto.randomUUID()}.${coverExt}`;
+        setUploadMsg("Upload cover…");
+        const { error: cErr } = await supabase.storage
+          .from("track-covers")
+          .upload(coverPath, cover, { contentType: cover.type, upsert: false });
+        if (cErr) throw cErr;
+      }
+
+      let duration: number | null = null;
+      try {
+        duration = await getAudioDuration(audio);
+      } catch {
+        // ignore
+      }
+
+      setUploadMsg("Enregistrement…");
+      const { error: dbErr } = await supabase.from("tracks").insert({
+        user_id: selectedArtist,
+        title: title.trim() || audio.name.replace(/\.[^.]+$/, ""),
+        audio_path: audioPath,
+        cover_path: coverPath,
+        duration_seconds: duration ? Math.round(duration) : null,
+      });
+      if (dbErr) throw dbErr;
+
+      setTitle("");
+      setAudio(null);
+      setCover(null);
+      setUploadMsg("✓ Morceau publié.");
+      await load();
+    } catch (err: any) {
+      setUploadErr(err.message ?? "Upload échoué");
+      setUploadMsg(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const pending = requests.filter((r) => r.status === "pending");
   const reviewed = requests.filter((r) => r.status !== "pending");
 
@@ -98,14 +186,71 @@ function AdminPage() {
         <h1 className="text-2xl font-bold">Admin</h1>
       </div>
 
+      {/* Upload directly for any certified artist */}
+      <section className="mb-6 rounded-xl border border-border/50 bg-gradient-card p-4">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
+          <UploadIcon className="h-4 w-4 text-primary-glow" /> Uploader pour un artiste
+        </h2>
+        {artists.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Aucun artiste certifié pour le moment.</p>
+        ) : (
+          <form onSubmit={adminUpload} className="space-y-3">
+            <select
+              value={selectedArtist}
+              onChange={(e) => setSelectedArtist(e.target.value)}
+              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm"
+              required
+            >
+              <option value="">— Choisir un artiste —</option>
+              {artists.map((a) => (
+                <option key={a.user_id} value={a.user_id}>
+                  {a.display_name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={120}
+              placeholder="Titre du morceau"
+              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm"
+            />
+            <input
+              type="file"
+              accept="audio/*"
+              required
+              onChange={(e) => setAudio(e.target.files?.[0] ?? null)}
+              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setCover(e.target.files?.[0] ?? null)}
+              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
+            />
+            {uploadErr && <p className="rounded bg-destructive/15 px-2 py-1 text-xs text-destructive">{uploadErr}</p>}
+            {uploadMsg && <p className="text-xs text-muted-foreground">{uploadMsg}</p>}
+            <button
+              type="submit"
+              disabled={uploading}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-2.5 text-xs font-bold shadow-glow disabled:opacity-60"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadIcon className="h-4 w-4" />}
+              {uploading ? "Upload…" : "Publier"}
+            </button>
+          </form>
+        )}
+      </section>
+
       <h2 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
-        Pending requests ({pending.length})
+        Demandes en attente ({pending.length})
       </h2>
 
       {loading ? (
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       ) : pending.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No pending requests.</p>
+        <p className="text-sm text-muted-foreground">Aucune demande.</p>
       ) : (
         <div className="space-y-3">
           {pending.map((r) => (
@@ -119,14 +264,14 @@ function AdminPage() {
                   disabled={busyId === r.id}
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-gradient-primary py-2 text-xs font-bold shadow-glow disabled:opacity-60"
                 >
-                  <Check className="h-3.5 w-3.5" /> Approve
+                  <Check className="h-3.5 w-3.5" /> Approuver
                 </button>
                 <button
                   onClick={() => review(r.id, "rejected")}
                   disabled={busyId === r.id}
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border py-2 text-xs font-bold disabled:opacity-60"
                 >
-                  <X className="h-3.5 w-3.5" /> Reject
+                  <X className="h-3.5 w-3.5" /> Rejeter
                 </button>
               </div>
             </div>
@@ -134,9 +279,37 @@ function AdminPage() {
         </div>
       )}
 
+      {/* All tracks management */}
+      <h2 className="mb-2 mt-6 text-xs font-semibold uppercase text-muted-foreground">
+        Tous les morceaux ({tracks.length})
+      </h2>
+      {tracks.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun morceau.</p>
+      ) : (
+        <div className="space-y-2">
+          {tracks.map((t) => (
+            <div key={t.id} className="flex items-center gap-3 rounded-lg border border-border/40 p-2">
+              <img src={t.coverUrl} alt="" className="h-10 w-10 rounded object-cover" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold">{t.title}</p>
+                <p className="truncate text-[10px] text-muted-foreground">{t.artistName}</p>
+              </div>
+              <button
+                onClick={() => deleteTrack(t)}
+                disabled={busyId === t.id}
+                className="rounded-full p-1.5 text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                aria-label="Supprimer"
+              >
+                {busyId === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {reviewed.length > 0 && (
         <>
-          <h2 className="mb-2 mt-6 text-xs font-semibold uppercase text-muted-foreground">History</h2>
+          <h2 className="mb-2 mt-6 text-xs font-semibold uppercase text-muted-foreground">Historique demandes</h2>
           <div className="space-y-2">
             {reviewed.map((r) => (
               <div
@@ -144,11 +317,7 @@ function AdminPage() {
                 className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2 text-xs"
               >
                 <span>{r.display_name}</span>
-                <span
-                  className={
-                    r.status === "approved" ? "text-primary-glow" : "text-destructive"
-                  }
-                >
+                <span className={r.status === "approved" ? "text-primary-glow" : "text-destructive"}>
                   {r.status}
                 </span>
               </div>
@@ -158,4 +327,14 @@ function AdminPage() {
       )}
     </div>
   );
+}
+
+function getAudioDuration(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const a = new Audio();
+    a.preload = "metadata";
+    a.onloadedmetadata = () => resolve(a.duration);
+    a.onerror = () => reject(new Error("Could not read audio metadata"));
+    a.src = URL.createObjectURL(file);
+  });
 }
