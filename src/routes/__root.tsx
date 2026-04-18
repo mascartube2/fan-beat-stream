@@ -1,7 +1,8 @@
-import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, createRootRoute, HeadContent, Scripts, Link } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 import { PlayerProvider } from "@/components/player/PlayerContext";
+import { AuthProvider } from "@/components/auth/AuthContext";
 import { AppShell } from "@/components/layout/AppShell";
 
 function NotFoundComponent() {
@@ -13,12 +14,12 @@ function NotFoundComponent() {
         <p className="mt-2 text-sm text-muted-foreground">
           The page you're looking for doesn't exist.
         </p>
-        <a
-          href="/"
+        <Link
+          to="/"
           className="mt-6 inline-flex items-center justify-center rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-semibold shadow-glow"
         >
           Go home
-        </a>
+        </Link>
       </div>
     </div>
   );
@@ -71,10 +72,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <PlayerProvider>
-      <AppShell>
-        <Outlet />
-      </AppShell>
-    </PlayerProvider>
+    <AuthProvider>
+      <PlayerProvider>
+        <AppShell>
+          <Outlet />
+        </AppShell>
+      </PlayerProvider>
+    </AuthProvider>
   );
 }

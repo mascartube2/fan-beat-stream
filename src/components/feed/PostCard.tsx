@@ -1,7 +1,6 @@
-import { Heart, MessageCircle, Share2, Play, Radio, BadgeCheck } from "lucide-react";
+import { Heart, MessageCircle, Share2, Radio, BadgeCheck } from "lucide-react";
 import { useState } from "react";
-import { getArtist, getTrack, type Post } from "@/lib/mock-data";
-import { usePlayer } from "@/components/player/PlayerContext";
+import { getArtist, type Post } from "@/lib/mock-data";
 
 function formatCount(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
@@ -10,8 +9,6 @@ function formatCount(n: number) {
 
 export function PostCard({ post }: { post: Post }) {
   const artist = getArtist(post.artistId);
-  const track = post.trackId ? getTrack(post.trackId) : null;
-  const { play } = usePlayer();
   const [liked, setLiked] = useState(false);
   const likes = post.likes + (liked ? 1 : 0);
 
@@ -57,22 +54,6 @@ export function PostCard({ post }: { post: Post }) {
             loading="lazy"
             className="aspect-square w-full object-cover"
           />
-          {track && (
-            <button
-              onClick={() => play(track)}
-              className="absolute bottom-3 left-3 right-3 flex items-center gap-3 glass rounded-xl p-2.5 transition active:scale-[0.98]"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-primary shadow-glow">
-                <Play className="ml-0.5 h-4 w-4 fill-current" />
-              </span>
-              <span className="min-w-0 flex-1 text-left">
-                <span className="block truncate text-sm font-semibold">{track.title}</span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {track.plays} plays · {track.duration}
-                </span>
-              </span>
-            </button>
-          )}
           {post.type === "live" && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/40">
               <button className="flex items-center gap-2 rounded-full bg-gradient-primary px-5 py-3 text-sm font-bold shadow-glow">
