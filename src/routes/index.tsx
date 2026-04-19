@@ -2,9 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StoriesRow } from "@/components/feed/StoriesRow";
+import { PostComposer } from "@/components/posts/PostComposer";
+import { SocialPostCard, type FeedPost } from "@/components/posts/SocialPostCard";
+import { fetchFeedPosts } from "@/lib/posts";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/tracks";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
