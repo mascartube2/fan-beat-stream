@@ -32,6 +32,8 @@ function ChatPage() {
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [call, setCall] = useState<{ callId: string; peerId: string; isInitiator: boolean } | null>(null);
+  const [incoming, setIncoming] = useState<{ callId: string; peerId: string } | null>(null);
 
   // Load all messages involving me + their profiles
   const loadAll = async () => {
