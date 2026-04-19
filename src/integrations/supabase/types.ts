@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      call_signals: {
+        Row: {
+          call_id: string
+          created_at: string
+          from_user: string
+          id: string
+          payload: Json | null
+          to_user: string
+          type: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          from_user: string
+          id?: string
+          payload?: Json | null
+          to_user: string
+          type: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          from_user?: string
+          id?: string
+          payload?: Json | null
+          to_user?: string
+          type?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -76,6 +106,143 @@ export type Database = {
           sender_id?: string
         }
         Relationships: []
+      }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_reposts: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reposts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          comments_count: number
+          content: string | null
+          created_at: string
+          id: string
+          likes_count: number
+          media_path: string | null
+          media_type: string | null
+          reposted_from: string | null
+          reposts_count: number
+          user_id: string
+        }
+        Insert: {
+          comments_count?: number
+          content?: string | null
+          created_at?: string
+          id?: string
+          likes_count?: number
+          media_path?: string | null
+          media_type?: string | null
+          reposted_from?: string | null
+          reposts_count?: number
+          user_id: string
+        }
+        Update: {
+          comments_count?: number
+          content?: string | null
+          created_at?: string
+          id?: string
+          likes_count?: number
+          media_path?: string | null
+          media_type?: string | null
+          reposted_from?: string | null
+          reposts_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_reposted_from_fkey"
+            columns: ["reposted_from"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
