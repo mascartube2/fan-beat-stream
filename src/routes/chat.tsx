@@ -193,6 +193,26 @@ function ChatPage() {
   if (activePeer) {
     const peer = profiles.get(activePeer);
     return (
+      <>
+        {call && (
+          <VideoCall
+            callId={call.callId}
+            selfId={user.id}
+            peerId={call.peerId}
+            isInitiator={call.isInitiator}
+            onClose={() => setCall(null)}
+          />
+        )}
+        {incoming && !call && (
+          <IncomingCallModal
+            peerName={profiles.get(incoming.peerId)?.display_name ?? "Utilisateur"}
+            onAccept={() => {
+              setCall({ callId: incoming.callId, peerId: incoming.peerId, isInitiator: false });
+              setIncoming(null);
+            }}
+            onDecline={() => setIncoming(null)}
+          />
+        )}
       <div className="flex h-[calc(100vh-9rem)] flex-col">
         <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur">
           <button onClick={() => setActivePeer(null)} className="rounded-full p-1 hover:bg-white/5">
