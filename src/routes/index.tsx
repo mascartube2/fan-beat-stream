@@ -105,6 +105,15 @@ function HomePage() {
       </section>
 
       <section className="mb-5">
+        <PostComposer onCreated={reloadPosts} />
+        {posts.length === 0 && !loading ? (
+          <p className="text-xs text-muted-foreground">Pas encore de publication — sois le premier !</p>
+        ) : (
+          posts.map((p) => <SocialPostCard key={p.id} post={p} onChange={reloadPosts} />)
+        )}
+      </section>
+
+      <section className="mb-5">
         <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Fresh uploads</h2>
         {loading ? (
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
