@@ -18,13 +18,24 @@ function HomePage() {
   const { playTrack } = usePlayer();
   const { user, isArtist, isAdmin } = useAuth();
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const reloadPosts = () => fetchFeedPosts(50).then(setPosts);
+
   useEffect(() => {
-    fetchTracksWithArtists(50).then((t) => {
+    Promise.all([fetchTracksWithArtists(50), fetchFeedPosts(50)]).then(([t, p]) => {
       setTracks(t);
+      setPosts(p);
       setLoading(false);
     });
+    const ch = supabase
+      .channel("home-posts")
+      .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, () => reloadPosts())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, []);
 
   const queue = tracks.map(toPlayable);
