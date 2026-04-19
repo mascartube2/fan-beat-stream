@@ -379,5 +379,36 @@ function ChatPage() {
         </div>
       )}
     </div>
+    </>
+  );
+}
+
+function IncomingCallModal({
+  peerName,
+  onAccept,
+  onDecline,
+}: {
+  peerName: string;
+  onAccept: () => void;
+  onDecline: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-6">
+      <div className="bg-gradient-card w-full max-w-xs rounded-2xl border border-border/50 p-5 text-center shadow-glow">
+        <div className="mx-auto mb-3 flex h-14 w-14 animate-pulse items-center justify-center rounded-full bg-gradient-primary">
+          <PhoneIncoming className="h-6 w-6" />
+        </div>
+        <p className="text-sm text-muted-foreground">Appel entrant de</p>
+        <p className="mb-4 text-lg font-bold">{peerName}</p>
+        <div className="flex gap-2">
+          <button onClick={onDecline} className="flex-1 rounded-full border border-border px-3 py-2.5 text-sm font-semibold">
+            Refuser
+          </button>
+          <button onClick={onAccept} className="flex-1 rounded-full bg-gradient-primary px-3 py-2.5 text-sm font-bold shadow-glow">
+            Accepter
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
