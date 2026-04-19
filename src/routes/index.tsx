@@ -2,9 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StoriesRow } from "@/components/feed/StoriesRow";
+import { PostComposer } from "@/components/posts/PostComposer";
+import { SocialPostCard, type FeedPost } from "@/components/posts/SocialPostCard";
+import { fetchFeedPosts } from "@/lib/posts";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/tracks";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -14,13 +18,24 @@ function HomePage() {
   const { playTrack } = usePlayer();
   const { user, isArtist, isAdmin } = useAuth();
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const reloadPosts = () => fetchFeedPosts(50).then(setPosts);
+
   useEffect(() => {
-    fetchTracksWithArtists(50).then((t) => {
+    Promise.all([fetchTracksWithArtists(50), fetchFeedPosts(50)]).then(([t, p]) => {
       setTracks(t);
+      setPosts(p);
       setLoading(false);
     });
+    const ch = supabase
+      .channel("home-posts")
+      .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, () => reloadPosts())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, []);
 
   const queue = tracks.map(toPlayable);
@@ -87,6 +102,15 @@ function HomePage() {
 
       <section className="mb-5">
         <StoriesRow />
+      </section>
+
+      <section className="mb-5">
+        <PostComposer onCreated={reloadPosts} />
+        {posts.length === 0 && !loading ? (
+          <p className="text-xs text-muted-foreground">Pas encore de publication — sois le premier !</p>
+        ) : (
+          posts.map((p) => <SocialPostCard key={p.id} post={p} onChange={reloadPosts} />)
+        )}
       </section>
 
       <section className="mb-5">

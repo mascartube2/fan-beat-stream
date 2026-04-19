@@ -1,0 +1,34 @@
+import { supabase } from "@/integrations/supabase/client";
+import type { FeedPost } from "@/components/posts/SocialPostCard";
+
+export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
+  const { data: rows } = await supabase
+    .from("posts")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (!rows?.length) return [];
+
+  const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+  const { data: profs } = await supabase
+    .from("profiles")
+    .select("user_id,display_name,avatar_url")
+    .in("user_id", userIds);
+  const profMap = new Map((profs ?? []).map((p) => [p.user_id, p]));
+
+  return rows.map((r) => ({
+    id: r.id,
+    user_id: r.user_id,
+    content: r.content,
+    media_path: r.media_path,
+    media_type: r.media_type,
+    likes_count: r.likes_count,
+    comments_count: r.comments_count,
+    reposts_count: r.reposts_count,
+    reposted_from: r.reposted_from,
+    created_at: r.created_at,
+    authorName: profMap.get(r.user_id)?.display_name ?? "Utilisateur",
+    authorAvatar: profMap.get(r.user_id)?.avatar_url ?? null,
+    mediaUrl: r.media_path ? supabase.storage.from("posts").getPublicUrl(r.media_path).data.publicUrl : null,
+  }));
+}
