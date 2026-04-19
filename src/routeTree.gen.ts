@@ -18,6 +18,7 @@ import { Route as BecomeArtistRouteImport } from './routes/become-artist'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 
 const UploadRoute = UploadRouteImport.update({
@@ -65,6 +66,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileEditRoute = ProfileEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => ProfileRoute,
+} as any)
 const PostPostIdRoute = PostPostIdRouteImport.update({
   id: '/post/$postId',
   path: '/post/$postId',
@@ -79,9 +85,10 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/upload': typeof UploadRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/profile/edit': typeof ProfileEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,9 +98,10 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/upload': typeof UploadRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/profile/edit': typeof ProfileEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,9 +112,10 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/upload': typeof UploadRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/profile/edit': typeof ProfileEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/upload'
     | '/post/$postId'
+    | '/profile/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/upload'
     | '/post/$postId'
+    | '/profile/edit'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/upload'
     | '/post/$postId'
+    | '/profile/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -155,7 +167,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   DiscoverRoute: typeof DiscoverRoute
   LibraryRoute: typeof LibraryRoute
-  ProfileRoute: typeof ProfileRoute
+  ProfileRoute: typeof ProfileRouteWithChildren
   UploadRoute: typeof UploadRoute
   PostPostIdRoute: typeof PostPostIdRoute
 }
@@ -225,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/edit': {
+      id: '/profile/edit'
+      path: '/edit'
+      fullPath: '/profile/edit'
+      preLoaderRoute: typeof ProfileEditRouteImport
+      parentRoute: typeof ProfileRoute
+    }
     '/post/$postId': {
       id: '/post/$postId'
       path: '/post/$postId'
@@ -235,6 +254,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ProfileRouteChildren {
+  ProfileEditRoute: typeof ProfileEditRoute
+}
+
+const ProfileRouteChildren: ProfileRouteChildren = {
+  ProfileEditRoute: ProfileEditRoute,
+}
+
+const ProfileRouteWithChildren =
+  ProfileRoute._addFileChildren(ProfileRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -243,7 +273,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   DiscoverRoute: DiscoverRoute,
   LibraryRoute: LibraryRoute,
-  ProfileRoute: ProfileRoute,
+  ProfileRoute: ProfileRouteWithChildren,
   UploadRoute: UploadRoute,
   PostPostIdRoute: PostPostIdRoute,
 }
