@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Send, Search, ArrowLeft, Loader2 } from "lucide-react";
+import { Send, Search, ArrowLeft, Loader2, Video, PhoneIncoming } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
+import { VideoCall } from "@/components/chat/VideoCall";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
