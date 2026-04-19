@@ -272,6 +272,7 @@ function ChatPage() {
           </button>
         </div>
       </div>
+      </>
     );
   }
 
