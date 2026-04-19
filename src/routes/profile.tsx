@@ -60,9 +60,9 @@ function ProfilePage() {
     <div>
       <div className="bg-gradient-hero relative h-40 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-glow" />
-        <button className="absolute right-4 top-4 rounded-full glass p-2.5">
+        <Link to="/profile/edit" className="absolute right-4 top-4 rounded-full glass p-2.5" aria-label="Edit profile">
           <Settings className="h-5 w-5" />
-        </button>
+        </Link>
       </div>
 
       <div className="relative px-4 pb-6">
