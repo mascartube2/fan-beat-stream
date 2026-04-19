@@ -78,6 +78,33 @@ function ChatPage() {
     };
   }, [user?.id]);
 
+  // Listen for incoming calls (offers addressed to me)
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel("incoming-calls")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "call_signals", filter: `to_user=eq.${user.id}` },
+        (payload) => {
+          const s = payload.new as { call_id: string; from_user: string; type: string };
+          if (s.type === "offer" && !call && (!incoming || incoming.callId !== s.call_id)) {
+            setIncoming({ callId: s.call_id, peerId: s.from_user });
+          }
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user?.id, call, incoming]);
+
+  const startCall = (peerId: string) => {
+    if (!user) return;
+    const callId = `${[user.id, peerId].sort().join("-")}-${Date.now()}`;
+    setCall({ callId, peerId, isInitiator: true });
+  };
+
   // Conversations grouped by peer
   const conversations = useMemo(() => {
     if (!user) return [];
