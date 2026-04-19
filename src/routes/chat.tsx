@@ -205,7 +205,14 @@ function ChatPage() {
               {(peer?.display_name ?? "U").slice(0, 2).toUpperCase()}
             </span>
           )}
-          <p className="font-semibold">{peer?.display_name ?? "Utilisateur"}</p>
+          <p className="flex-1 font-semibold">{peer?.display_name ?? "Utilisateur"}</p>
+          <button
+            onClick={() => startCall(activePeer)}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary shadow-glow"
+            aria-label="Appel vidéo"
+          >
+            <Video className="h-4 w-4" />
+          </button>
         </header>
 
         <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-4 py-3">
