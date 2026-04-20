@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as MembersRouteImport } from './routes/members'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ChatRouteImport } from './routes/chat'
@@ -29,6 +30,11 @@ const UploadRoute = UploadRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MembersRoute = MembersRouteImport.update({
+  id: '/members',
+  path: '/members',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryRoute = LibraryRouteImport.update({
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
+  '/members': typeof MembersRoute
   '/profile': typeof ProfileRouteWithChildren
   '/upload': typeof UploadRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
+  '/members': typeof MembersRoute
   '/profile': typeof ProfileRouteWithChildren
   '/upload': typeof UploadRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/library': typeof LibraryRoute
+  '/members': typeof MembersRoute
   '/profile': typeof ProfileRouteWithChildren
   '/upload': typeof UploadRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/discover'
     | '/library'
+    | '/members'
     | '/profile'
     | '/upload'
     | '/post/$postId'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/discover'
     | '/library'
+    | '/members'
     | '/profile'
     | '/upload'
     | '/post/$postId'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/discover'
     | '/library'
+    | '/members'
     | '/profile'
     | '/upload'
     | '/post/$postId'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   DiscoverRoute: typeof DiscoverRoute
   LibraryRoute: typeof LibraryRoute
+  MembersRoute: typeof MembersRoute
   ProfileRoute: typeof ProfileRouteWithChildren
   UploadRoute: typeof UploadRoute
   PostPostIdRoute: typeof PostPostIdRoute
@@ -186,6 +199,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/members': {
+      id: '/members'
+      path: '/members'
+      fullPath: '/members'
+      preLoaderRoute: typeof MembersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/library': {
@@ -273,6 +293,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   DiscoverRoute: DiscoverRoute,
   LibraryRoute: LibraryRoute,
+  MembersRoute: MembersRoute,
   ProfileRoute: ProfileRouteWithChildren,
   UploadRoute: UploadRoute,
   PostPostIdRoute: PostPostIdRoute,

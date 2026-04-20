@@ -28,7 +28,9 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
     reposted_from: r.reposted_from,
     created_at: r.created_at,
     authorName: profMap.get(r.user_id)?.display_name ?? "Utilisateur",
-    authorAvatar: profMap.get(r.user_id)?.avatar_url ?? null,
+    authorAvatar: profMap.get(r.user_id)?.avatar_url
+      ? supabase.storage.from("track-covers").getPublicUrl(profMap.get(r.user_id)!.avatar_url!).data.publicUrl
+      : null,
     mediaUrl: r.media_path ? supabase.storage.from("posts").getPublicUrl(r.media_path).data.publicUrl : null,
   }));
 }
