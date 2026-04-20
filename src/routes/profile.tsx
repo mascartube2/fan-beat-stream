@@ -82,6 +82,12 @@ function ProfilePage() {
         </div>
         <p className="text-sm text-muted-foreground">{user.email}</p>
         {profile?.bio && <p className="mt-2 text-sm">{profile.bio}</p>}
+        <Link
+          to="/profile/edit"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary-glow"
+        >
+          <Settings className="h-3.5 w-3.5" /> Modifier la photo et le profil
+        </Link>
 
         <div className="mt-4 flex items-center gap-6 text-sm">
           <div>
