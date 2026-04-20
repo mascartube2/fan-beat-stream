@@ -40,6 +40,15 @@ export function MiniPlayer() {
             <p className="truncate text-sm font-semibold">{current.title}</p>
             <p className="truncate text-xs text-muted-foreground">{current.artistName}</p>
           </div>
+          <a
+            href={current.audioUrl}
+            download={`${current.title}.mp3`}
+            className="rounded-full p-2 transition hover:bg-white/10"
+            aria-label="Télécharger"
+            title="Télécharger"
+          >
+            <Download className="h-4 w-4" />
+          </a>
           <button
             onClick={() => setLiked((l) => !l)}
             className="rounded-full p-2 transition hover:bg-white/10"
