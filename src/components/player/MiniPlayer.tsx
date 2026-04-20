@@ -1,4 +1,4 @@
-import { Pause, Play, SkipBack, SkipForward, Heart } from "lucide-react";
+import { Pause, Play, SkipBack, SkipForward, Heart, Download } from "lucide-react";
 import { usePlayer } from "./PlayerContext";
 import { useState } from "react";
 
