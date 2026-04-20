@@ -109,6 +109,16 @@ function LibraryPage() {
               </span>
               <span className="text-xs text-muted-foreground">{fmt(t.duration_seconds)}</span>
               <Play className="h-4 w-4 fill-current text-primary-glow" />
+              <a
+                href={t.audioUrl}
+                download={`${t.title}.mp3`}
+                onClick={(e) => e.stopPropagation()}
+                className="rounded-full p-1.5 hover:bg-white/10"
+                aria-label={`Télécharger ${t.title}`}
+                title="Télécharger"
+              >
+                <Download className="h-4 w-4 text-muted-foreground hover:text-primary-glow" />
+              </a>
             </button>
           ))}
         </div>
