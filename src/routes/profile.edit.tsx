@@ -130,22 +130,26 @@ function EditProfilePage() {
       </header>
 
       <div className="flex flex-col items-center px-4 pt-6">
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-background bg-gradient-primary shadow-elevated"
-        >
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-3xl font-bold">
-              {(displayName || user.email || "?").charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition hover:opacity-100">
-            {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Camera className="h-6 w-6" />}
+        <div className="relative">
+          <div className="h-28 w-28 overflow-hidden rounded-full border-4 border-background bg-gradient-primary shadow-elevated">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-3xl font-bold">
+                {(displayName || user.email || "?").charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
-        </button>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border-2 border-background bg-primary shadow-glow transition active:scale-95 disabled:opacity-50"
+            aria-label="Changer la photo de profil"
+          >
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+          </button>
+        </div>
         <input
           ref={fileRef}
           type="file"
@@ -156,9 +160,10 @@ function EditProfilePage() {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="mt-3 text-xs font-semibold text-primary"
+          disabled={uploading}
+          className="mt-3 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary-glow disabled:opacity-50"
         >
-          {uploading ? "Téléchargement..." : "Changer la photo"}
+          {uploading ? "Téléchargement..." : "Changer la photo de profil"}
         </button>
       </div>
 

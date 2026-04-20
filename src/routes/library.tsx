@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, ListMusic, Clock, Download, Upload, Music, Loader2, Play } from "lucide-react";
+import { ArrowLeft, Heart, ListMusic, Clock, Download, Upload, Music, Loader2, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePlayer } from "@/components/player/PlayerContext";
-import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/tracks";
+import { fetchTracksWithArtists, toPlayable, downloadTrack, type TrackWithArtist } from "@/lib/tracks";
 import { useAuth } from "@/components/auth/AuthContext";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/library")({
   component: LibraryPage,
@@ -41,8 +42,15 @@ function LibraryPage() {
 
   return (
     <div className="px-4 pt-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Your Library</h1>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <Link
+          to="/"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-white/5"
+          aria-label="Retour à l'accueil"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+        <h1 className="flex-1 text-2xl font-bold">Your Library</h1>
         {isArtist && (
           <Link
             to="/upload"
@@ -113,15 +121,18 @@ function LibraryPage() {
                 <span className="text-xs text-muted-foreground">{fmt(t.duration_seconds)}</span>
                 <Play className="h-4 w-4 fill-current text-primary-glow" />
               </button>
-              <a
-                href={t.audioUrl}
-                download={`${t.title}.mp3`}
+              <button
+                onClick={async () => {
+                  toast.loading("Téléchargement...", { id: `dl-${t.id}` });
+                  await downloadTrack(t);
+                  toast.success(`${t.title} téléchargé`, { id: `dl-${t.id}` });
+                }}
                 className="rounded-full p-2 hover:bg-white/10"
                 aria-label={`Télécharger ${t.title}`}
                 title="Télécharger"
               >
                 <Download className="h-4 w-4 text-muted-foreground hover:text-primary-glow" />
-              </a>
+              </button>
             </div>
           ))}
         </div>
