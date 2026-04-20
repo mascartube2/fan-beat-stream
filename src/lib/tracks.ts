@@ -53,6 +53,44 @@ export async function fetchTracksWithArtists(limit = 50): Promise<TrackWithArtis
   }));
 }
 
+function sanitizeFilename(name: string): string {
+  return name.replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, " ").trim() || "track";
+}
+
+function extFromPathOrUrl(s: string, fallback = "mp3"): string {
+  const clean = s.split("?")[0].split("#")[0];
+  const m = clean.match(/\.([a-zA-Z0-9]{2,5})$/);
+  return m ? m[1].toLowerCase() : fallback;
+}
+
+export async function downloadTrack(track: { title: string; audioUrl: string; audio_path?: string | null }): Promise<void> {
+  const ext = extFromPathOrUrl(track.audio_path || track.audioUrl, "mp3");
+  const filename = `${sanitizeFilename(track.title)}.${ext}`;
+  try {
+    const res = await fetch(track.audioUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch {
+    // Fallback: open in new tab so user can save manually
+    const a = document.createElement("a");
+    a.href = track.audioUrl;
+    a.download = filename;
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+}
+
 export function toPlayable(t: TrackWithArtist): PlayableTrack {
   return {
     id: t.id,
