@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
 import { Loader2 } from "lucide-react";
+import { LogoIcon } from "@/components/brand/Logo";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -54,10 +55,13 @@ function AuthPage() {
   return (
     <div className="min-h-screen px-5 pt-12">
       <div className="mx-auto max-w-sm">
-        <h1 className="mb-1 text-3xl font-bold">
-          <span className="text-gradient">Pulse</span>
+        <div className="mb-4 flex justify-center">
+          <LogoIcon className="h-20 w-20 drop-shadow-[0_0_30px_rgba(139,92,246,0.5)]" />
+        </div>
+        <h1 className="mb-1 text-center text-3xl font-bold">
+          <span className="text-gradient">Mascartube</span>
         </h1>
-        <p className="mb-8 text-sm text-muted-foreground">
+        <p className="mb-8 text-center text-sm text-muted-foreground">
           {mode === "signup" ? "Create your account" : "Welcome back"}
         </p>
 

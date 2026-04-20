@@ -9,6 +9,7 @@ import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { LogoFull } from "@/components/brand/Logo";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -43,12 +44,9 @@ function HomePage() {
   return (
     <div className="px-4 pt-4">
       <header className="mb-4 flex items-center justify-between">
-        <div>
-          <p className="text-xs text-muted-foreground">Welcome back</p>
-          <h1 className="text-2xl font-bold tracking-tight">
-            <span className="text-gradient">Pulse</span>
-          </h1>
-        </div>
+        <Link to="/" aria-label="Mascartube home" className="flex items-center">
+          <LogoFull className="h-9" />
+        </Link>
         <div className="flex items-center gap-1">
           <button className="rounded-full p-2.5 hover:bg-white/5" aria-label="Search">
             <Search className="h-5 w-5" />
