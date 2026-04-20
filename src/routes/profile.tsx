@@ -66,13 +66,16 @@ function ProfilePage() {
       </div>
 
       <div className="relative px-4 pb-6">
-        <div className="-mt-12 flex h-24 w-24 items-center justify-center rounded-full border-4 border-background bg-gradient-primary text-2xl font-bold shadow-elevated">
+        <Link to="/profile/edit" className="group relative -mt-12 flex h-24 w-24 items-center justify-center rounded-full border-4 border-background bg-gradient-primary text-2xl font-bold shadow-elevated">
           {avatarUrl ? (
             <img src={avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
           ) : (
             (profile?.display_name ?? user.email ?? "?").charAt(0).toUpperCase()
           )}
-        </div>
+          <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-primary shadow-glow">
+            <Settings className="h-3.5 w-3.5" />
+          </span>
+        </Link>
         <div className="mt-3 flex items-center gap-1.5">
           <h1 className="text-2xl font-bold">{profile?.display_name ?? user.email}</h1>
           {isArtist && <BadgeCheck className="h-5 w-5 fill-primary text-primary-foreground" />}

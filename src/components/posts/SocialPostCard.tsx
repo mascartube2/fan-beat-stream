@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Repeat2, Share2, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Share2, Trash2, Pencil, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +35,19 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
   const [reposted, setReposted] = useState(false);
   const [likes, setLikes] = useState(post.likes_count);
   const [reposts, setReposts] = useState(post.reposts_count);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(post.content ?? "");
+  const [content, setContent] = useState(post.content);
+
+  const saveEdit = async () => {
+    const newContent = draft.trim() || null;
+    const { error } = await supabase.from("posts").update({ content: newContent }).eq("id", post.id);
+    if (error) return toast.error(error.message);
+    setContent(newContent);
+    setEditing(false);
+    toast.success("Modifié");
+    onChange?.();
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -120,13 +133,39 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
           <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
         </div>
         {(user?.id === post.user_id || isAdmin) && (
-          <button onClick={remove} className="rounded-full p-1.5 text-muted-foreground hover:bg-white/5">
-            <Trash2 className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            {user?.id === post.user_id && !editing && (
+              <button onClick={() => setEditing(true)} className="rounded-full p-1.5 text-muted-foreground hover:bg-white/5" aria-label="Modifier">
+                <Pencil className="h-4 w-4" />
+              </button>
+            )}
+            <button onClick={remove} className="rounded-full p-1.5 text-muted-foreground hover:bg-white/5" aria-label="Supprimer">
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         )}
       </header>
 
-      {post.content && <p className="mb-3 whitespace-pre-wrap text-sm leading-relaxed">{post.content}</p>}
+      {editing ? (
+        <div className="mb-3">
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={3}
+            className="w-full resize-none rounded-lg border border-border bg-background p-2 text-sm focus:border-primary focus:outline-none"
+          />
+          <div className="mt-2 flex justify-end gap-2">
+            <button onClick={() => { setEditing(false); setDraft(content ?? ""); }} className="rounded-full border border-border px-3 py-1 text-xs">
+              <X className="inline h-3 w-3" /> Annuler
+            </button>
+            <button onClick={saveEdit} className="rounded-full bg-gradient-primary px-3 py-1 text-xs font-bold">
+              <Check className="inline h-3 w-3" /> Enregistrer
+            </button>
+          </div>
+        </div>
+      ) : (
+        content && <p className="mb-3 whitespace-pre-wrap text-sm leading-relaxed">{content}</p>
+      )}
 
       {post.mediaUrl && (
         <div className="mb-3 overflow-hidden rounded-xl">
