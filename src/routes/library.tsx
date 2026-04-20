@@ -90,26 +90,39 @@ function LibraryPage() {
       ) : (
         <div className="space-y-2">
           {tracks.map((t) => (
-            <button
+            <div
               key={t.id}
-              onClick={() => playTrack(toPlayable(t), playableQueue)}
-              className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-surface/60"
+              className="flex w-full items-center gap-3 rounded-xl p-2 transition hover:bg-surface/60"
             >
-              <img
-                src={t.coverUrl}
-                alt={t.title}
-                width={48}
-                height={48}
-                loading="lazy"
-                className="h-12 w-12 rounded-lg object-cover"
-              />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold">{t.title}</span>
-                <span className="block truncate text-xs text-muted-foreground">{t.artistName}</span>
-              </span>
-              <span className="text-xs text-muted-foreground">{fmt(t.duration_seconds)}</span>
-              <Play className="h-4 w-4 fill-current text-primary-glow" />
-            </button>
+              <button
+                onClick={() => playTrack(toPlayable(t), playableQueue)}
+                className="flex min-w-0 flex-1 items-center gap-3 text-left"
+              >
+                <img
+                  src={t.coverUrl}
+                  alt={t.title}
+                  width={48}
+                  height={48}
+                  loading="lazy"
+                  className="h-12 w-12 rounded-lg object-cover"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">{t.title}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{t.artistName}</span>
+                </span>
+                <span className="text-xs text-muted-foreground">{fmt(t.duration_seconds)}</span>
+                <Play className="h-4 w-4 fill-current text-primary-glow" />
+              </button>
+              <a
+                href={t.audioUrl}
+                download={`${t.title}.mp3`}
+                className="rounded-full p-2 hover:bg-white/10"
+                aria-label={`Télécharger ${t.title}`}
+                title="Télécharger"
+              >
+                <Download className="h-4 w-4 text-muted-foreground hover:text-primary-glow" />
+              </a>
+            </div>
           ))}
         </div>
       )}
