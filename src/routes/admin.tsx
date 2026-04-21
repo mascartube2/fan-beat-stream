@@ -2,13 +2,25 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
-import { Loader2, Check, X, ShieldCheck, Upload as UploadIcon, Trash2 } from "lucide-react";
+import { Loader2, Check, X, ShieldCheck, Upload as UploadIcon, Trash2, Film } from "lucide-react";
 import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
+import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
-  head: () => ({ meta: [{ title: "Admin — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Admin — Mascartube" }] }),
 });
+
+type StoryAdmin = {
+  id: string;
+  user_id: string;
+  media_path: string;
+  media_type: string;
+  created_at: string;
+  authorName: string;
+  mediaUrl: string;
+};
 
 type Request = {
   id: string;
