@@ -68,14 +68,22 @@ function EditProfilePage() {
     }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
       const path = `${user.id}/avatar-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
-        .from("track-covers")
-        .upload(path, file, { cacheControl: "3600", upsert: true });
+        .from("avatars")
+        .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
       if (upErr) throw upErr;
-      setAvatarPath(path);
-      toast.success("Photo prête. N'oublie pas d'enregistrer.");
+      // Save the public URL directly so it's reusable everywhere
+      const publicURL = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+      const { error: updErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicURL })
+        .eq("user_id", user.id);
+      if (updErr) throw updErr;
+      setAvatarPath(publicURL);
+      window.dispatchEvent(new CustomEvent("profile:avatar-updated", { detail: publicURL }));
+      toast.success("Photo de profil mise à jour");
     } catch (err) {
       toast.error("Échec de l'upload");
       console.error(err);
@@ -106,7 +114,11 @@ function EditProfilePage() {
     }
   };
 
-  const avatarUrl = avatarPath ? publicUrl("track-covers", avatarPath) : null;
+  const avatarUrl = avatarPath
+    ? avatarPath.startsWith("http")
+      ? avatarPath
+      : publicUrl("track-covers", avatarPath)
+    : null;
 
   return (
     <div className="pb-24">

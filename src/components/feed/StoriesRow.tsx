@@ -1,4 +1,4 @@
-import { Plus, Loader2, X, Send } from "lucide-react";
+import { Plus, Loader2, X, Send, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -106,6 +106,25 @@ export function StoriesRow() {
     }
   };
 
+  const handleDelete = async (story: StoryWithAuthor) => {
+    if (!user || story.user_id !== user.id) return;
+    if (!confirm("Supprimer cette story ?")) return;
+    // Optimistic UI
+    const prev = stories;
+    setStories((s) => s.filter((x) => x.id !== story.id));
+    setViewing(null);
+    try {
+      const { error: rmErr } = await supabase.storage.from("stories").remove([story.media_path]);
+      if (rmErr) throw rmErr;
+      const { error: delErr } = await supabase.from("stories").delete().eq("id", story.id);
+      if (delErr) throw delErr;
+      toast.success("Story supprimée");
+    } catch (err) {
+      setStories(prev);
+      toast.error((err as Error).message);
+    }
+  };
+
   const current = viewing !== null ? stories[viewing] : null;
 
   return (
@@ -195,6 +214,18 @@ export function StoriesRow() {
               {new Date(current.created_at).toLocaleString()}
             </span>
           </div>
+          {user && current.user_id === user.id && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(current);
+              }}
+              className="absolute bottom-6 right-4 z-10 flex items-center gap-1.5 rounded-full bg-red-600/90 px-3 py-2 text-xs font-bold text-white shadow-lg"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Effacer ma story
+            </button>
+          )}
           <div className="max-h-[90vh] w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             {current.media_type === "video" ? (
               <video src={current.mediaUrl} controls autoPlay className="max-h-[90vh] w-full" />
