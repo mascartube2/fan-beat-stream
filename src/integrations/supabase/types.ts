@@ -274,6 +274,71 @@ export type Database = {
         }
         Relationships: []
       }
+      short_likes: {
+        Row: {
+          created_at: string
+          id: string
+          short_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          short_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          short_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "short_likes_short_id_fkey"
+            columns: ["short_id"]
+            isOneToOne: false
+            referencedRelation: "shorts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shorts: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          likes_count: number
+          thumbnail_path: string | null
+          updated_at: string
+          user_id: string
+          video_path: string
+          views_count: number
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          likes_count?: number
+          thumbnail_path?: string | null
+          updated_at?: string
+          user_id: string
+          video_path: string
+          views_count?: number
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          likes_count?: number
+          thumbnail_path?: string | null
+          updated_at?: string
+          user_id?: string
+          video_path?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
           caption: string | null

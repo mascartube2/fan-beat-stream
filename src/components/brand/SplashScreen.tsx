@@ -4,17 +4,16 @@ import logoIcon from "@/assets/logo-icon.png";
 const SPLASH_KEY = "mascartube_splash_shown";
 
 export function SplashScreen() {
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return !sessionStorage.getItem(SPLASH_KEY);
-  });
+  // Always start hidden on first render to match SSR; reveal after mount if needed.
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!visible) return;
+    if (sessionStorage.getItem(SPLASH_KEY)) return;
     sessionStorage.setItem(SPLASH_KEY, "1");
+    setVisible(true);
     const t = setTimeout(() => setVisible(false), 5000);
     return () => clearTimeout(t);
-  }, [visible]);
+  }, []);
 
   if (!visible) return null;
 
