@@ -39,6 +39,8 @@ function AdminPage() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [artists, setArtists] = useState<ArtistOption[]>([]);
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
+  const [stories, setStories] = useState<StoryAdmin[]>([]);
+  const [shorts, setShorts] = useState<ShortWithAuthor[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
