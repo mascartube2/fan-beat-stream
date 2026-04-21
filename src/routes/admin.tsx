@@ -474,6 +474,90 @@ function AdminPage() {
           </div>
         </>
       )}
+
+      {/* Certification */}
+      <h2 className="mb-2 mt-6 flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
+        <BadgeCheck className="h-3 w-3" /> Certification ({allProfiles.filter((p) => p.is_certified).length}/{allProfiles.length})
+      </h2>
+      <input
+        type="text"
+        value={profileSearch}
+        onChange={(e) => setProfileSearch(e.target.value)}
+        placeholder="Rechercher un utilisateur…"
+        className="mb-2 w-full rounded-lg border border-border bg-input px-3 py-2 text-sm"
+      />
+      <div className="max-h-72 space-y-1 overflow-y-auto">
+        {allProfiles
+          .filter((p) => !profileSearch || (p.display_name ?? "").toLowerCase().includes(profileSearch.toLowerCase()))
+          .slice(0, 50)
+          .map((p) => (
+            <div key={p.user_id} className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2 text-xs">
+              <span className="flex items-center gap-1.5 truncate">
+                {p.display_name ?? "Sans nom"} {p.is_certified && <BadgeCheck className="h-3.5 w-3.5 fill-sky-500 text-background" />}
+                <span className="text-amber-400">· {p.mascar_coins} MA.CA</span>
+              </span>
+              <button
+                onClick={() => toggleCertified(p)}
+                disabled={busyId === p.user_id}
+                className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${p.is_certified ? "bg-destructive/20 text-destructive" : "bg-sky-500/20 text-sky-400"}`}
+              >
+                {busyId === p.user_id ? "…" : p.is_certified ? "Décertifier" : "Certifier"}
+              </button>
+            </div>
+          ))}
+      </div>
+
+      {/* Deposits validation */}
+      <h2 className="mb-2 mt-6 flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
+        <Coins className="h-3 w-3" /> Dépôts à valider ({deposits.filter((d) => d.status === "en_attente").length})
+      </h2>
+      {deposits.filter((d) => d.status === "en_attente").length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun dépôt en attente.</p>
+      ) : (
+        <div className="space-y-2">
+          {deposits.filter((d) => d.status === "en_attente").map((d) => (
+            <div key={d.id} className="rounded-lg border border-border/40 p-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">{d.userName}</span>
+                <span className="text-amber-400">+{d.maca_amount} MA.CA ({d.amount_ar} Ar)</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Réf Mvola : <span className="font-mono">{d.transaction_ref}</span></p>
+              <div className="mt-2 flex gap-2">
+                <button onClick={() => approveDeposit(d.id)} disabled={busyId === d.id} className="flex-1 rounded-full bg-gradient-primary py-1.5 text-[11px] font-bold disabled:opacity-50">
+                  {busyId === d.id ? <Loader2 className="mx-auto h-3 w-3 animate-spin" /> : "Valider & Créditer"}
+                </button>
+                <button onClick={() => rejectDeposit(d.id)} disabled={busyId === d.id} className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold">Refuser</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Withdrawals */}
+      <h2 className="mb-2 mt-6 flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
+        <Wallet className="h-3 w-3" /> Retraits artistes ({withdrawals.filter((w) => w.status === "en_attente").length})
+      </h2>
+      {withdrawals.filter((w) => w.status === "en_attente").length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun retrait en attente.</p>
+      ) : (
+        <div className="space-y-2">
+          {withdrawals.filter((w) => w.status === "en_attente").map((w) => (
+            <div key={w.id} className="rounded-lg border border-border/40 p-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">{w.userName}</span>
+                <span className="text-primary-glow">{w.maca_amount} MA.CA → {w.amount_ar} Ar</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Mvola sortant : <span className="font-mono font-bold">{w.mvola_number}</span></p>
+              <div className="mt-2 flex gap-2">
+                <button onClick={() => approveWithdrawal(w.id)} disabled={busyId === w.id} className="flex-1 rounded-full bg-gradient-primary py-1.5 text-[11px] font-bold disabled:opacity-50">
+                  {busyId === w.id ? <Loader2 className="mx-auto h-3 w-3 animate-spin" /> : "Marquer comme payé"}
+                </button>
+                <button onClick={() => rejectWithdrawal(w.id)} disabled={busyId === w.id} className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold">Refuser</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
