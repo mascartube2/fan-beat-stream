@@ -132,6 +132,42 @@ function AdminPage() {
     setBusyId(null);
   };
 
+  const toggleCertified = async (p: ProfileRow) => {
+    setBusyId(p.user_id);
+    const { error } = await supabase.rpc("set_certified", { _user_id: p.user_id, _value: !p.is_certified });
+    if (error) toast.error(error.message);
+    else { toast.success(p.is_certified ? "Certification retirée" : "Utilisateur certifié"); await load(); }
+    setBusyId(null);
+  };
+
+  const approveDeposit = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("approve_deposit", { _deposit_id: id });
+    if (error) toast.error(error.message); else { toast.success("Dépôt validé"); await load(); }
+    setBusyId(null);
+  };
+
+  const rejectDeposit = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.from("deposits").update({ status: "refuse", reviewed_by: user.id, reviewed_at: new Date().toISOString() }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Dépôt refusé"); await load(); }
+    setBusyId(null);
+  };
+
+  const approveWithdrawal = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("approve_withdrawal", { _withdrawal_id: id });
+    if (error) toast.error(error.message); else { toast.success("Retrait marqué comme payé"); await load(); }
+    setBusyId(null);
+  };
+
+  const rejectWithdrawal = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("reject_withdrawal", { _withdrawal_id: id });
+    if (error) toast.error(error.message); else { toast.success("Retrait refusé (solde restitué)"); await load(); }
+    setBusyId(null);
+  };
+
   const deleteTrack = async (t: TrackWithArtist) => {
     if (!confirm(`Supprimer "${t.title}" ?`)) return;
     setBusyId(t.id);
