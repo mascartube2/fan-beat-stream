@@ -46,6 +46,10 @@ function AdminPage() {
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
   const [stories, setStories] = useState<StoryAdmin[]>([]);
   const [shorts, setShorts] = useState<ShortWithAuthor[]>([]);
+  const [allProfiles, setAllProfiles] = useState<ProfileRow[]>([]);
+  const [deposits, setDeposits] = useState<DepositRow[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
+  const [profileSearch, setProfileSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
