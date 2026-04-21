@@ -1,4 +1,4 @@
-import { Plus, Loader2, X, Send } from "lucide-react";
+import { Plus, Loader2, X, Send, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
