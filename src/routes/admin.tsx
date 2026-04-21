@@ -149,6 +149,39 @@ function AdminPage() {
     setBusyId(null);
   };
 
+  const deleteStory = async (s: StoryAdmin) => {
+    if (!confirm(`Supprimer la story de ${s.authorName} ?`)) return;
+    setBusyId(s.id);
+    try {
+      await supabase.storage.from("stories").remove([s.media_path]);
+      const { error } = await supabase.from("stories").delete().eq("id", s.id);
+      if (error) throw error;
+      toast.success("Story supprimée");
+      await load();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const deleteShort = async (s: ShortWithAuthor) => {
+    if (!confirm(`Supprimer le réel de ${s.authorName} ?`)) return;
+    setBusyId(s.id);
+    try {
+      await supabase.storage.from("shorts").remove([s.video_path]);
+      if (s.thumbnail_path) await supabase.storage.from("shorts").remove([s.thumbnail_path]);
+      const { error } = await supabase.from("shorts").delete().eq("id", s.id);
+      if (error) throw error;
+      toast.success("Réel supprimé");
+      await load();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const adminUpload = async (e: FormEvent) => {
     e.preventDefault();
     setUploadErr(null);
@@ -331,6 +364,64 @@ function AdminPage() {
               >
                 {busyId === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
               </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Stories moderation */}
+      <h2 className="mb-2 mt-6 text-xs font-semibold uppercase text-muted-foreground">
+        Stories actives ({stories.length})
+      </h2>
+      {stories.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucune story active.</p>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          {stories.map((s) => (
+            <div key={s.id} className="relative overflow-hidden rounded-lg border border-border/40">
+              {s.media_type === "video" ? (
+                <video src={s.mediaUrl} className="aspect-square w-full bg-black object-cover" muted />
+              ) : (
+                <img src={s.mediaUrl} alt="" className="aspect-square w-full object-cover" />
+              )}
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/60 px-1.5 py-1">
+                <span className="truncate text-[10px]">{s.authorName}</span>
+                <button
+                  onClick={() => deleteStory(s)}
+                  disabled={busyId === s.id}
+                  className="rounded-full p-0.5 text-destructive hover:bg-white/10 disabled:opacity-50"
+                  aria-label="Supprimer"
+                >
+                  {busyId === s.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Shorts moderation */}
+      <h2 className="mb-2 mt-6 flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
+        <Film className="h-3 w-3" /> Réels ({shorts.length})
+      </h2>
+      {shorts.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun réel.</p>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          {shorts.map((s) => (
+            <div key={s.id} className="relative overflow-hidden rounded-lg border border-border/40">
+              <video src={s.videoUrl} poster={s.thumbnailUrl ?? undefined} className="aspect-[9/16] w-full bg-black object-cover" muted />
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/60 px-1.5 py-1">
+                <span className="truncate text-[10px]">{s.authorName}</span>
+                <button
+                  onClick={() => deleteShort(s)}
+                  disabled={busyId === s.id}
+                  className="rounded-full p-0.5 text-destructive hover:bg-white/10 disabled:opacity-50"
+                  aria-label="Supprimer"
+                >
+                  {busyId === s.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                </button>
+              </div>
             </div>
           ))}
         </div>
