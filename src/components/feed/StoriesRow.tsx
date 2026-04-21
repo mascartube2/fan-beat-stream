@@ -214,6 +214,18 @@ export function StoriesRow() {
               {new Date(current.created_at).toLocaleString()}
             </span>
           </div>
+          {user && current.user_id === user.id && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(current);
+              }}
+              className="absolute bottom-6 right-4 z-10 flex items-center gap-1.5 rounded-full bg-red-600/90 px-3 py-2 text-xs font-bold text-white shadow-lg"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Effacer ma story
+            </button>
+          )}
           <div className="max-h-[90vh] w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             {current.media_type === "video" ? (
               <video src={current.mediaUrl} controls autoPlay className="max-h-[90vh] w-full" />
