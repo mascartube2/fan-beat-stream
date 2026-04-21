@@ -5,7 +5,12 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { Loader2, Check, X, ShieldCheck, Upload as UploadIcon, Trash2, Film } from "lucide-react";
 import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
 import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
+import { BadgeCheck, Coins, Wallet } from "lucide-react";
 import { toast } from "sonner";
+
+type ProfileRow = { user_id: string; display_name: string | null; is_certified: boolean; mascar_coins: number };
+type DepositRow = { id: string; user_id: string; amount_ar: number; maca_amount: number; transaction_ref: string; status: string; created_at: string; userName?: string };
+type WithdrawalRow = { id: string; user_id: string; maca_amount: number; amount_ar: number; mvola_number: string; status: string; created_at: string; userName?: string };
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
