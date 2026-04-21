@@ -114,7 +114,11 @@ function EditProfilePage() {
     }
   };
 
-  const avatarUrl = avatarPath ? publicUrl("track-covers", avatarPath) : null;
+  const avatarUrl = avatarPath
+    ? avatarPath.startsWith("http")
+      ? avatarPath
+      : publicUrl("track-covers", avatarPath)
+    : null;
 
   return (
     <div className="pb-24">
