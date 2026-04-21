@@ -55,15 +55,18 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: reqs }, { data: artistRoles }, allTracks] = await Promise.all([
+    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows] = await Promise.all([
       supabase.from("artist_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id").eq("role", "artist"),
       fetchTracksWithArtists(200),
+      supabase.from("stories").select("*").gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }),
+      fetchShorts(50),
     ]);
 
     const allUserIds = new Set<string>();
     (reqs ?? []).forEach((r) => allUserIds.add(r.user_id));
     (artistRoles ?? []).forEach((r) => allUserIds.add(r.user_id));
+    (storyRows ?? []).forEach((r) => allUserIds.add(r.user_id));
 
     const { data: profiles } = await supabase
       .from("profiles")
@@ -79,6 +82,18 @@ function AdminPage() {
       })),
     );
     setTracks(allTracks);
+    setStories(
+      (storyRows ?? []).map((s) => ({
+        id: s.id,
+        user_id: s.user_id,
+        media_path: s.media_path,
+        media_type: s.media_type,
+        created_at: s.created_at,
+        authorName: nameMap.get(s.user_id) ?? "Unknown",
+        mediaUrl: supabase.storage.from("stories").getPublicUrl(s.media_path).data.publicUrl,
+      })),
+    );
+    setShorts(shortRows);
     setLoading(false);
   };
 
