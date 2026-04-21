@@ -34,7 +34,7 @@ export async function fetchShorts(limit = 30): Promise<ShortWithAuthor[]> {
   if (!rows || rows.length === 0) return [];
   const ids = Array.from(new Set(rows.map((r) => r.user_id)));
   const [{ data: profs }, { data: roles }, { data: { user } }] = await Promise.all([
-    supabase.from("profiles").select("user_id,display_name,avatar_url").in("user_id", ids),
+    supabase.from("profiles").select("user_id,display_name,avatar_url,is_certified").in("user_id", ids),
     supabase.from("user_roles").select("user_id,role").in("user_id", ids),
     supabase.auth.getUser(),
   ]);
@@ -58,13 +58,14 @@ export async function fetchShorts(limit = 30): Promise<ShortWithAuthor[]> {
   });
   return rows.map((r) => {
     const userRoles = rolesByUser.get(r.user_id) ?? new Set();
+    const prof = profMap.get(r.user_id);
     return {
       ...r,
       videoUrl: publicUrl("shorts", r.video_path),
       thumbnailUrl: r.thumbnail_path ? publicUrl("shorts", r.thumbnail_path) : null,
-      authorName: profMap.get(r.user_id)?.display_name ?? "User",
-      authorAvatar: profMap.get(r.user_id)?.avatar_url ?? null,
-      authorIsArtist: userRoles.has("artist") || userRoles.has("admin"),
+      authorName: prof?.display_name ?? "User",
+      authorAvatar: prof?.avatar_url ?? null,
+      authorIsArtist: !!prof?.is_certified,
       authorIsAdmin: userRoles.has("admin"),
       liked: likedSet.has(r.id),
     };
