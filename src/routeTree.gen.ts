@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
+import { Route as ShortsRouteImport } from './routes/shorts'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as LibraryRouteImport } from './routes/library'
@@ -25,6 +26,11 @@ import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShortsRoute = ShortsRouteImport.update({
+  id: '/shorts',
+  path: '/shorts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/library': typeof LibraryRoute
   '/members': typeof MembersRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/library': typeof LibraryRoute
   '/members': typeof MembersRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/library': typeof LibraryRoute
   '/members': typeof MembersRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/members'
     | '/profile'
+    | '/shorts'
     | '/upload'
     | '/post/$postId'
     | '/profile/edit'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/members'
     | '/profile'
+    | '/shorts'
     | '/upload'
     | '/post/$postId'
     | '/profile/edit'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/members'
     | '/profile'
+    | '/shorts'
     | '/upload'
     | '/post/$postId'
     | '/profile/edit'
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   LibraryRoute: typeof LibraryRoute
   MembersRoute: typeof MembersRoute
   ProfileRoute: typeof ProfileRouteWithChildren
+  ShortsRoute: typeof ShortsRoute
   UploadRoute: typeof UploadRoute
   PostPostIdRoute: typeof PostPostIdRoute
 }
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       path: '/upload'
       fullPath: '/upload'
       preLoaderRoute: typeof UploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shorts': {
+      id: '/shorts'
+      path: '/shorts'
+      fullPath: '/shorts'
+      preLoaderRoute: typeof ShortsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -295,6 +315,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRoute,
   MembersRoute: MembersRoute,
   ProfileRoute: ProfileRouteWithChildren,
+  ShortsRoute: ShortsRoute,
   UploadRoute: UploadRoute,
   PostPostIdRoute: PostPostIdRoute,
 }
