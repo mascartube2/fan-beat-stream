@@ -131,7 +131,10 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
           </span>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{post.authorName}</p>
+          <p className="flex items-center gap-1 truncate text-sm font-semibold">
+            {post.authorName}
+            {post.authorIsArtist && <CertifiedBadge />}
+          </p>
           <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
         </div>
         {(user?.id === post.user_id || isAdmin) && (
