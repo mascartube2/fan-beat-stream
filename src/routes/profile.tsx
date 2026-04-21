@@ -1,20 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Settings, BadgeCheck, Play, Upload, ShieldCheck, LogOut, Music, Loader2 } from "lucide-react";
+import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Coins, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist, publicUrl } from "@/lib/tracks";
+import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
+import { useMaca, formatAr } from "@/hooks/use-maca";
 
 export const Route = createFileRoute("/profile")({
   component: ProfilePage,
-  head: () => ({ meta: [{ title: "Profile — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Profile — Mascartube" }] }),
 });
 
 function ProfilePage() {
   const { user, isArtist, isAdmin, signOut, loading: authLoading } = useAuth();
   const { playTrack } = usePlayer();
   const navigate = useNavigate();
+  const { balance, isCertified } = useMaca();
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null } | null>(null);
   const [myTracks, setMyTracks] = useState<TrackWithArtist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,10 +57,13 @@ function ProfilePage() {
   }
 
   const queue = myTracks.map(toPlayable);
-  const avatarUrl = profile?.avatar_url ? publicUrl("track-covers", profile.avatar_url) : null;
+  const avatarRaw = profile?.avatar_url ?? null;
+  const avatarUrl = avatarRaw
+    ? avatarRaw.startsWith("http") ? avatarRaw : publicUrl("avatars", avatarRaw)
+    : null;
 
   return (
-    <div>
+    <div className="pb-24">
       <div className="bg-gradient-hero relative h-40 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-glow" />
         <Link to="/profile/edit" className="absolute right-4 top-4 rounded-full glass p-2.5" aria-label="Edit profile">
@@ -66,27 +72,35 @@ function ProfilePage() {
       </div>
 
       <div className="relative px-4 pb-6">
-        <Link to="/profile/edit" className="group relative -mt-12 flex h-24 w-24 items-center justify-center rounded-full border-4 border-background bg-gradient-primary text-2xl font-bold shadow-elevated">
+        <Link to="/profile/edit" className="group relative -mt-12 flex h-24 w-24 items-center justify-center rounded-full border-4 border-background bg-gradient-primary text-2xl font-bold shadow-elevated overflow-hidden">
           {avatarUrl ? (
             <img src={avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
           ) : (
             (profile?.display_name ?? user.email ?? "?").charAt(0).toUpperCase()
           )}
-          <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-primary shadow-glow">
-            <Settings className="h-3.5 w-3.5" />
-          </span>
         </Link>
         <div className="mt-3 flex items-center gap-1.5">
           <h1 className="text-2xl font-bold">{profile?.display_name ?? user.email}</h1>
-          {isArtist && <BadgeCheck className="h-5 w-5 fill-primary text-primary-foreground" />}
+          {isCertified && <CertifiedBadge className="h-5 w-5" />}
         </div>
         <p className="text-sm text-muted-foreground">{user.email}</p>
         {profile?.bio && <p className="mt-2 text-sm">{profile.bio}</p>}
+
+        {/* MA.CA Balance Card */}
         <Link
-          to="/profile/edit"
-          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary-glow"
+          to="/wallet"
+          className="mt-4 flex items-center justify-between rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/15 to-amber-600/5 p-4 shadow-soft"
         >
-          <Settings className="h-3.5 w-3.5" /> Modifier la photo et le profil
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-300/80">Solde</p>
+            <p className="mt-0.5 flex items-center gap-1.5 text-xl font-bold text-amber-300">
+              <Coins className="h-5 w-5" /> {balance} MA.CA
+            </p>
+            <p className="text-[10px] text-amber-300/60">≈ {formatAr(balance * 10)}</p>
+          </div>
+          <span className="flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1.5 text-xs font-bold text-amber-950">
+            <Wallet className="h-3.5 w-3.5" /> Portefeuille
+          </span>
         </Link>
 
         <div className="mt-4 flex items-center gap-6 text-sm">

@@ -10,14 +10,11 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
   if (!rows?.length) return [];
 
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
-  const [{ data: profs }, { data: roleRows }] = await Promise.all([
-    supabase.from("profiles").select("user_id,display_name,avatar_url").in("user_id", userIds),
-    supabase.from("user_roles").select("user_id,role").in("user_id", userIds),
-  ]);
+  const { data: profs } = await supabase
+    .from("profiles")
+    .select("user_id,display_name,avatar_url,is_certified")
+    .in("user_id", userIds);
   const profMap = new Map((profs ?? []).map((p) => [p.user_id, p]));
-  const certifiedSet = new Set(
-    (roleRows ?? []).filter((r) => r.role === "artist" || r.role === "admin").map((r) => r.user_id),
-  );
 
   return rows.map((r) => ({
     id: r.id,
@@ -38,6 +35,6 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
       return supabase.storage.from("track-covers").getPublicUrl(a).data.publicUrl;
     })(),
     mediaUrl: r.media_path ? supabase.storage.from("posts").getPublicUrl(r.media_path).data.publicUrl : null,
-    authorIsArtist: certifiedSet.has(r.user_id),
+    authorIsArtist: !!profMap.get(r.user_id)?.is_certified,
   }));
 }

@@ -5,7 +5,12 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { Loader2, Check, X, ShieldCheck, Upload as UploadIcon, Trash2, Film } from "lucide-react";
 import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
 import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
+import { BadgeCheck, Coins, Wallet } from "lucide-react";
 import { toast } from "sonner";
+
+type ProfileRow = { user_id: string; display_name: string | null; is_certified: boolean; mascar_coins: number };
+type DepositRow = { id: string; user_id: string; amount_ar: number; maca_amount: number; transaction_ref: string; status: string; created_at: string; userName?: string };
+type WithdrawalRow = { id: string; user_id: string; maca_amount: number; amount_ar: number; mvola_number: string; status: string; created_at: string; userName?: string };
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -41,6 +46,10 @@ function AdminPage() {
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
   const [stories, setStories] = useState<StoryAdmin[]>([]);
   const [shorts, setShorts] = useState<ShortWithAuthor[]>([]);
+  const [allProfiles, setAllProfiles] = useState<ProfileRow[]>([]);
+  const [deposits, setDeposits] = useState<DepositRow[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
+  const [profileSearch, setProfileSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -55,45 +64,29 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows] = await Promise.all([
+    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: depRows }, { data: wRows }, { data: allProfs }] = await Promise.all([
       supabase.from("artist_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id").eq("role", "artist"),
       fetchTracksWithArtists(200),
       supabase.from("stories").select("*").gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }),
       fetchShorts(50),
+      supabase.from("deposits").select("*").order("created_at", { ascending: false }),
+      supabase.from("withdrawals").select("*").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("user_id, display_name, is_certified, mascar_coins").order("display_name"),
     ]);
-
-    const allUserIds = new Set<string>();
-    (reqs ?? []).forEach((r) => allUserIds.add(r.user_id));
-    (artistRoles ?? []).forEach((r) => allUserIds.add(r.user_id));
-    (storyRows ?? []).forEach((r) => allUserIds.add(r.user_id));
-
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("user_id, display_name")
-      .in("user_id", [...allUserIds]);
-    const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
-
+    const nameMap = new Map((allProfs ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
+    setAllProfiles((allProfs ?? []) as ProfileRow[]);
     setRequests(((reqs ?? []) as Request[]).map((r) => ({ ...r, display_name: nameMap.get(r.user_id) })));
-    setArtists(
-      (artistRoles ?? []).map((r) => ({
-        user_id: r.user_id,
-        display_name: nameMap.get(r.user_id) ?? "Unknown",
-      })),
-    );
+    setArtists((artistRoles ?? []).map((r) => ({ user_id: r.user_id, display_name: nameMap.get(r.user_id) ?? "Unknown" })));
     setTracks(allTracks);
-    setStories(
-      (storyRows ?? []).map((s) => ({
-        id: s.id,
-        user_id: s.user_id,
-        media_path: s.media_path,
-        media_type: s.media_type,
-        created_at: s.created_at,
-        authorName: nameMap.get(s.user_id) ?? "Unknown",
-        mediaUrl: supabase.storage.from("stories").getPublicUrl(s.media_path).data.publicUrl,
-      })),
-    );
+    setStories((storyRows ?? []).map((s) => ({
+      id: s.id, user_id: s.user_id, media_path: s.media_path, media_type: s.media_type, created_at: s.created_at,
+      authorName: nameMap.get(s.user_id) ?? "Unknown",
+      mediaUrl: supabase.storage.from("stories").getPublicUrl(s.media_path).data.publicUrl,
+    })));
     setShorts(shortRows);
+    setDeposits(((depRows ?? []) as DepositRow[]).map((d) => ({ ...d, userName: nameMap.get(d.user_id) ?? "?" })));
+    setWithdrawals(((wRows ?? []) as WithdrawalRow[]).map((w) => ({ ...w, userName: nameMap.get(w.user_id) ?? "?" })));
     setLoading(false);
   };
 
@@ -136,6 +129,42 @@ function AdminPage() {
       .update({ status, reviewed_by: user.id, reviewed_at: new Date().toISOString() })
       .eq("id", id);
     await load();
+    setBusyId(null);
+  };
+
+  const toggleCertified = async (p: ProfileRow) => {
+    setBusyId(p.user_id);
+    const { error } = await supabase.rpc("set_certified", { _user_id: p.user_id, _value: !p.is_certified });
+    if (error) toast.error(error.message);
+    else { toast.success(p.is_certified ? "Certification retirée" : "Utilisateur certifié"); await load(); }
+    setBusyId(null);
+  };
+
+  const approveDeposit = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("approve_deposit", { _deposit_id: id });
+    if (error) toast.error(error.message); else { toast.success("Dépôt validé"); await load(); }
+    setBusyId(null);
+  };
+
+  const rejectDeposit = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.from("deposits").update({ status: "refuse", reviewed_by: user.id, reviewed_at: new Date().toISOString() }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Dépôt refusé"); await load(); }
+    setBusyId(null);
+  };
+
+  const approveWithdrawal = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("approve_withdrawal", { _withdrawal_id: id });
+    if (error) toast.error(error.message); else { toast.success("Retrait marqué comme payé"); await load(); }
+    setBusyId(null);
+  };
+
+  const rejectWithdrawal = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("reject_withdrawal", { _withdrawal_id: id });
+    if (error) toast.error(error.message); else { toast.success("Retrait refusé (solde restitué)"); await load(); }
     setBusyId(null);
   };
 
@@ -444,6 +473,90 @@ function AdminPage() {
             ))}
           </div>
         </>
+      )}
+
+      {/* Certification */}
+      <h2 className="mb-2 mt-6 flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
+        <BadgeCheck className="h-3 w-3" /> Certification ({allProfiles.filter((p) => p.is_certified).length}/{allProfiles.length})
+      </h2>
+      <input
+        type="text"
+        value={profileSearch}
+        onChange={(e) => setProfileSearch(e.target.value)}
+        placeholder="Rechercher un utilisateur…"
+        className="mb-2 w-full rounded-lg border border-border bg-input px-3 py-2 text-sm"
+      />
+      <div className="max-h-72 space-y-1 overflow-y-auto">
+        {allProfiles
+          .filter((p) => !profileSearch || (p.display_name ?? "").toLowerCase().includes(profileSearch.toLowerCase()))
+          .slice(0, 50)
+          .map((p) => (
+            <div key={p.user_id} className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2 text-xs">
+              <span className="flex items-center gap-1.5 truncate">
+                {p.display_name ?? "Sans nom"} {p.is_certified && <BadgeCheck className="h-3.5 w-3.5 fill-sky-500 text-background" />}
+                <span className="text-amber-400">· {p.mascar_coins} MA.CA</span>
+              </span>
+              <button
+                onClick={() => toggleCertified(p)}
+                disabled={busyId === p.user_id}
+                className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${p.is_certified ? "bg-destructive/20 text-destructive" : "bg-sky-500/20 text-sky-400"}`}
+              >
+                {busyId === p.user_id ? "…" : p.is_certified ? "Décertifier" : "Certifier"}
+              </button>
+            </div>
+          ))}
+      </div>
+
+      {/* Deposits validation */}
+      <h2 className="mb-2 mt-6 flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
+        <Coins className="h-3 w-3" /> Dépôts à valider ({deposits.filter((d) => d.status === "en_attente").length})
+      </h2>
+      {deposits.filter((d) => d.status === "en_attente").length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun dépôt en attente.</p>
+      ) : (
+        <div className="space-y-2">
+          {deposits.filter((d) => d.status === "en_attente").map((d) => (
+            <div key={d.id} className="rounded-lg border border-border/40 p-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">{d.userName}</span>
+                <span className="text-amber-400">+{d.maca_amount} MA.CA ({d.amount_ar} Ar)</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Réf Mvola : <span className="font-mono">{d.transaction_ref}</span></p>
+              <div className="mt-2 flex gap-2">
+                <button onClick={() => approveDeposit(d.id)} disabled={busyId === d.id} className="flex-1 rounded-full bg-gradient-primary py-1.5 text-[11px] font-bold disabled:opacity-50">
+                  {busyId === d.id ? <Loader2 className="mx-auto h-3 w-3 animate-spin" /> : "Valider & Créditer"}
+                </button>
+                <button onClick={() => rejectDeposit(d.id)} disabled={busyId === d.id} className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold">Refuser</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Withdrawals */}
+      <h2 className="mb-2 mt-6 flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
+        <Wallet className="h-3 w-3" /> Retraits artistes ({withdrawals.filter((w) => w.status === "en_attente").length})
+      </h2>
+      {withdrawals.filter((w) => w.status === "en_attente").length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun retrait en attente.</p>
+      ) : (
+        <div className="space-y-2">
+          {withdrawals.filter((w) => w.status === "en_attente").map((w) => (
+            <div key={w.id} className="rounded-lg border border-border/40 p-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">{w.userName}</span>
+                <span className="text-primary-glow">{w.maca_amount} MA.CA → {w.amount_ar} Ar</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Mvola sortant : <span className="font-mono font-bold">{w.mvola_number}</span></p>
+              <div className="mt-2 flex gap-2">
+                <button onClick={() => approveWithdrawal(w.id)} disabled={busyId === w.id} className="flex-1 rounded-full bg-gradient-primary py-1.5 text-[11px] font-bold disabled:opacity-50">
+                  {busyId === w.id ? <Loader2 className="mx-auto h-3 w-3 animate-spin" /> : "Marquer comme payé"}
+                </button>
+                <button onClick={() => rejectWithdrawal(w.id)} disabled={busyId === w.id} className="rounded-full border border-border px-3 py-1.5 text-[11px] font-bold">Refuser</button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

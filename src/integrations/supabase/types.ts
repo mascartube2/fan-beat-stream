@@ -80,6 +80,48 @@ export type Database = {
         }
         Relationships: []
       }
+      deposits: {
+        Row: {
+          amount_ar: number
+          created_at: string
+          id: string
+          maca_amount: number
+          operator: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          transaction_ref: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_ar: number
+          created_at?: string
+          id?: string
+          maca_amount: number
+          operator?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          transaction_ref: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_ar?: number
+          created_at?: string
+          id?: string
+          maca_amount?: number
+          operator?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          transaction_ref?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -251,6 +293,9 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_certified: boolean
+          mascar_coins: number
+          mvola_number: string | null
           updated_at: string
           user_id: string
         }
@@ -260,6 +305,9 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_certified?: boolean
+          mascar_coins?: number
+          mvola_number?: string | null
           updated_at?: string
           user_id: string
         }
@@ -269,6 +317,9 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_certified?: boolean
+          mascar_coins?: number
+          mvola_number?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -369,6 +420,41 @@ export type Database = {
         }
         Relationships: []
       }
+      tips: {
+        Row: {
+          created_at: string
+          from_user: string
+          id: string
+          maca_amount: number
+          short_id: string | null
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          from_user: string
+          id?: string
+          maca_amount: number
+          short_id?: string | null
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          from_user?: string
+          id?: string
+          maca_amount?: number
+          short_id?: string | null
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tips_short_id_fkey"
+            columns: ["short_id"]
+            isOneToOne: false
+            referencedRelation: "shorts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracks: {
         Row: {
           audio_path: string
@@ -441,17 +527,71 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawals: {
+        Row: {
+          amount_ar: number
+          created_at: string
+          id: string
+          maca_amount: number
+          mvola_number: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_ar: number
+          created_at?: string
+          id?: string
+          maca_amount: number
+          mvola_number: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_ar?: number
+          created_at?: string
+          id?: string
+          maca_amount?: number
+          mvola_number?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      approve_deposit: { Args: { _deposit_id: string }; Returns: Json }
+      approve_withdrawal: { Args: { _withdrawal_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      reject_withdrawal: { Args: { _withdrawal_id: string }; Returns: Json }
+      request_withdrawal: {
+        Args: { _amount: number; _mvola: string }
+        Returns: Json
+      }
+      set_certified: {
+        Args: { _user_id: string; _value: boolean }
+        Returns: Json
+      }
+      transfer_maca: {
+        Args: { _amount: number; _short_id?: string; _to_user: string }
+        Returns: Json
       }
     }
     Enums: {
