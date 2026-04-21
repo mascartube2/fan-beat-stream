@@ -106,6 +106,25 @@ export function StoriesRow() {
     }
   };
 
+  const handleDelete = async (story: StoryWithAuthor) => {
+    if (!user || story.user_id !== user.id) return;
+    if (!confirm("Supprimer cette story ?")) return;
+    // Optimistic UI
+    const prev = stories;
+    setStories((s) => s.filter((x) => x.id !== story.id));
+    setViewing(null);
+    try {
+      const { error: rmErr } = await supabase.storage.from("stories").remove([story.media_path]);
+      if (rmErr) throw rmErr;
+      const { error: delErr } = await supabase.from("stories").delete().eq("id", story.id);
+      if (delErr) throw delErr;
+      toast.success("Story supprimée");
+    } catch (err) {
+      setStories(prev);
+      toast.error((err as Error).message);
+    }
+  };
+
   const current = viewing !== null ? stories[viewing] : null;
 
   return (
