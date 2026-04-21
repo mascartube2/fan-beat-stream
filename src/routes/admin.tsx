@@ -64,45 +64,29 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows] = await Promise.all([
+    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: depRows }, { data: wRows }, { data: allProfs }] = await Promise.all([
       supabase.from("artist_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id").eq("role", "artist"),
       fetchTracksWithArtists(200),
       supabase.from("stories").select("*").gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }),
       fetchShorts(50),
+      supabase.from("deposits").select("*").order("created_at", { ascending: false }),
+      supabase.from("withdrawals").select("*").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("user_id, display_name, is_certified, mascar_coins").order("display_name"),
     ]);
-
-    const allUserIds = new Set<string>();
-    (reqs ?? []).forEach((r) => allUserIds.add(r.user_id));
-    (artistRoles ?? []).forEach((r) => allUserIds.add(r.user_id));
-    (storyRows ?? []).forEach((r) => allUserIds.add(r.user_id));
-
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("user_id, display_name")
-      .in("user_id", [...allUserIds]);
-    const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
-
+    const nameMap = new Map((allProfs ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
+    setAllProfiles((allProfs ?? []) as ProfileRow[]);
     setRequests(((reqs ?? []) as Request[]).map((r) => ({ ...r, display_name: nameMap.get(r.user_id) })));
-    setArtists(
-      (artistRoles ?? []).map((r) => ({
-        user_id: r.user_id,
-        display_name: nameMap.get(r.user_id) ?? "Unknown",
-      })),
-    );
+    setArtists((artistRoles ?? []).map((r) => ({ user_id: r.user_id, display_name: nameMap.get(r.user_id) ?? "Unknown" })));
     setTracks(allTracks);
-    setStories(
-      (storyRows ?? []).map((s) => ({
-        id: s.id,
-        user_id: s.user_id,
-        media_path: s.media_path,
-        media_type: s.media_type,
-        created_at: s.created_at,
-        authorName: nameMap.get(s.user_id) ?? "Unknown",
-        mediaUrl: supabase.storage.from("stories").getPublicUrl(s.media_path).data.publicUrl,
-      })),
-    );
+    setStories((storyRows ?? []).map((s) => ({
+      id: s.id, user_id: s.user_id, media_path: s.media_path, media_type: s.media_type, created_at: s.created_at,
+      authorName: nameMap.get(s.user_id) ?? "Unknown",
+      mediaUrl: supabase.storage.from("stories").getPublicUrl(s.media_path).data.publicUrl,
+    })));
     setShorts(shortRows);
+    setDeposits(((depRows ?? []) as DepositRow[]).map((d) => ({ ...d, userName: nameMap.get(d.user_id) ?? "?" })));
+    setWithdrawals(((wRows ?? []) as WithdrawalRow[]).map((w) => ({ ...w, userName: nameMap.get(w.user_id) ?? "?" })));
     setLoading(false);
   };
 
