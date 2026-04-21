@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
+import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { toast } from "sonner";
 
 export type FeedPost = {
@@ -19,6 +20,7 @@ export type FeedPost = {
   authorName: string;
   authorAvatar: string | null;
   mediaUrl: string | null;
+  authorIsArtist?: boolean;
 };
 
 function timeAgo(iso: string) {
