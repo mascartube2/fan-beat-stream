@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { PlayableTrack } from "@/components/player/PlayerContext";
+import { downloadOfflineMedia, getPreferredMediaUrl, hasOfflineMedia } from "@/lib/offline-media";
 
 export type DbTrack = {
   id: string;
@@ -16,6 +17,15 @@ export type TrackWithArtist = DbTrack & {
   artistName: string;
   audioUrl: string;
   coverUrl: string;
+};
+
+export type DownloadableTrack = {
+  id: string;
+  title: string;
+  artistName: string;
+  audioUrl: string;
+  coverUrl?: string;
+  audio_path?: string | null;
 };
 
 const FALLBACK_COVER =
@@ -89,6 +99,32 @@ export async function downloadTrack(track: { title: string; audioUrl: string; au
     a.click();
     a.remove();
   }
+}
+
+export async function downloadTrackOffline(
+  track: DownloadableTrack,
+  onProgress?: (receivedBytes: number, totalBytes: number | null) => void,
+) {
+  const ext = extFromPathOrUrl(track.audio_path || track.audioUrl, "mp3");
+  const filename = `${sanitizeFilename(track.title)}.${ext}`;
+  return downloadOfflineMedia({
+    id: track.id,
+    kind: "audio",
+    url: track.audioUrl,
+    title: track.title,
+    artistName: track.artistName,
+    coverUrl: track.coverUrl ?? null,
+    fileName: filename,
+    onProgress,
+  });
+}
+
+export function isTrackDownloaded(trackId: string) {
+  return hasOfflineMedia("audio", trackId);
+}
+
+export function resolveTrackPlaybackUrl(track: Pick<PlayableTrack, "id" | "audioUrl">) {
+  return getPreferredMediaUrl("audio", track.id, track.audioUrl);
 }
 
 export function toPlayable(t: TrackWithArtist): PlayableTrack {
