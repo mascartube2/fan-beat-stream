@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadProfileAvatar } from "@/lib/avatar";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist, publicUrl } from "@/lib/tracks";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { useMaca, formatAr } from "@/hooks/use-maca";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   component: ProfilePage,
@@ -21,21 +23,49 @@ function ProfilePage() {
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null } | null>(null);
   const [myTracks, setMyTracks] = useState<TrackWithArtist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const loadProfile = async (userId: string) => {
+    const [{ data }, allTracks] = await Promise.all([
+      supabase.from("profiles").select("display_name, avatar_url, bio").eq("user_id", userId).maybeSingle(),
+      fetchTracksWithArtists(100),
+    ]);
+    setProfile(data ?? null);
+    setMyTracks(allTracks.filter((t) => t.user_id === userId));
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (!user) {
       setLoading(false);
       return;
     }
-    Promise.all([
-      supabase.from("profiles").select("display_name, avatar_url, bio").eq("user_id", user.id).maybeSingle(),
-      fetchTracksWithArtists(100),
-    ]).then(([{ data }, allTracks]) => {
-      setProfile(data ?? null);
-      setMyTracks(allTracks.filter((t) => t.user_id === user.id));
-      setLoading(false);
-    });
+    loadProfile(user.id);
+
+    const onAvatarUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ userId: string; avatarUrl: string }>).detail;
+      if (detail?.userId === user.id) {
+        setProfile((prev) => (prev ? { ...prev, avatar_url: detail.avatarUrl } : prev));
+      }
+    };
+
+    window.addEventListener("profile:avatar-updated", onAvatarUpdated);
+    return () => window.removeEventListener("profile:avatar-updated", onAvatarUpdated);
   }, [user]);
+
+  const handleAvatarChange = async (file: File | null) => {
+    if (!user || !file) return;
+    setUploadingAvatar(true);
+    try {
+      const avatarUrl = await uploadProfileAvatar(user.id, file);
+      setProfile((prev) => (prev ? { ...prev, avatar_url: avatarUrl } : prev));
+      toast.success("Photo de profil mise à jour");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Échec de l'upload");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   if (authLoading || loading) {
     return (
@@ -119,6 +149,19 @@ function ProfilePage() {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
+          <label className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-bold">
+            {uploadingAvatar ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+            Modifier la photo
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                void handleAvatarChange(e.target.files?.[0] ?? null);
+                e.target.value = "";
+              }}
+            />
+          </label>
           {isArtist ? (
             <Link
               to="/upload"
