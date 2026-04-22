@@ -1,7 +1,9 @@
 import { Pause, Play, SkipBack, SkipForward, Heart, Download } from "lucide-react";
 import { usePlayer } from "./PlayerContext";
 import { useState } from "react";
-import { downloadTrack } from "@/lib/tracks";
+import { downloadTrackOffline } from "@/lib/tracks";
+import { useOfflineStatus } from "@/hooks/use-offline-media";
+import { formatProgress } from "@/lib/offline-ui";
 import { toast } from "sonner";
 
 function fmt(s: number) {
@@ -15,6 +17,8 @@ export function MiniPlayer() {
   const { current, isPlaying, toggle, next, prev, progress, currentTime, duration, seek } =
     usePlayer();
   const [liked, setLiked] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<{ receivedBytes: number; totalBytes: number | null } | null>(null);
+  const { downloaded, refresh } = useOfflineStatus("audio", current?.id ?? "");
 
   if (!current) return null;
 
@@ -44,15 +48,30 @@ export function MiniPlayer() {
           </div>
           <button
             onClick={async () => {
+              if (downloaded) {
+                toast.success("Déjà disponible hors ligne", { id: `dl-${current.id}` });
+                return;
+              }
               toast.loading("Téléchargement...", { id: `dl-${current.id}` });
-              await downloadTrack({ title: current.title, audioUrl: current.audioUrl });
-              toast.success(`${current.title} téléchargé`, { id: `dl-${current.id}` });
+              setDownloadProgress({ receivedBytes: 0, totalBytes: null });
+              try {
+                await downloadTrackOffline(current, (receivedBytes, totalBytes) => {
+                  setDownloadProgress({ receivedBytes, totalBytes });
+                  toast.loading(formatProgress(receivedBytes, totalBytes), { id: `dl-${current.id}` });
+                });
+                await refresh();
+                toast.success(`${current.title} disponible hors ligne`, { id: `dl-${current.id}` });
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Téléchargement impossible", { id: `dl-${current.id}` });
+              } finally {
+                setDownloadProgress(null);
+              }
             }}
             className="rounded-full p-2 transition hover:bg-white/10"
-            aria-label="Télécharger"
-            title="Télécharger"
+            aria-label={downloaded ? "Disponible hors ligne" : "Télécharger hors ligne"}
+            title={downloaded ? "Disponible hors ligne" : "Télécharger hors ligne"}
           >
-            <Download className="h-4 w-4" />
+            <Download className={`h-4 w-4 ${downloaded ? "text-primary-glow" : ""}`} />
           </button>
           <button
             onClick={() => setLiked((l) => !l)}
@@ -88,6 +107,9 @@ export function MiniPlayer() {
           />
           <span className="w-8 text-right text-[10px] tabular-nums text-muted-foreground">{fmt(duration)}</span>
         </div>
+        {downloadProgress && (
+          <p className="mt-1 px-1 text-[10px] text-muted-foreground">{formatProgress(downloadProgress.receivedBytes, downloadProgress.totalBytes)}</p>
+        )}
       </div>
     </div>
   );
