@@ -65,7 +65,7 @@ export async function fetchShorts(limit = 30): Promise<ShortWithAuthor[]> {
       thumbnailUrl: r.thumbnail_path ? publicUrl("shorts", r.thumbnail_path) : null,
       authorName: prof?.display_name ?? "User",
       authorAvatar: prof?.avatar_url ?? null,
-      authorIsArtist: !!prof?.is_certified,
+      authorIsArtist: !!prof?.is_certified || userRoles.has("artist") || userRoles.has("admin"),
       authorIsAdmin: userRoles.has("admin"),
       liked: likedSet.has(r.id),
     };
