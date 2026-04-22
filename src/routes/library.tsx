@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Heart, ListMusic, Clock, Download, Upload, Music, Loader2, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePlayer } from "@/components/player/PlayerContext";
-import { fetchTracksWithArtists, toPlayable, downloadTrack, type TrackWithArtist } from "@/lib/tracks";
+import { fetchTracksWithArtists, toPlayable, downloadTrackOffline, type TrackWithArtist } from "@/lib/tracks";
 import { useAuth } from "@/components/auth/AuthContext";
+import { useOfflineStatus } from "@/hooks/use-offline-media";
+import { formatProgress } from "@/lib/offline-ui";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/library")({
@@ -23,6 +25,44 @@ function fmt(s: number | null) {
   const m = Math.floor(s / 60);
   const r = s % 60;
   return `${m}:${r.toString().padStart(2, "0")}`;
+}
+
+function TrackDownloadButton({ track }: { track: TrackWithArtist }) {
+  const { downloaded, refresh } = useOfflineStatus("audio", track.id);
+  const [progress, setProgress] = useState<{ receivedBytes: number; totalBytes: number | null } | null>(null);
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        onClick={async () => {
+          if (downloaded) {
+            toast.success("Déjà téléchargé hors ligne", { id: `dl-${track.id}` });
+            return;
+          }
+          toast.loading("Téléchargement...", { id: `dl-${track.id}` });
+          setProgress({ receivedBytes: 0, totalBytes: null });
+          try {
+            await downloadTrackOffline(track, (receivedBytes, totalBytes) => {
+              setProgress({ receivedBytes, totalBytes });
+              toast.loading(formatProgress(receivedBytes, totalBytes), { id: `dl-${track.id}` });
+            });
+            await refresh();
+            toast.success(`${track.title} disponible hors ligne`, { id: `dl-${track.id}` });
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Téléchargement impossible", { id: `dl-${track.id}` });
+          } finally {
+            setProgress(null);
+          }
+        }}
+        className="rounded-full p-2 hover:bg-white/10"
+        aria-label={`Télécharger ${track.title}`}
+        title={downloaded ? "Disponible hors ligne" : "Télécharger hors ligne"}
+      >
+        <Download className={`h-4 w-4 ${downloaded ? "text-primary-glow" : "text-muted-foreground hover:text-primary-glow"}`} />
+      </button>
+      {progress && <span className="max-w-24 text-right text-[10px] text-muted-foreground">{formatProgress(progress.receivedBytes, progress.totalBytes)}</span>}
+    </div>
+  );
 }
 
 function LibraryPage() {
@@ -121,18 +161,7 @@ function LibraryPage() {
                 <span className="text-xs text-muted-foreground">{fmt(t.duration_seconds)}</span>
                 <Play className="h-4 w-4 fill-current text-primary-glow" />
               </button>
-              <button
-                onClick={async () => {
-                  toast.loading("Téléchargement...", { id: `dl-${t.id}` });
-                  await downloadTrack(t);
-                  toast.success(`${t.title} téléchargé`, { id: `dl-${t.id}` });
-                }}
-                className="rounded-full p-2 hover:bg-white/10"
-                aria-label={`Télécharger ${t.title}`}
-                title="Télécharger"
-              >
-                <Download className="h-4 w-4 text-muted-foreground hover:text-primary-glow" />
-              </button>
+              <TrackDownloadButton track={t} />
             </div>
           ))}
         </div>
