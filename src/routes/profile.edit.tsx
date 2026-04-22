@@ -85,7 +85,6 @@ function EditProfilePage() {
     } finally {
       e.target.value = "";
       setUploading(false);
-    } finally {
     }
   };
 
