@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Coins, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
+import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -202,27 +203,28 @@ function ProfilePage() {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {myTracks.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => playTrack(toPlayable(t), queue)}
-                className="bg-gradient-card group rounded-xl border border-border/50 p-2 text-left"
-              >
-                <div className="relative mb-2 overflow-hidden rounded-lg">
-                  <img
-                    src={t.coverUrl}
-                    alt={t.title}
-                    width={200}
-                    height={200}
-                    loading="lazy"
-                    className="aspect-square w-full object-cover transition group-hover:scale-105"
-                  />
-                  <span className="absolute bottom-1.5 right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary opacity-0 shadow-glow transition group-hover:opacity-100">
-                    <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
-                  </span>
+              <div key={t.id} className="bg-gradient-card group rounded-xl border border-border/50 p-2">
+                <button onClick={() => playTrack(toPlayable(t), queue)} className="w-full text-left">
+                  <div className="relative mb-2 overflow-hidden rounded-lg">
+                    <img
+                      src={t.coverUrl}
+                      alt={t.title}
+                      width={200}
+                      height={200}
+                      loading="lazy"
+                      className="aspect-square w-full object-cover transition group-hover:scale-105"
+                    />
+                    <span className="absolute bottom-1.5 right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary opacity-0 shadow-glow transition group-hover:opacity-100">
+                      <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
+                    </span>
+                  </div>
+                  <p className="truncate text-xs font-semibold">{t.title}</p>
+                  <p className="truncate text-[10px] text-muted-foreground">{t.plays} plays</p>
+                </button>
+                <div className="mt-1 flex justify-end">
+                  <OfflineTrackButton track={t} compact />
                 </div>
-                <p className="truncate text-xs font-semibold">{t.title}</p>
-                <p className="truncate text-[10px] text-muted-foreground">{t.plays} plays</p>
-              </button>
+              </div>
             ))}
           </div>
         )}

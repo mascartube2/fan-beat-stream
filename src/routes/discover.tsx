@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Search, TrendingUp, Play, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/tracks";
 
@@ -48,28 +49,30 @@ function DiscoverPage() {
         ) : (
           <div className="space-y-2">
             {tracks.slice(0, 5).map((t, i) => (
-              <button
+              <div
                 key={t.id}
-                onClick={() => playTrack(toPlayable(t), queue)}
-                className="flex w-full items-center gap-3 rounded-xl bg-surface/50 p-2 text-left transition hover:bg-surface"
+                className="flex items-center gap-3 rounded-xl bg-surface/50 p-2 transition hover:bg-surface"
               >
-                <span className="w-5 text-center text-sm font-bold text-muted-foreground">{i + 1}</span>
-                <img
-                  src={t.coverUrl}
-                  alt={t.title}
-                  width={48}
-                  height={48}
-                  loading="lazy"
-                  className="h-12 w-12 rounded-lg object-cover"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold">{t.title}</span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {t.artistName} · {t.plays} plays
+                <button onClick={() => playTrack(toPlayable(t), queue)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                  <span className="w-5 text-center text-sm font-bold text-muted-foreground">{i + 1}</span>
+                  <img
+                    src={t.coverUrl}
+                    alt={t.title}
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    className="h-12 w-12 rounded-lg object-cover"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">{t.title}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {t.artistName} · {t.plays} plays
+                    </span>
                   </span>
-                </span>
-                <Play className="h-4 w-4 fill-current text-primary-glow" />
-              </button>
+                  <Play className="h-4 w-4 fill-current text-primary-glow" />
+                </button>
+                <OfflineTrackButton track={t} compact />
+              </div>
             ))}
           </div>
         )}

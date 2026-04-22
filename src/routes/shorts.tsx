@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Loader2, Heart, Trash2, Plus, Upload, X, Play, Coins } from "lucide-react";
+import { Loader2, Heart, Trash2, Plus, Upload, X, Play, Coins, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
-import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
+import { downloadShortOffline, fetchShorts, resolveShortPlaybackUrl, type ShortWithAuthor } from "@/lib/shorts";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { useMaca } from "@/hooks/use-maca";
+import { useOfflineStatus } from "@/hooks/use-offline-media";
+import { formatProgress } from "@/lib/offline-ui";
 import { toast } from "sonner";
 
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20 Mo
@@ -97,54 +99,16 @@ function ShortsPage() {
       ) : (
         <div className="space-y-4">
           {items.map((s) => (
-            <div key={s.id} className="relative overflow-hidden rounded-2xl border border-border/40 bg-surface">
-              <video
-                src={s.videoUrl}
-                poster={s.thumbnailUrl ?? undefined}
-                controls
-                playsInline
-                autoPlay
-                muted
-                loop
-                className="aspect-[9/16] w-full bg-black object-cover"
-              />
-              <div className="p-3">
-                <div className="flex items-center gap-1.5">
-                  {s.authorAvatar ? (
-                    <img src={s.authorAvatar} alt="" className="h-6 w-6 rounded-full object-cover" />
-                  ) : (
-                    <span className="h-6 w-6 rounded-full bg-muted" />
-                  )}
-                  <span className="truncate text-xs font-semibold">{s.authorName}</span>
-                  {s.authorIsArtist && <CertifiedBadge />}
-                </div>
-                {s.caption && <p className="mt-1.5 text-xs text-muted-foreground">{s.caption}</p>}
-                <div className="mt-2 flex items-center gap-2">
-                  <button onClick={() => toggleLike(s)} className="flex items-center gap-1 text-xs">
-                    <Heart className={`h-4 w-4 ${s.liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
-                    {s.likes_count}
-                  </button>
-                  {s.authorIsArtist && user && user.id !== s.user_id && (
-                    <button
-                      onClick={() => setTipFor(s)}
-                      className="ml-auto flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1.5 text-xs font-bold text-amber-400 hover:bg-amber-500/25"
-                    >
-                      <Coins className="h-3.5 w-3.5" /> Soutenir
-                    </button>
-                  )}
-                  {user && (s.user_id === user.id || isAdmin) && (
-                    <button
-                      onClick={() => handleDelete(s)}
-                      disabled={busyId === s.id}
-                      className="ml-auto rounded-full p-1 text-destructive hover:bg-destructive/10 disabled:opacity-50"
-                      aria-label="Supprimer"
-                    >
-                      {busyId === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+            <ShortCard
+              key={s.id}
+              short={s}
+              currentUserId={user?.id ?? null}
+              isAdmin={isAdmin}
+              busy={busyId === s.id}
+              onLike={() => toggleLike(s)}
+              onTip={() => setTipFor(s)}
+              onDelete={() => handleDelete(s)}
+            />
           ))}
         </div>
       )}
@@ -155,6 +119,125 @@ function ShortsPage() {
       {tipFor && (
         <TipModal short={tipFor} onClose={() => setTipFor(null)} />
       )}
+    </div>
+  );
+}
+
+function ShortCard({
+  short,
+  currentUserId,
+  isAdmin,
+  busy,
+  onLike,
+  onTip,
+  onDelete,
+}: {
+  short: ShortWithAuthor;
+  currentUserId: string | null;
+  isAdmin: boolean;
+  busy: boolean;
+  onLike: () => void;
+  onTip: () => void;
+  onDelete: () => void;
+}) {
+  const [videoSrc, setVideoSrc] = useState(short.videoUrl);
+  const [progress, setProgress] = useState<{ receivedBytes: number; totalBytes: number | null } | null>(null);
+  const { downloaded, refresh } = useOfflineStatus("video", short.id);
+
+  useEffect(() => {
+    let mounted = true;
+    void resolveShortPlaybackUrl(short).then((url) => {
+      if (mounted) setVideoSrc(url);
+    });
+    const onChanged = () => {
+      void resolveShortPlaybackUrl(short).then((url) => {
+        if (mounted) setVideoSrc(url);
+      });
+    };
+    window.addEventListener("offline-media:changed", onChanged);
+    return () => {
+      mounted = false;
+      window.removeEventListener("offline-media:changed", onChanged);
+    };
+  }, [short]);
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-surface">
+      <video
+        src={videoSrc}
+        poster={short.thumbnailUrl ?? undefined}
+        controls
+        playsInline
+        autoPlay
+        muted
+        loop
+        className="aspect-[9/16] w-full bg-black object-cover"
+      />
+      <div className="p-3">
+        <div className="flex items-center gap-1.5">
+          {short.authorAvatar ? (
+            <img src={short.authorAvatar} alt="" className="h-6 w-6 rounded-full object-cover" />
+          ) : (
+            <span className="h-6 w-6 rounded-full bg-muted" />
+          )}
+          <span className="truncate text-xs font-semibold">{short.authorName}</span>
+          {short.authorIsArtist && <CertifiedBadge />}
+        </div>
+        {short.caption && <p className="mt-1.5 text-xs text-muted-foreground">{short.caption}</p>}
+        <div className="mt-2 flex items-center gap-2">
+          <button onClick={onLike} className="flex items-center gap-1 text-xs">
+            <Heart className={`h-4 w-4 ${short.liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+            {short.likes_count}
+          </button>
+          <button
+            onClick={async () => {
+              if (downloaded) {
+                toast.success("Déjà disponible hors ligne", { id: `dl-short-${short.id}` });
+                return;
+              }
+              toast.loading("Téléchargement...", { id: `dl-short-${short.id}` });
+              setProgress({ receivedBytes: 0, totalBytes: null });
+              try {
+                await downloadShortOffline(short, (receivedBytes, totalBytes) => {
+                  setProgress({ receivedBytes, totalBytes });
+                  toast.loading(formatProgress(receivedBytes, totalBytes), { id: `dl-short-${short.id}` });
+                });
+                await refresh();
+                setVideoSrc(await resolveShortPlaybackUrl(short));
+                toast.success("Réel disponible hors ligne", { id: `dl-short-${short.id}` });
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Téléchargement impossible", { id: `dl-short-${short.id}` });
+              } finally {
+                setProgress(null);
+              }
+            }}
+            className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
+            aria-label="Télécharger le réel"
+          >
+            <Download className={`h-4 w-4 ${downloaded ? "text-primary-glow" : ""}`} />
+            <span>{downloaded ? "Offline" : "Télécharger"}</span>
+          </button>
+          {short.authorIsArtist && currentUserId && currentUserId !== short.user_id && (
+            <button
+              onClick={onTip}
+              className="ml-auto flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1.5 text-xs font-bold text-amber-400 hover:bg-amber-500/25"
+            >
+              <Coins className="h-3.5 w-3.5" /> Soutenir
+            </button>
+          )}
+          {currentUserId && (short.user_id === currentUserId || isAdmin) && (
+            <button
+              onClick={onDelete}
+              disabled={busy}
+              className="ml-auto rounded-full p-1 text-destructive hover:bg-destructive/10 disabled:opacity-50"
+              aria-label="Supprimer"
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            </button>
+          )}
+        </div>
+        {progress && <p className="mt-2 text-[10px] text-muted-foreground">{formatProgress(progress.receivedBytes, progress.totalBytes)}</p>}
+      </div>
     </div>
   );
 }

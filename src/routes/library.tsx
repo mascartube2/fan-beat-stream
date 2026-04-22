@@ -2,9 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Heart, ListMusic, Clock, Download, Upload, Music, Loader2, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePlayer } from "@/components/player/PlayerContext";
-import { fetchTracksWithArtists, toPlayable, downloadTrack, type TrackWithArtist } from "@/lib/tracks";
+import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
+import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/tracks";
 import { useAuth } from "@/components/auth/AuthContext";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/library")({
   component: LibraryPage,
@@ -121,18 +121,7 @@ function LibraryPage() {
                 <span className="text-xs text-muted-foreground">{fmt(t.duration_seconds)}</span>
                 <Play className="h-4 w-4 fill-current text-primary-glow" />
               </button>
-              <button
-                onClick={async () => {
-                  toast.loading("Téléchargement...", { id: `dl-${t.id}` });
-                  await downloadTrack(t);
-                  toast.success(`${t.title} téléchargé`, { id: `dl-${t.id}` });
-                }}
-                className="rounded-full p-2 hover:bg-white/10"
-                aria-label={`Télécharger ${t.title}`}
-                title="Télécharger"
-              >
-                <Download className="h-4 w-4 text-muted-foreground hover:text-primary-glow" />
-              </button>
+              <OfflineTrackButton track={t} />
             </div>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { downloadOfflineMedia, getPreferredMediaUrl, hasOfflineMedia } from "@/lib/offline-media";
 
 export type ShortRow = {
   id: string;
@@ -20,6 +21,10 @@ export type ShortWithAuthor = ShortRow & {
   authorIsAdmin: boolean;
   liked: boolean;
 };
+
+function sanitizeShortFilename(name: string) {
+  return name.replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, " ").trim() || "reel";
+}
 
 function publicUrl(bucket: string, path: string) {
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
@@ -70,4 +75,29 @@ export async function fetchShorts(limit = 30): Promise<ShortWithAuthor[]> {
       liked: likedSet.has(r.id),
     };
   });
+}
+
+export async function downloadShortOffline(
+  short: Pick<ShortWithAuthor, "id" | "videoUrl" | "authorName" | "caption" | "thumbnailUrl">,
+  onProgress?: (receivedBytes: number, totalBytes: number | null) => void,
+) {
+  const filename = `${sanitizeShortFilename(short.caption || `reel-${short.id}`)}.mp4`;
+  return downloadOfflineMedia({
+    id: short.id,
+    kind: "video",
+    url: short.videoUrl,
+    title: short.caption || "Réel hors ligne",
+    artistName: short.authorName,
+    coverUrl: short.thumbnailUrl ?? null,
+    fileName: filename,
+    onProgress,
+  });
+}
+
+export function isShortDownloaded(shortId: string) {
+  return hasOfflineMedia("video", shortId);
+}
+
+export function resolveShortPlaybackUrl(short: Pick<ShortWithAuthor, "id" | "videoUrl">) {
+  return getPreferredMediaUrl("video", short.id, short.videoUrl);
 }

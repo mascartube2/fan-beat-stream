@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { resolveTrackPlaybackUrl } from "@/lib/tracks";
 
 export type PlayableTrack = {
   id: string;
@@ -72,11 +73,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     queueRef.current = queue;
   }, [queue]);
 
-  const loadAndPlay = (track: PlayableTrack) => {
+  const loadAndPlay = async (track: PlayableTrack) => {
     const a = audioRef.current;
     if (!a) return;
-    if (a.src !== track.audioUrl) {
-      a.src = track.audioUrl;
+    const preferredUrl = await resolveTrackPlaybackUrl(track);
+    if (a.src !== preferredUrl) {
+      a.src = preferredUrl;
     }
     a.play()
       .then(() => setIsPlaying(true))
