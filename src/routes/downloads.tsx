@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, Loader2, Music2, Play, Trash2, Video } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useOfflineLibrary, useOfflineMediaUrl } from "@/hooks/use-offline-media";
+import type { OfflineMediaRecord } from "@/lib/offline-media";
 import { formatBytes } from "@/lib/offline-ui";
 
 export const Route = createFileRoute("/downloads")({
@@ -76,7 +77,7 @@ function OfflineAudioCard({
   item,
   onRemove,
 }: {
-  item: { id: string; kind: "audio"; title: string; artistName: string | null; coverUrl: string | null; size: number };
+  item: OfflineMediaRecord;
   onRemove: (kind: "audio" | "video", id: string) => Promise<void>;
 }) {
   const src = useOfflineMediaUrl("audio", item.id, "");
@@ -111,7 +112,7 @@ function OfflineVideoCard({
   item,
   onRemove,
 }: {
-  item: { id: string; kind: "video"; title: string; artistName: string | null; coverUrl: string | null; size: number };
+  item: OfflineMediaRecord;
   onRemove: (kind: "audio" | "video", id: string) => Promise<void>;
 }) {
   const src = useOfflineMediaUrl("video", item.id, "");

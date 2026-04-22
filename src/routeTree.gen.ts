@@ -15,6 +15,7 @@ import { Route as ShortsRouteImport } from './routes/shorts'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as DownloadsRouteImport } from './routes/downloads'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as BecomeArtistRouteImport } from './routes/become-artist'
@@ -52,6 +53,11 @@ const MembersRoute = MembersRouteImport.update({
 const LibraryRoute = LibraryRouteImport.update({
   id: '/library',
   path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DownloadsRoute = DownloadsRouteImport.update({
+  id: '/downloads',
+  path: '/downloads',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/become-artist': typeof BecomeArtistRoute
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
+  '/downloads': typeof DownloadsRoute
   '/library': typeof LibraryRoute
   '/members': typeof MembersRoute
   '/profile': typeof ProfileRouteWithChildren
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/become-artist': typeof BecomeArtistRoute
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
+  '/downloads': typeof DownloadsRoute
   '/library': typeof LibraryRoute
   '/members': typeof MembersRoute
   '/profile': typeof ProfileRouteWithChildren
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/become-artist': typeof BecomeArtistRoute
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
+  '/downloads': typeof DownloadsRoute
   '/library': typeof LibraryRoute
   '/members': typeof MembersRoute
   '/profile': typeof ProfileRouteWithChildren
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/become-artist'
     | '/chat'
     | '/discover'
+    | '/downloads'
     | '/library'
     | '/members'
     | '/profile'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/become-artist'
     | '/chat'
     | '/discover'
+    | '/downloads'
     | '/library'
     | '/members'
     | '/profile'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/become-artist'
     | '/chat'
     | '/discover'
+    | '/downloads'
     | '/library'
     | '/members'
     | '/profile'
@@ -202,6 +214,7 @@ export interface RootRouteChildren {
   BecomeArtistRoute: typeof BecomeArtistRoute
   ChatRoute: typeof ChatRoute
   DiscoverRoute: typeof DiscoverRoute
+  DownloadsRoute: typeof DownloadsRoute
   LibraryRoute: typeof LibraryRoute
   MembersRoute: typeof MembersRoute
   ProfileRoute: typeof ProfileRouteWithChildren
@@ -253,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/library'
       preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/downloads': {
+      id: '/downloads'
+      path: '/downloads'
+      fullPath: '/downloads'
+      preLoaderRoute: typeof DownloadsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -332,6 +352,7 @@ const rootRouteChildren: RootRouteChildren = {
   BecomeArtistRoute: BecomeArtistRoute,
   ChatRoute: ChatRoute,
   DiscoverRoute: DiscoverRoute,
+  DownloadsRoute: DownloadsRoute,
   LibraryRoute: LibraryRoute,
   MembersRoute: MembersRoute,
   ProfileRoute: ProfileRouteWithChildren,
