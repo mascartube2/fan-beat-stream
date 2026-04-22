@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StoriesRow } from "@/components/feed/StoriesRow";
+import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { PostComposer } from "@/components/posts/PostComposer";
 import { SocialPostCard, type FeedPost } from "@/components/posts/SocialPostCard";
 import { fetchFeedPosts } from "@/lib/posts";
@@ -120,27 +121,31 @@ function HomePage() {
         ) : (
           <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 scrollbar-hide">
             {tracks.slice(0, 12).map((t) => (
-              <button
+              <div
                 key={t.id}
-                onClick={() => playTrack(toPlayable(t), queue)}
-                className="bg-gradient-card group w-36 shrink-0 snap-start rounded-xl border border-border/50 p-2 text-left"
+                className="bg-gradient-card group w-36 shrink-0 snap-start rounded-xl border border-border/50 p-2"
               >
-                <div className="relative mb-2 overflow-hidden rounded-lg">
-                  <img
-                    src={t.coverUrl}
-                    alt={t.title}
-                    width={144}
-                    height={144}
-                    loading="lazy"
-                    className="aspect-square w-full object-cover"
-                  />
-                  <span className="absolute bottom-1.5 right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary opacity-0 shadow-glow transition group-hover:opacity-100">
-                    <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
-                  </span>
+                <button onClick={() => playTrack(toPlayable(t), queue)} className="w-full text-left">
+                  <div className="relative mb-2 overflow-hidden rounded-lg">
+                    <img
+                      src={t.coverUrl}
+                      alt={t.title}
+                      width={144}
+                      height={144}
+                      loading="lazy"
+                      className="aspect-square w-full object-cover"
+                    />
+                    <span className="absolute bottom-1.5 right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary opacity-0 shadow-glow transition group-hover:opacity-100">
+                      <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
+                    </span>
+                  </div>
+                  <p className="truncate text-xs font-semibold">{t.title}</p>
+                  <p className="truncate text-[10px] text-muted-foreground">{t.artistName}</p>
+                </button>
+                <div className="mt-1 flex justify-end">
+                  <OfflineTrackButton track={t} compact />
                 </div>
-                <p className="truncate text-xs font-semibold">{t.title}</p>
-                <p className="truncate text-[10px] text-muted-foreground">{t.artistName}</p>
-              </button>
+              </div>
             ))}
           </div>
         )}
@@ -153,25 +158,27 @@ function HomePage() {
         ) : (
           <div className="space-y-2">
             {tracks.map((t) => (
-              <button
+              <div
                 key={t.id}
-                onClick={() => playTrack(toPlayable(t), queue)}
-                className="flex w-full items-center gap-3 rounded-xl bg-surface/50 p-2 text-left transition hover:bg-surface"
+                className="flex items-center gap-3 rounded-xl bg-surface/50 p-2 transition hover:bg-surface"
               >
-                <img
-                  src={t.coverUrl}
-                  alt={t.title}
-                  width={48}
-                  height={48}
-                  loading="lazy"
-                  className="h-12 w-12 rounded-lg object-cover"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold">{t.title}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{t.artistName}</span>
-                </span>
-                <Play className="h-4 w-4 fill-current text-primary-glow" />
-              </button>
+                <button onClick={() => playTrack(toPlayable(t), queue)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                  <img
+                    src={t.coverUrl}
+                    alt={t.title}
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    className="h-12 w-12 rounded-lg object-cover"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">{t.title}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{t.artistName}</span>
+                  </span>
+                  <Play className="h-4 w-4 fill-current text-primary-glow" />
+                </button>
+                <OfflineTrackButton track={t} compact />
+              </div>
             ))}
           </div>
         )}
