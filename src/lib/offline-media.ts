@@ -30,6 +30,7 @@ type DownloadOfflineInput = {
 
 const DB_NAME = "mascartube-offline";
 const STORE_NAME = "media";
+const objectUrlCache = new Map<string, string>();
 
 function getDb() {
   return openDB(DB_NAME, 1, {
@@ -71,9 +72,31 @@ export async function listOfflineMedia(): Promise<OfflineMediaRecord[]> {
 }
 
 export async function removeOfflineMedia(kind: OfflineMediaKind, id: string) {
+  const key = makeOfflineMediaKey(kind, id);
   const db = await getDb();
-  await db.delete(STORE_NAME, makeOfflineMediaKey(kind, id));
+  await db.delete(STORE_NAME, key);
+  const cachedUrl = objectUrlCache.get(key);
+  if (cachedUrl) {
+    URL.revokeObjectURL(cachedUrl);
+    objectUrlCache.delete(key);
+  }
   emitOfflineMediaChanged();
+}
+
+export async function getOfflineMediaObjectUrl(kind: OfflineMediaKind, id: string): Promise<string | null> {
+  const record = await getOfflineMedia(kind, id);
+  if (!record) return null;
+
+  const cachedUrl = objectUrlCache.get(record.key);
+  if (cachedUrl) return cachedUrl;
+
+  const objectUrl = URL.createObjectURL(record.blob);
+  objectUrlCache.set(record.key, objectUrl);
+  return objectUrl;
+}
+
+export async function getPreferredMediaUrl(kind: OfflineMediaKind, id: string, sourceUrl: string): Promise<string> {
+  return (await getOfflineMediaObjectUrl(kind, id)) ?? sourceUrl;
 }
 
 export async function downloadOfflineMedia(input: DownloadOfflineInput): Promise<OfflineMediaRecord> {
@@ -98,14 +121,15 @@ export async function downloadOfflineMedia(input: DownloadOfflineInput): Promise
     input.onProgress?.(blob.size, blob.size);
   } else {
     const reader = response.body.getReader();
-    const chunks: Uint8Array[] = [];
+    const chunks: ArrayBuffer[] = [];
     let receivedBytes = 0;
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       if (!value) continue;
-      chunks.push(value);
+      const chunk = value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) as ArrayBuffer;
+      chunks.push(chunk);
       receivedBytes += value.byteLength;
       input.onProgress?.(receivedBytes, totalBytes);
     }
