@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { ArrowLeft, Camera, Loader2, Save } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadProfileAvatar } from "@/lib/avatar";
 import { publicUrl } from "@/lib/tracks";
 import { toast } from "sonner";
 
@@ -22,22 +23,33 @@ function EditProfilePage() {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const loadProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("display_name, avatar_url, bio")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    setDisplayName(data?.display_name ?? "");
+    setBio(data?.bio ?? "");
+    setAvatarPath(data?.avatar_url ?? null);
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (!user) {
       setLoading(false);
       return;
     }
-    supabase
-      .from("profiles")
-      .select("display_name, avatar_url, bio")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        setDisplayName(data?.display_name ?? "");
-        setBio(data?.bio ?? "");
-        setAvatarPath(data?.avatar_url ?? null);
-        setLoading(false);
-      });
+    loadProfile(user.id);
+
+    const onAvatarUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ userId: string; avatarUrl: string }>).detail;
+      if (detail?.userId === user.id) setAvatarPath(detail.avatarUrl);
+    };
+
+    window.addEventListener("profile:avatar-updated", onAvatarUpdated);
+    return () => window.removeEventListener("profile:avatar-updated", onAvatarUpdated);
   }, [user]);
 
   if (authLoading || loading) {
@@ -59,35 +71,19 @@ function EditProfilePage() {
     );
   }
 
-  const handlePickFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePickFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image trop lourde (max 5 Mo)");
-      return;
-    }
     setUploading(true);
     try {
-      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
-      if (upErr) throw upErr;
-      // Save the public URL directly so it's reusable everywhere
-      const publicURL = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
-      const { error: updErr } = await supabase
-        .from("profiles")
-        .update({ avatar_url: publicURL })
-        .eq("user_id", user.id);
-      if (updErr) throw updErr;
-      setAvatarPath(publicURL);
-      window.dispatchEvent(new CustomEvent("profile:avatar-updated", { detail: publicURL }));
+      const avatarUrl = await uploadProfileAvatar(user.id, file);
+      setAvatarPath(avatarUrl);
       toast.success("Photo de profil mise à jour");
     } catch (err) {
-      toast.error("Échec de l'upload");
+      toast.error(err instanceof Error ? err.message : "Échec de l'upload");
       console.error(err);
     } finally {
+      e.target.value = "";
       setUploading(false);
     }
   };
