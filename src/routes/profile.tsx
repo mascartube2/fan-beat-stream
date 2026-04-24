@@ -20,19 +20,24 @@ function ProfilePage() {
   const { user, isArtist, isAdmin, signOut, loading: authLoading } = useAuth();
   const { playTrack } = usePlayer();
   const navigate = useNavigate();
-  const { balance, isCertified } = useMaca();
-  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null; is_certified: boolean } | null>(null);
   const [myTracks, setMyTracks] = useState<TrackWithArtist[]>([]);
+  const [myShorts, setMyShorts] = useState<ShortWithAuthor[]>([]);
+  const [archivedShorts, setArchivedShorts] = useState<ShortWithAuthor[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const loadProfile = async (userId: string) => {
-    const [{ data }, allTracks] = await Promise.all([
-      supabase.from("profiles").select("display_name, avatar_url, bio").eq("user_id", userId).maybeSingle(),
+    const [{ data }, allTracks, recentShorts, oldShorts] = await Promise.all([
+      supabase.from("profiles").select("display_name, avatar_url, bio, is_certified").eq("user_id", userId).maybeSingle(),
       fetchTracksWithArtists(100),
+      fetchShorts({ scope: "feed", userId, limit: 100 }),
+      fetchShorts({ scope: "archive", userId, limit: 100 }),
     ]);
     setProfile(data ?? null);
     setMyTracks(allTracks.filter((t) => t.user_id === userId));
+    setMyShorts(recentShorts);
+    setArchivedShorts(oldShorts);
     setLoading(false);
   };
 
@@ -53,6 +58,8 @@ function ProfilePage() {
     window.addEventListener("profile:avatar-updated", onAvatarUpdated);
     return () => window.removeEventListener("profile:avatar-updated", onAvatarUpdated);
   }, [user]);
+
+  const isCertified = !!profile?.is_certified;
 
   const handleAvatarChange = async (file: File | null) => {
     if (!user || !file) return;
