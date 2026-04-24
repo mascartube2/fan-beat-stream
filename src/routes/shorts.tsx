@@ -1,13 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Loader2, Heart, Trash2, Plus, Upload, X, Play, Coins, Download } from "lucide-react";
+import { Loader2, Heart, Trash2, Plus, Upload, X, Play, Coins } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
-import { downloadShortOffline, fetchShorts, resolveShortPlaybackUrl, type ShortWithAuthor } from "@/lib/shorts";
+import { fetchShorts, resolveShortPlaybackUrl, type ShortWithAuthor } from "@/lib/shorts";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { useMaca } from "@/hooks/use-maca";
-import { useOfflineStatus } from "@/hooks/use-offline-media";
-import { formatProgress } from "@/lib/offline-ui";
+import { ShortMediaMenu } from "@/components/player/ShortMediaMenu";
 import { toast } from "sonner";
 
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20 Mo
