@@ -218,6 +218,42 @@ function ProfilePage() {
             ))}
           </div>
         )}
+
+        {(myShorts.length > 0 || archivedShorts.length > 0) && (
+          <>
+            <h2 className="mb-3 mt-6 flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
+              <Film className="h-4 w-4" /> Mes réels
+              <span className="ml-auto text-[10px] font-normal">
+                {myShorts.length} actifs · {archivedShorts.length} archivés (&gt;30j)
+              </span>
+            </h2>
+            <div className="grid grid-cols-3 gap-2">
+              {[...myShorts, ...archivedShorts].slice(0, 12).map((s) => {
+                const old = archivedShorts.some((x) => x.id === s.id);
+                return (
+                  <div key={s.id} className="relative overflow-hidden rounded-lg border border-border/40">
+                    <video
+                      src={s.videoUrl}
+                      poster={s.thumbnailUrl ?? undefined}
+                      className={`aspect-[9/16] w-full bg-black object-cover ${old ? "opacity-60" : ""}`}
+                      muted
+                    />
+                    {old && (
+                      <span className="absolute left-1 top-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase">
+                        Archivé
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {archivedShorts.length > 0 && (
+              <p className="mt-2 text-[10px] text-muted-foreground">
+                Les réels archivés ne sont plus visibles dans le feed public mais restent dans ton tableau de bord.
+              </p>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
