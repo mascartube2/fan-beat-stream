@@ -1,11 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Loader2, Heart, Trash2, Plus, Upload, X, Play, Coins } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { Loader2, Heart, Trash2, Plus, Upload, X, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
 import { fetchShorts, resolveShortPlaybackUrl, type ShortWithAuthor } from "@/lib/shorts";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
-import { useMaca } from "@/hooks/use-maca";
 import { ShortMediaMenu } from "@/components/player/ShortMediaMenu";
 import { toast } from "sonner";
 
@@ -23,7 +22,6 @@ function ShortsPage() {
   const [loading, setLoading] = useState(true);
   const [composerOpen, setComposerOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [tipFor, setTipFor] = useState<ShortWithAuthor | null>(null);
 
   const load = () => fetchShorts(30).then((d) => { setItems(d); setLoading(false); });
 
@@ -105,7 +103,6 @@ function ShortsPage() {
               isAdmin={isAdmin}
               busy={busyId === s.id}
               onLike={() => toggleLike(s)}
-              onTip={() => setTipFor(s)}
               onDelete={() => handleDelete(s)}
             />
           ))}
@@ -114,9 +111,6 @@ function ShortsPage() {
 
       {composerOpen && user && (
         <ShortComposer onClose={() => setComposerOpen(false)} onCreated={load} />
-      )}
-      {tipFor && (
-        <TipModal short={tipFor} onClose={() => setTipFor(null)} />
       )}
     </div>
   );
@@ -128,7 +122,6 @@ function ShortCard({
   isAdmin,
   busy,
   onLike,
-  onTip,
   onDelete,
 }: {
   short: ShortWithAuthor;
@@ -136,7 +129,6 @@ function ShortCard({
   isAdmin: boolean;
   busy: boolean;
   onLike: () => void;
-  onTip: () => void;
   onDelete: () => void;
 }) {
   const [videoSrc, setVideoSrc] = useState(short.videoUrl);
@@ -192,14 +184,6 @@ function ShortCard({
             <Heart className={`h-4 w-4 ${short.liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
             {short.likes_count}
           </button>
-          {short.authorIsArtist && currentUserId && currentUserId !== short.user_id && (
-            <button
-              onClick={onTip}
-              className="ml-auto flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1.5 text-xs font-bold text-amber-400 hover:bg-amber-500/25"
-            >
-              <Coins className="h-3.5 w-3.5" /> Soutenir
-            </button>
-          )}
           {currentUserId && (short.user_id === currentUserId || isAdmin) && (
             <button
               onClick={onDelete}
@@ -314,66 +298,6 @@ function ShortComposer({ onClose, onCreated }: { onClose: () => void; onCreated:
           {busy ? "Upload…" : "Publier"}
         </button>
       </form>
-    </div>
-  );
-}
-
-function TipModal({ short, onClose }: { short: ShortWithAuthor; onClose: () => void }) {
-  const { balance, refresh } = useMaca();
-  const [busy, setBusy] = useState(false);
-  const presets = [10, 50, 100, 500];
-
-  const send = async (amount: number) => {
-    if (amount > balance) {
-      toast.error(`Solde insuffisant (${balance} MA.CA). Recharge ton portefeuille.`);
-      return;
-    }
-    setBusy(true);
-    const { error } = await supabase.rpc("transfer_maca", {
-      _to_user: short.user_id,
-      _amount: amount,
-      _short_id: short.id,
-    });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success(`+${amount} MA.CA envoyés à ${short.authorName}`);
-    refresh();
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/70 p-4 sm:items-center" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-2xl border border-border bg-background p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-sm font-bold">
-            <Coins className="h-4 w-4 text-amber-400" /> Soutenir {short.authorName}
-          </h2>
-          <button onClick={onClose}><X className="h-4 w-4" /></button>
-        </div>
-        <p className="mb-3 text-[11px] text-muted-foreground">Ton solde : {balance} MA.CA</p>
-        <div className="grid grid-cols-2 gap-2">
-          {presets.map((p) => (
-            <button
-              key={p}
-              disabled={busy}
-              onClick={() => send(p)}
-              className="rounded-xl border border-amber-500/30 bg-amber-500/10 py-3 text-sm font-bold text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
-            >
-              {p} MA.CA
-              <span className="block text-[10px] font-normal text-amber-300/70">{p * 10} Ar</span>
-            </button>
-          ))}
-        </div>
-        <Link
-          to="/wallet"
-          className="mt-3 block rounded-full border border-border py-2 text-center text-xs font-semibold"
-        >
-          Recharger mon portefeuille
-        </Link>
-      </div>
     </div>
   );
 }

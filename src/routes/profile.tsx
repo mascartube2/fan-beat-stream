@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Coins, Wallet } from "lucide-react";
+import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Film } from "lucide-react";
 import { useEffect, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
@@ -7,8 +7,8 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadProfileAvatar } from "@/lib/avatar";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist, publicUrl } from "@/lib/tracks";
+import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
-import { useMaca, formatAr } from "@/hooks/use-maca";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
@@ -20,19 +20,24 @@ function ProfilePage() {
   const { user, isArtist, isAdmin, signOut, loading: authLoading } = useAuth();
   const { playTrack } = usePlayer();
   const navigate = useNavigate();
-  const { balance, isCertified } = useMaca();
-  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null; is_certified: boolean } | null>(null);
   const [myTracks, setMyTracks] = useState<TrackWithArtist[]>([]);
+  const [myShorts, setMyShorts] = useState<ShortWithAuthor[]>([]);
+  const [archivedShorts, setArchivedShorts] = useState<ShortWithAuthor[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const loadProfile = async (userId: string) => {
-    const [{ data }, allTracks] = await Promise.all([
-      supabase.from("profiles").select("display_name, avatar_url, bio").eq("user_id", userId).maybeSingle(),
+    const [{ data }, allTracks, recentShorts, oldShorts] = await Promise.all([
+      supabase.from("profiles").select("display_name, avatar_url, bio, is_certified").eq("user_id", userId).maybeSingle(),
       fetchTracksWithArtists(100),
+      fetchShorts({ scope: "feed", userId, limit: 100 }),
+      fetchShorts({ scope: "archive", userId, limit: 100 }),
     ]);
     setProfile(data ?? null);
     setMyTracks(allTracks.filter((t) => t.user_id === userId));
+    setMyShorts(recentShorts);
+    setArchivedShorts(oldShorts);
     setLoading(false);
   };
 
@@ -53,6 +58,8 @@ function ProfilePage() {
     window.addEventListener("profile:avatar-updated", onAvatarUpdated);
     return () => window.removeEventListener("profile:avatar-updated", onAvatarUpdated);
   }, [user]);
+
+  const isCertified = !!profile?.is_certified;
 
   const handleAvatarChange = async (file: File | null) => {
     if (!user || !file) return;
@@ -117,35 +124,18 @@ function ProfilePage() {
         <p className="text-sm text-muted-foreground">{user.email}</p>
         {profile?.bio && <p className="mt-2 text-sm">{profile.bio}</p>}
 
-        {/* MA.CA Balance Card */}
-        <Link
-          to="/wallet"
-          className="mt-4 flex items-center justify-between rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/15 to-amber-600/5 p-4 shadow-soft"
-        >
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-300/80">Solde</p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-xl font-bold text-amber-300">
-              <Coins className="h-5 w-5" /> {balance} MA.CA
-            </p>
-            <p className="text-[10px] text-amber-300/60">≈ {formatAr(balance * 10)}</p>
-          </div>
-          <span className="flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1.5 text-xs font-bold text-amber-950">
-            <Wallet className="h-3.5 w-3.5" /> Portefeuille
-          </span>
-        </Link>
-
         <div className="mt-4 flex items-center gap-6 text-sm">
-          <div>
-            <p className="font-bold">0</p>
-            <p className="text-xs text-muted-foreground">Followers</p>
-          </div>
-          <div>
-            <p className="font-bold">0</p>
-            <p className="text-xs text-muted-foreground">Following</p>
-          </div>
           <div>
             <p className="font-bold">{myTracks.length}</p>
             <p className="text-xs text-muted-foreground">Tracks</p>
+          </div>
+          <div>
+            <p className="font-bold">{myShorts.length}</p>
+            <p className="text-xs text-muted-foreground">Réels actifs</p>
+          </div>
+          <div>
+            <p className="font-bold">{archivedShorts.length}</p>
+            <p className="text-xs text-muted-foreground">Archivés</p>
           </div>
         </div>
 
@@ -227,6 +217,42 @@ function ProfilePage() {
               </div>
             ))}
           </div>
+        )}
+
+        {(myShorts.length > 0 || archivedShorts.length > 0) && (
+          <>
+            <h2 className="mb-3 mt-6 flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
+              <Film className="h-4 w-4" /> Mes réels
+              <span className="ml-auto text-[10px] font-normal">
+                {myShorts.length} actifs · {archivedShorts.length} archivés (&gt;30j)
+              </span>
+            </h2>
+            <div className="grid grid-cols-3 gap-2">
+              {[...myShorts, ...archivedShorts].slice(0, 12).map((s) => {
+                const old = archivedShorts.some((x) => x.id === s.id);
+                return (
+                  <div key={s.id} className="relative overflow-hidden rounded-lg border border-border/40">
+                    <video
+                      src={s.videoUrl}
+                      poster={s.thumbnailUrl ?? undefined}
+                      className={`aspect-[9/16] w-full bg-black object-cover ${old ? "opacity-60" : ""}`}
+                      muted
+                    />
+                    {old && (
+                      <span className="absolute left-1 top-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] font-bold uppercase">
+                        Archivé
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {archivedShorts.length > 0 && (
+              <p className="mt-2 text-[10px] text-muted-foreground">
+                Les réels archivés ne sont plus visibles dans le feed public mais restent dans ton tableau de bord.
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>
