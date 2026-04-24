@@ -460,7 +460,6 @@ function AdminPage() {
             <div key={p.user_id} className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2 text-xs">
               <span className="flex items-center gap-1.5 truncate">
                 {p.display_name ?? "Sans nom"} {p.is_certified && <BadgeCheck className="h-3.5 w-3.5 fill-sky-500 text-background" />}
-                <span className="text-amber-400">· {p.mascar_coins} MA.CA</span>
               </span>
               <button
                 onClick={() => toggleCertified(p)}
