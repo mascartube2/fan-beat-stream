@@ -124,35 +124,18 @@ function ProfilePage() {
         <p className="text-sm text-muted-foreground">{user.email}</p>
         {profile?.bio && <p className="mt-2 text-sm">{profile.bio}</p>}
 
-        {/* MA.CA Balance Card */}
-        <Link
-          to="/wallet"
-          className="mt-4 flex items-center justify-between rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/15 to-amber-600/5 p-4 shadow-soft"
-        >
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-300/80">Solde</p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-xl font-bold text-amber-300">
-              <Coins className="h-5 w-5" /> {balance} MA.CA
-            </p>
-            <p className="text-[10px] text-amber-300/60">≈ {formatAr(balance * 10)}</p>
-          </div>
-          <span className="flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1.5 text-xs font-bold text-amber-950">
-            <Wallet className="h-3.5 w-3.5" /> Portefeuille
-          </span>
-        </Link>
-
         <div className="mt-4 flex items-center gap-6 text-sm">
-          <div>
-            <p className="font-bold">0</p>
-            <p className="text-xs text-muted-foreground">Followers</p>
-          </div>
-          <div>
-            <p className="font-bold">0</p>
-            <p className="text-xs text-muted-foreground">Following</p>
-          </div>
           <div>
             <p className="font-bold">{myTracks.length}</p>
             <p className="text-xs text-muted-foreground">Tracks</p>
+          </div>
+          <div>
+            <p className="font-bold">{myShorts.length}</p>
+            <p className="text-xs text-muted-foreground">Réels actifs</p>
+          </div>
+          <div>
+            <p className="font-bold">{archivedShorts.length}</p>
+            <p className="text-xs text-muted-foreground">Archivés</p>
           </div>
         </div>
 
