@@ -1,13 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Loader2, Heart, Trash2, Plus, Upload, X, Play, Coins, Download } from "lucide-react";
+import { Loader2, Heart, Trash2, Plus, Upload, X, Play, Coins } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
-import { downloadShortOffline, fetchShorts, resolveShortPlaybackUrl, type ShortWithAuthor } from "@/lib/shorts";
+import { fetchShorts, resolveShortPlaybackUrl, type ShortWithAuthor } from "@/lib/shorts";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { useMaca } from "@/hooks/use-maca";
-import { useOfflineStatus } from "@/hooks/use-offline-media";
-import { formatProgress } from "@/lib/offline-ui";
+import { ShortMediaMenu } from "@/components/player/ShortMediaMenu";
 import { toast } from "sonner";
 
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20 Mo
@@ -141,8 +140,6 @@ function ShortCard({
   onDelete: () => void;
 }) {
   const [videoSrc, setVideoSrc] = useState(short.videoUrl);
-  const [progress, setProgress] = useState<{ receivedBytes: number; totalBytes: number | null } | null>(null);
-  const { downloaded, refresh } = useOfflineStatus("video", short.id);
 
   useEffect(() => {
     let mounted = true;
@@ -182,40 +179,18 @@ function ShortCard({
           )}
           <span className="truncate text-xs font-semibold">{short.authorName}</span>
           {short.authorIsArtist && <CertifiedBadge />}
+          <div className="ml-auto">
+            <ShortMediaMenu
+              short={short}
+              onAfterOffline={() => void resolveShortPlaybackUrl(short).then(setVideoSrc)}
+            />
+          </div>
         </div>
         {short.caption && <p className="mt-1.5 text-xs text-muted-foreground">{short.caption}</p>}
         <div className="mt-2 flex items-center gap-2">
           <button onClick={onLike} className="flex items-center gap-1 text-xs">
             <Heart className={`h-4 w-4 ${short.liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
             {short.likes_count}
-          </button>
-          <button
-            onClick={async () => {
-              if (downloaded) {
-                toast.success("Déjà disponible hors ligne", { id: `dl-short-${short.id}` });
-                return;
-              }
-              toast.loading("Téléchargement...", { id: `dl-short-${short.id}` });
-              setProgress({ receivedBytes: 0, totalBytes: null });
-              try {
-                await downloadShortOffline(short, (receivedBytes, totalBytes) => {
-                  setProgress({ receivedBytes, totalBytes });
-                  toast.loading(formatProgress(receivedBytes, totalBytes), { id: `dl-short-${short.id}` });
-                });
-                await refresh();
-                setVideoSrc(await resolveShortPlaybackUrl(short));
-                toast.success("Réel disponible hors ligne", { id: `dl-short-${short.id}` });
-              } catch (error) {
-                toast.error(error instanceof Error ? error.message : "Téléchargement impossible", { id: `dl-short-${short.id}` });
-              } finally {
-                setProgress(null);
-              }
-            }}
-            className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
-            aria-label="Télécharger le réel"
-          >
-            <Download className={`h-4 w-4 ${downloaded ? "text-primary-glow" : ""}`} />
-            <span>{downloaded ? "Offline" : "Télécharger"}</span>
           </button>
           {short.authorIsArtist && currentUserId && currentUserId !== short.user_id && (
             <button
@@ -236,7 +211,6 @@ function ShortCard({
             </button>
           )}
         </div>
-        {progress && <p className="mt-2 text-[10px] text-muted-foreground">{formatProgress(progress.receivedBytes, progress.totalBytes)}</p>}
       </div>
     </div>
   );
