@@ -30,12 +30,29 @@ function publicUrl(bucket: string, path: string) {
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
-export async function fetchShorts(limit = 30): Promise<ShortWithAuthor[]> {
-  const { data: rows } = await supabase
-    .from("shorts")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(limit);
+// Réels visibles publiquement pendant 30 jours.
+export const SHORTS_PUBLIC_DAYS = 30;
+
+export type FetchShortsOptions = {
+  limit?: number;
+  /** "feed" = uniquement < 30j (défaut). "all" = pas de filtre date. "archive" = uniquement >= 30j. */
+  scope?: "feed" | "all" | "archive";
+  /** Restreindre à un auteur précis (utile pour le tableau de bord artiste). */
+  userId?: string;
+};
+
+export async function fetchShorts(
+  limitOrOptions: number | FetchShortsOptions = 30,
+): Promise<ShortWithAuthor[]> {
+  const opts: FetchShortsOptions =
+    typeof limitOrOptions === "number" ? { limit: limitOrOptions } : limitOrOptions;
+  const { limit = 30, scope = "feed", userId } = opts;
+  const cutoff = new Date(Date.now() - SHORTS_PUBLIC_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  let query = supabase.from("shorts").select("*").order("created_at", { ascending: false }).limit(limit);
+  if (scope === "feed") query = query.gte("created_at", cutoff);
+  else if (scope === "archive") query = query.lt("created_at", cutoff);
+  if (userId) query = query.eq("user_id", userId);
+  const { data: rows } = await query;
   if (!rows || rows.length === 0) return [];
   const ids = Array.from(new Set(rows.map((r) => r.user_id)));
   const [{ data: profs }, { data: roles }, { data: { user } }] = await Promise.all([
