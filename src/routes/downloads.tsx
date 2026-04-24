@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Download, Loader2, Music2, Play, Trash2, Video } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Download, Loader2, Music2, Play, Trash2, Video, HardDrive, WifiOff } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useOfflineLibrary, useOfflineMediaUrl } from "@/hooks/use-offline-media";
-import type { OfflineMediaRecord } from "@/lib/offline-media";
+import { removeOfflineMedia, type OfflineMediaRecord } from "@/lib/offline-media";
 import { formatBytes } from "@/lib/offline-ui";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/downloads")({
   component: DownloadsPage,
@@ -11,7 +12,34 @@ export const Route = createFileRoute("/downloads")({
 });
 
 function DownloadsPage() {
-  const { grouped, loading, removeItem } = useOfflineLibrary();
+  const { items, grouped, loading, removeItem } = useOfflineLibrary();
+  const [quota, setQuota] = useState<{ usage: number; quota: number } | null>(null);
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.storage?.estimate) {
+      navigator.storage.estimate().then((est) => {
+        if (typeof est.usage === "number" && typeof est.quota === "number") {
+          setQuota({ usage: est.usage, quota: est.quota });
+        }
+      }).catch(() => {});
+    }
+  }, [items.length]);
+
+  const totalSize = useMemo(() => items.reduce((sum, it) => sum + (it.size || 0), 0), [items]);
+  const quotaPercent = quota && quota.quota > 0 ? Math.min(100, (quota.usage / quota.quota) * 100) : null;
+
+  const clearAll = async () => {
+    if (items.length === 0) return;
+    if (!confirm(`Supprimer ${items.length} fichier(s) hors ligne ?`)) return;
+    try {
+      for (const it of items) {
+        await removeOfflineMedia(it.kind, it.id);
+      }
+      toast.success("Stockage hors ligne vidé");
+    } catch {
+      toast.error("Suppression partielle");
+    }
+  };
 
   return (
     <div className="px-4 pt-4 pb-24">
@@ -21,9 +49,55 @@ function DownloadsPage() {
           <p className="text-xs text-muted-foreground">Lecture locale audio et vidéo, même hors ligne.</p>
         </div>
         <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60">
-          <Download className="h-4 w-4" />
+          <WifiOff className="h-4 w-4" />
         </span>
       </header>
+
+      <section className="mb-5 rounded-2xl border border-border/50 bg-surface/40 p-4">
+        <div className="flex items-center gap-2">
+          <HardDrive className="h-4 w-4 text-primary-glow" />
+          <h2 className="text-sm font-semibold">Stockage hors ligne</h2>
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-3 text-center">
+          <div>
+            <p className="text-lg font-bold">{items.length}</p>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Fichiers</p>
+          </div>
+          <div>
+            <p className="text-lg font-bold">{grouped.audio.length}</p>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Audio</p>
+          </div>
+          <div>
+            <p className="text-lg font-bold">{grouped.video.length}</p>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Vidéos</p>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between text-xs">
+          <span className="text-muted-foreground">Espace utilisé par Mascartube</span>
+          <span className="font-semibold">{formatBytes(totalSize)}</span>
+        </div>
+        {quotaPercent !== null && quota && (
+          <div className="mt-2">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-gradient-primary"
+                style={{ width: `${Math.max(2, quotaPercent)}%` }}
+              />
+            </div>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Navigateur : {formatBytes(quota.usage)} / {formatBytes(quota.quota)} disponibles
+            </p>
+          </div>
+        )}
+        {items.length > 0 && (
+          <button
+            onClick={clearAll}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-destructive/40 px-3 py-1.5 text-xs font-semibold text-destructive transition hover:bg-destructive/10"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> Tout supprimer
+          </button>
+        )}
+      </section>
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
