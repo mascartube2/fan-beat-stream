@@ -1,11 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Loader2, Heart, Trash2, Plus, Upload, X, Play, Coins } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { Loader2, Heart, Trash2, Plus, Upload, X, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
 import { fetchShorts, resolveShortPlaybackUrl, type ShortWithAuthor } from "@/lib/shorts";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
-import { useMaca } from "@/hooks/use-maca";
 import { ShortMediaMenu } from "@/components/player/ShortMediaMenu";
 import { toast } from "sonner";
 
