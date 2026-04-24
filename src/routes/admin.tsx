@@ -5,12 +5,10 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { Loader2, Check, X, ShieldCheck, Upload as UploadIcon, Trash2, Film } from "lucide-react";
 import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
 import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
-import { BadgeCheck, Coins, Wallet } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
 
-type ProfileRow = { user_id: string; display_name: string | null; is_certified: boolean; mascar_coins: number };
-type DepositRow = { id: string; user_id: string; amount_ar: number; maca_amount: number; transaction_ref: string; status: string; created_at: string; userName?: string };
-type WithdrawalRow = { id: string; user_id: string; maca_amount: number; amount_ar: number; mvola_number: string; status: string; created_at: string; userName?: string };
+type ProfileRow = { user_id: string; display_name: string | null; is_certified: boolean };
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -47,8 +45,6 @@ function AdminPage() {
   const [stories, setStories] = useState<StoryAdmin[]>([]);
   const [shorts, setShorts] = useState<ShortWithAuthor[]>([]);
   const [allProfiles, setAllProfiles] = useState<ProfileRow[]>([]);
-  const [deposits, setDeposits] = useState<DepositRow[]>([]);
-  const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [profileSearch, setProfileSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -64,15 +60,13 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: depRows }, { data: wRows }, { data: allProfs }] = await Promise.all([
+    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: allProfs }] = await Promise.all([
       supabase.from("artist_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id").eq("role", "artist"),
       fetchTracksWithArtists(200),
       supabase.from("stories").select("*").gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }),
-      fetchShorts(50),
-      supabase.from("deposits").select("*").order("created_at", { ascending: false }),
-      supabase.from("withdrawals").select("*").order("created_at", { ascending: false }),
-      supabase.from("profiles").select("user_id, display_name, is_certified, mascar_coins").order("display_name"),
+      fetchShorts({ scope: "all", limit: 100 }),
+      supabase.from("profiles").select("user_id, display_name, is_certified").order("display_name"),
     ]);
     const nameMap = new Map((allProfs ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
     setAllProfiles((allProfs ?? []) as ProfileRow[]);
@@ -85,8 +79,6 @@ function AdminPage() {
       mediaUrl: supabase.storage.from("stories").getPublicUrl(s.media_path).data.publicUrl,
     })));
     setShorts(shortRows);
-    setDeposits(((depRows ?? []) as DepositRow[]).map((d) => ({ ...d, userName: nameMap.get(d.user_id) ?? "?" })));
-    setWithdrawals(((wRows ?? []) as WithdrawalRow[]).map((w) => ({ ...w, userName: nameMap.get(w.user_id) ?? "?" })));
     setLoading(false);
   };
 
@@ -140,33 +132,7 @@ function AdminPage() {
     setBusyId(null);
   };
 
-  const approveDeposit = async (id: string) => {
-    setBusyId(id);
-    const { error } = await supabase.rpc("approve_deposit", { _deposit_id: id });
-    if (error) toast.error(error.message); else { toast.success("Dépôt validé"); await load(); }
-    setBusyId(null);
-  };
 
-  const rejectDeposit = async (id: string) => {
-    setBusyId(id);
-    const { error } = await supabase.from("deposits").update({ status: "refuse", reviewed_by: user.id, reviewed_at: new Date().toISOString() }).eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Dépôt refusé"); await load(); }
-    setBusyId(null);
-  };
-
-  const approveWithdrawal = async (id: string) => {
-    setBusyId(id);
-    const { error } = await supabase.rpc("approve_withdrawal", { _withdrawal_id: id });
-    if (error) toast.error(error.message); else { toast.success("Retrait marqué comme payé"); await load(); }
-    setBusyId(null);
-  };
-
-  const rejectWithdrawal = async (id: string) => {
-    setBusyId(id);
-    const { error } = await supabase.rpc("reject_withdrawal", { _withdrawal_id: id });
-    if (error) toast.error(error.message); else { toast.success("Retrait refusé (solde restitué)"); await load(); }
-    setBusyId(null);
-  };
 
   const deleteTrack = async (t: TrackWithArtist) => {
     if (!confirm(`Supprimer "${t.title}" ?`)) return;
