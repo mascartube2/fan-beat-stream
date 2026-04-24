@@ -22,7 +22,6 @@ function ShortsPage() {
   const [loading, setLoading] = useState(true);
   const [composerOpen, setComposerOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [tipFor, setTipFor] = useState<ShortWithAuthor | null>(null);
 
   const load = () => fetchShorts(30).then((d) => { setItems(d); setLoading(false); });
 
