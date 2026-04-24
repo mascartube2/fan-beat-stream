@@ -103,7 +103,6 @@ function ShortsPage() {
               isAdmin={isAdmin}
               busy={busyId === s.id}
               onLike={() => toggleLike(s)}
-              onTip={() => setTipFor(s)}
               onDelete={() => handleDelete(s)}
             />
           ))}
@@ -112,9 +111,6 @@ function ShortsPage() {
 
       {composerOpen && user && (
         <ShortComposer onClose={() => setComposerOpen(false)} onCreated={load} />
-      )}
-      {tipFor && (
-        <TipModal short={tipFor} onClose={() => setTipFor(null)} />
       )}
     </div>
   );
@@ -126,7 +122,6 @@ function ShortCard({
   isAdmin,
   busy,
   onLike,
-  onTip,
   onDelete,
 }: {
   short: ShortWithAuthor;
@@ -134,7 +129,6 @@ function ShortCard({
   isAdmin: boolean;
   busy: boolean;
   onLike: () => void;
-  onTip: () => void;
   onDelete: () => void;
 }) {
   const [videoSrc, setVideoSrc] = useState(short.videoUrl);
@@ -190,14 +184,6 @@ function ShortCard({
             <Heart className={`h-4 w-4 ${short.liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
             {short.likes_count}
           </button>
-          {short.authorIsArtist && currentUserId && currentUserId !== short.user_id && (
-            <button
-              onClick={onTip}
-              className="ml-auto flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1.5 text-xs font-bold text-amber-400 hover:bg-amber-500/25"
-            >
-              <Coins className="h-3.5 w-3.5" /> Soutenir
-            </button>
-          )}
           {currentUserId && (short.user_id === currentUserId || isAdmin) && (
             <button
               onClick={onDelete}
