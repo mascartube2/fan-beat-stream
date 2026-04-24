@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as ShortsRouteImport } from './routes/shorts'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -25,11 +24,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 
-const WalletRoute = WalletRouteImport.update({
-  id: '/wallet',
-  path: '/wallet',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
@@ -114,7 +108,6 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRouteWithChildren
   '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
-  '/wallet': typeof WalletRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
 }
@@ -131,7 +124,6 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRouteWithChildren
   '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
-  '/wallet': typeof WalletRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
 }
@@ -149,7 +141,6 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRouteWithChildren
   '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
-  '/wallet': typeof WalletRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
 }
@@ -168,7 +159,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/shorts'
     | '/upload'
-    | '/wallet'
     | '/post/$postId'
     | '/profile/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -185,7 +175,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/shorts'
     | '/upload'
-    | '/wallet'
     | '/post/$postId'
     | '/profile/edit'
   id:
@@ -202,7 +191,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/shorts'
     | '/upload'
-    | '/wallet'
     | '/post/$postId'
     | '/profile/edit'
   fileRoutesById: FileRoutesById
@@ -220,19 +208,11 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRouteWithChildren
   ShortsRoute: typeof ShortsRoute
   UploadRoute: typeof UploadRoute
-  WalletRoute: typeof WalletRoute
   PostPostIdRoute: typeof PostPostIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/wallet': {
-      id: '/wallet'
-      path: '/wallet'
-      fullPath: '/wallet'
-      preLoaderRoute: typeof WalletRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/upload': {
       id: '/upload'
       path: '/upload'
@@ -358,7 +338,6 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRouteWithChildren,
   ShortsRoute: ShortsRoute,
   UploadRoute: UploadRoute,
-  WalletRoute: WalletRoute,
   PostPostIdRoute: PostPostIdRoute,
 }
 export const routeTree = rootRouteImport

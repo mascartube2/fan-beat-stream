@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Coins, Wallet } from "lucide-react";
+import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Film } from "lucide-react";
 import { useEffect, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
@@ -7,8 +7,8 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadProfileAvatar } from "@/lib/avatar";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist, publicUrl } from "@/lib/tracks";
+import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
-import { useMaca, formatAr } from "@/hooks/use-maca";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
