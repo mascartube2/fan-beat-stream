@@ -3,6 +3,7 @@ import { Search, TrendingUp, Play, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
+import { supabase } from "@/integrations/supabase/client";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/tracks";
 
 export const Route = createFileRoute("/discover")({
