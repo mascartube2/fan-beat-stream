@@ -132,6 +132,7 @@ function ShortCard({
   onDelete: () => void;
 }) {
   const [videoSrc, setVideoSrc] = useState(short.videoUrl);
+  const [viewed, setViewed] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -150,6 +151,12 @@ function ShortCard({
     };
   }, [short]);
 
+  const handlePlay = () => {
+    if (viewed) return;
+    setViewed(true);
+    void supabase.rpc("increment_short_view", { _short_id: short.id });
+  };
+
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-surface">
       <video
@@ -160,6 +167,7 @@ function ShortCard({
         autoPlay
         muted
         loop
+        onPlay={handlePlay}
         className="aspect-[9/16] w-full bg-black object-cover"
       />
       <div className="p-3">
