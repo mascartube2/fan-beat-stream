@@ -154,12 +154,20 @@ function ProfilePage() {
             />
           </label>
           {isArtist ? (
-            <Link
-              to="/upload"
-              className="flex items-center gap-1.5 rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold shadow-glow"
-            >
-              <Upload className="h-3.5 w-3.5" /> Upload track
-            </Link>
+            <>
+              <Link
+                to="/upload"
+                className="flex items-center gap-1.5 rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold shadow-glow"
+              >
+                <Upload className="h-3.5 w-3.5" /> Upload track
+              </Link>
+              <Link
+                to="/artist-dashboard"
+                className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-bold"
+              >
+                <Film className="h-3.5 w-3.5" /> Tableau de bord
+              </Link>
+            </>
           ) : (
             <Link
               to="/become-artist"
