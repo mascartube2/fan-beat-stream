@@ -23,6 +23,14 @@ function DiscoverPage() {
       setTracks(t);
       setLoading(false);
     });
+    const ch = supabase
+      .channel("tracks-plays")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "tracks" }, (payload) => {
+        const row = payload.new as { id: string; plays: number };
+        setTracks((prev) => prev.map((x) => x.id === row.id ? { ...x, plays: row.plays } : x));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   const queue = tracks.map(toPlayable);
