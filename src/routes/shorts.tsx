@@ -29,7 +29,14 @@ function ShortsPage() {
     load();
     const ch = supabase
       .channel("shorts-feed")
-      .on("postgres_changes", { event: "*", schema: "public", table: "shorts" }, () => load())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "shorts" }, (payload) => {
+        const row = payload.new as { id: string; views_count: number; likes_count: number };
+        setItems((prev) => prev.map((x) => x.id === row.id
+          ? { ...x, views_count: row.views_count, likes_count: row.likes_count }
+          : x));
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "shorts" }, () => load())
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "shorts" }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
