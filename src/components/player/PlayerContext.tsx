@@ -82,7 +82,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       a.src = preferredUrl;
     }
     a.play()
-      .then(() => setIsPlaying(true))
+      .then(() => {
+        setIsPlaying(true);
+        void supabase.rpc("increment_track_play", { _track_id: track.id });
+      })
       .catch(() => setIsPlaying(false));
   };
 
