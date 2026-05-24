@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { resolveTrackPlaybackUrl } from "@/lib/tracks";
+import { supabase } from "@/integrations/supabase/client";
 
 export type PlayableTrack = {
   id: string;
