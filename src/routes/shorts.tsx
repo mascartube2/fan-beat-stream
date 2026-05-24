@@ -194,11 +194,15 @@ function ShortCard({
           </div>
         </div>
         {short.caption && <p className="mt-1.5 text-xs text-muted-foreground">{short.caption}</p>}
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-3">
           <button onClick={onLike} className="flex items-center gap-1 text-xs">
             <Heart className={`h-4 w-4 ${short.liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
             {short.likes_count}
           </button>
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Play className="h-3.5 w-3.5" />
+            {short.views_count} vues
+          </span>
           {currentUserId && (short.user_id === currentUserId || isAdmin) && (
             <button
               onClick={onDelete}
