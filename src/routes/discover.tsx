@@ -3,6 +3,7 @@ import { Search, TrendingUp, Play, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
+import { supabase } from "@/integrations/supabase/client";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/tracks";
 
 export const Route = createFileRoute("/discover")({
@@ -22,6 +23,14 @@ function DiscoverPage() {
       setTracks(t);
       setLoading(false);
     });
+    const ch = supabase
+      .channel("tracks-plays")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "tracks" }, (payload) => {
+        const row = payload.new as { id: string; plays: number };
+        setTracks((prev) => prev.map((x) => x.id === row.id ? { ...x, plays: row.plays } : x));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   const queue = tracks.map(toPlayable);

@@ -29,7 +29,14 @@ function ShortsPage() {
     load();
     const ch = supabase
       .channel("shorts-feed")
-      .on("postgres_changes", { event: "*", schema: "public", table: "shorts" }, () => load())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "shorts" }, (payload) => {
+        const row = payload.new as { id: string; views_count: number; likes_count: number };
+        setItems((prev) => prev.map((x) => x.id === row.id
+          ? { ...x, views_count: row.views_count, likes_count: row.likes_count }
+          : x));
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "shorts" }, () => load())
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "shorts" }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
@@ -132,6 +139,7 @@ function ShortCard({
   onDelete: () => void;
 }) {
   const [videoSrc, setVideoSrc] = useState(short.videoUrl);
+  const [viewed, setViewed] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -150,6 +158,12 @@ function ShortCard({
     };
   }, [short]);
 
+  const handlePlay = () => {
+    if (viewed) return;
+    setViewed(true);
+    void supabase.rpc("increment_short_view", { _short_id: short.id });
+  };
+
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-surface">
       <video
@@ -160,6 +174,7 @@ function ShortCard({
         autoPlay
         muted
         loop
+        onPlay={handlePlay}
         className="aspect-[9/16] w-full bg-black object-cover"
       />
       <div className="p-3">
@@ -179,11 +194,15 @@ function ShortCard({
           </div>
         </div>
         {short.caption && <p className="mt-1.5 text-xs text-muted-foreground">{short.caption}</p>}
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-3">
           <button onClick={onLike} className="flex items-center gap-1 text-xs">
             <Heart className={`h-4 w-4 ${short.liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
             {short.likes_count}
           </button>
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Play className="h-3.5 w-3.5" />
+            {short.views_count} vues
+          </span>
           {currentUserId && (short.user_id === currentUserId || isAdmin) && (
             <button
               onClick={onDelete}

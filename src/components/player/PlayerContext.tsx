@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { resolveTrackPlaybackUrl } from "@/lib/tracks";
+import { supabase } from "@/integrations/supabase/client";
 
 export type PlayableTrack = {
   id: string;
@@ -81,7 +82,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       a.src = preferredUrl;
     }
     a.play()
-      .then(() => setIsPlaying(true))
+      .then(() => {
+        setIsPlaying(true);
+        void supabase.rpc("increment_track_play", { _track_id: track.id });
+      })
       .catch(() => setIsPlaying(false));
   };
 

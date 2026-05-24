@@ -580,6 +580,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_short_view: { Args: { _short_id: string }; Returns: undefined }
+      increment_track_play: { Args: { _track_id: string }; Returns: undefined }
       reject_withdrawal: { Args: { _withdrawal_id: string }; Returns: Json }
       request_withdrawal: {
         Args: { _amount: number; _mvola: string }
