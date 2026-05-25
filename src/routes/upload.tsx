@@ -2,7 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
+import { TRACK_GENRES } from "@/lib/tracks";
 import { Loader2, Upload as UploadIcon, Music } from "lucide-react";
+
 
 export const Route = createFileRoute("/upload")({
   component: UploadPage,
