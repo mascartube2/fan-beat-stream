@@ -121,7 +121,7 @@ function ProfilePage() {
           <h1 className="text-2xl font-bold">{profile?.display_name ?? user.email}</h1>
           {isCertified && <CertifiedBadge className="h-5 w-5" />}
         </div>
-        <p className="text-sm text-muted-foreground">{user.email}</p>
+        
         {profile?.bio && <p className="mt-2 text-sm">{profile.bio}</p>}
 
         <div className="mt-4 flex items-center gap-6 text-sm">
