@@ -103,7 +103,9 @@ function UploadPage() {
         audio_path: audioPath,
         cover_path: coverPath,
         duration_seconds: duration ? Math.round(duration) : null,
+        genre: genre || null,
       });
+
       if (dbErr) throw dbErr;
 
       navigate({ to: "/library" });
