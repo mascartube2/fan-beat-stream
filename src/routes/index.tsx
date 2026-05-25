@@ -10,7 +10,7 @@ import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { LogoFull } from "@/components/brand/Logo";
+import logoSquare from "@/assets/logo-square.png";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
