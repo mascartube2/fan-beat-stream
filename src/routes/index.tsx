@@ -10,7 +10,7 @@ import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { LogoFull } from "@/components/brand/Logo";
+import logoSquare from "@/assets/logo-square.png";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -45,8 +45,8 @@ function HomePage() {
   return (
     <div className="px-4 pt-4">
       <header className="mb-4 flex items-center justify-between">
-        <Link to="/" aria-label="Mascartube home" className="flex items-center">
-          <LogoFull className="h-9" />
+        <Link to="/" aria-label="Mascartube home" className="flex items-center gap-2">
+          <img src={logoSquare} alt="Mascartube" width={48} height={48} className="h-12 w-12 rounded-xl shadow-glow" />
         </Link>
         <div className="flex items-center gap-1">
           <button className="rounded-full p-2.5 hover:bg-white/5" aria-label="Search">
