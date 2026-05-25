@@ -344,7 +344,6 @@ export type Database = {
           id: string
           is_certified: boolean
           mascar_coins: number
-          mvola_number: string | null
           updated_at: string
           user_id: string
         }
@@ -356,7 +355,6 @@ export type Database = {
           id?: string
           is_certified?: boolean
           mascar_coins?: number
-          mvola_number?: string | null
           updated_at?: string
           user_id: string
         }
@@ -368,7 +366,6 @@ export type Database = {
           id?: string
           is_certified?: boolean
           mascar_coins?: number
-          mvola_number?: string | null
           updated_at?: string
           user_id?: string
         }
