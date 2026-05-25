@@ -15,9 +15,11 @@ function UploadPage() {
   const { user, isArtist, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
+  const [genre, setGenre] = useState<string>("");
   const [audio, setAudio] = useState<File | null>(null);
   const [cover, setCover] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
