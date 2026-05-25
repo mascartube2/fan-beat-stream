@@ -136,7 +136,22 @@ function UploadPage() {
         </div>
 
         <div>
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Genre musical</label>
+          <select
+            value={genre}
+            onChange={(e) => setGenre(e.target.value)}
+            className="w-full rounded-xl border border-border bg-input px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="">— Choisir un genre —</option>
+            {TRACK_GENRES.map((g) => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
           <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Audio file (mp3, wav…)</label>
+
           <input
             type="file"
             accept="audio/*"
