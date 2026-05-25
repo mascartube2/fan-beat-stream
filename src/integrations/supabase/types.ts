@@ -507,6 +507,7 @@ export type Database = {
           cover_path: string | null
           created_at: string
           duration_seconds: number | null
+          genre: string | null
           id: string
           plays: number
           title: string
@@ -518,6 +519,7 @@ export type Database = {
           cover_path?: string | null
           created_at?: string
           duration_seconds?: number | null
+          genre?: string | null
           id?: string
           plays?: number
           title: string
@@ -529,6 +531,7 @@ export type Database = {
           cover_path?: string | null
           created_at?: string
           duration_seconds?: number | null
+          genre?: string | null
           id?: string
           plays?: number
           title?: string
