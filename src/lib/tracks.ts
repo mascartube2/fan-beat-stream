@@ -2,6 +2,21 @@ import { supabase } from "@/integrations/supabase/client";
 import type { PlayableTrack } from "@/components/player/PlayerContext";
 import { downloadOfflineMedia, getPreferredMediaUrl, hasOfflineMedia } from "@/lib/offline-media";
 
+export const TRACK_GENRES = [
+  "Hip-Hop",
+  "R&B",
+  "Afrobeat",
+  "Gasy / Malagasy",
+  "Pop",
+  "Electronic",
+  "Reggae",
+  "Jazz",
+  "Rock",
+  "Classique",
+  "Autre",
+] as const;
+export type TrackGenre = (typeof TRACK_GENRES)[number];
+
 export type DbTrack = {
   id: string;
   user_id: string;
@@ -11,7 +26,9 @@ export type DbTrack = {
   duration_seconds: number | null;
   plays: number;
   created_at: string;
+  genre: string | null;
 };
+
 
 export type TrackWithArtist = DbTrack & {
   artistName: string;

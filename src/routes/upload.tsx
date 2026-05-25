@@ -2,7 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
+import { TRACK_GENRES } from "@/lib/tracks";
 import { Loader2, Upload as UploadIcon, Music } from "lucide-react";
+
 
 export const Route = createFileRoute("/upload")({
   component: UploadPage,
@@ -13,9 +15,11 @@ function UploadPage() {
   const { user, isArtist, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
+  const [genre, setGenre] = useState<string>("");
   const [audio, setAudio] = useState<File | null>(null);
   const [cover, setCover] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,7 +103,9 @@ function UploadPage() {
         audio_path: audioPath,
         cover_path: coverPath,
         duration_seconds: duration ? Math.round(duration) : null,
+        genre: genre || null,
       });
+
       if (dbErr) throw dbErr;
 
       navigate({ to: "/library" });
@@ -130,7 +136,22 @@ function UploadPage() {
         </div>
 
         <div>
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Genre musical</label>
+          <select
+            value={genre}
+            onChange={(e) => setGenre(e.target.value)}
+            className="w-full rounded-xl border border-border bg-input px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="">— Choisir un genre —</option>
+            {TRACK_GENRES.map((g) => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
           <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Audio file (mp3, wav…)</label>
+
           <input
             type="file"
             accept="audio/*"
