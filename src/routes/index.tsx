@@ -3,6 +3,7 @@ import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck } from "lucide-
 import { useEffect, useState } from "react";
 import { StoriesRow } from "@/components/feed/StoriesRow";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
+import { ShareMenu } from "@/components/share/ShareMenu";
 import { PostComposer } from "@/components/posts/PostComposer";
 import { SocialPostCard, type FeedPost } from "@/components/posts/SocialPostCard";
 import { fetchFeedPosts } from "@/lib/posts";
@@ -158,7 +159,8 @@ function HomePage() {
                   <p className="truncate text-xs font-semibold">{t.title}</p>
                   <p className="truncate text-[10px] text-muted-foreground">{t.artistName}</p>
                 </button>
-                <div className="mt-1 flex justify-end">
+                <div className="mt-1 flex items-center justify-end gap-1">
+                  <ShareMenu url={`/track/${t.id}`} title={t.title} text={`${t.title} — ${t.artistName}`} />
                   <OfflineTrackButton track={t} compact />
                 </div>
               </div>
@@ -193,6 +195,7 @@ function HomePage() {
                   </span>
                   <Play className="h-4 w-4 fill-current text-primary-glow" />
                 </button>
+                <ShareMenu url={`/track/${t.id}`} title={t.title} text={`${t.title} — ${t.artistName}`} />
                 <OfflineTrackButton track={t} compact />
               </div>
             ))}

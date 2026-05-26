@@ -1,4 +1,5 @@
-import { Heart, MessageCircle, Repeat2, Share2, Trash2, Pencil, Check, X } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Trash2, Pencil, Check, X } from "lucide-react";
+import { ShareMenu } from "@/components/share/ShareMenu";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -102,19 +103,6 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
     }
   };
 
-  const share = async () => {
-    const url = `${window.location.origin}/post/${post.id}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: post.authorName, text: post.content ?? "", url });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast.success("Lien copié");
-      }
-    } catch {
-      /* ignore */
-    }
-  };
 
   const remove = async () => {
     if (!confirm("Supprimer cette publication ?")) return;
@@ -201,9 +189,14 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
           <Repeat2 className={`h-4 w-4 ${reposted ? "text-green-400" : ""}`} />
           <span>{reposts}</span>
         </button>
-        <button onClick={share} className="ml-auto rounded-full p-2 hover:bg-white/5" aria-label="Partager">
-          <Share2 className="h-4 w-4" />
-        </button>
+        <div className="ml-auto">
+          <ShareMenu
+            url={`/post/${post.id}`}
+            title={post.authorName}
+            text={post.content ?? ""}
+            className="rounded-full p-2 hover:bg-white/5"
+          />
+        </div>
       </footer>
     </article>
   );
