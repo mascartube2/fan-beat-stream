@@ -53,10 +53,10 @@ function HomePage() {
             <Search className="h-5 w-5" />
           </button>
           {user ? (
-            <button className="relative rounded-full p-2.5 hover:bg-white/5" aria-label="Notifications">
+            <Link to="/notifications" className="relative rounded-full p-2.5 hover:bg-white/5" aria-label="Notifications">
               <Bell className="h-5 w-5" />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary-glow" />
-            </button>
+            </Link>
           ) : (
             <Link to="/auth" className="rounded-full bg-gradient-primary px-3 py-1.5 text-xs font-bold shadow-glow">
               Sign in
