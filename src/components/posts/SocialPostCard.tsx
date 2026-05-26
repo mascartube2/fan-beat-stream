@@ -202,9 +202,14 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
           <Repeat2 className={`h-4 w-4 ${reposted ? "text-green-400" : ""}`} />
           <span>{reposts}</span>
         </button>
-        <button onClick={share} className="ml-auto rounded-full p-2 hover:bg-white/5" aria-label="Partager">
-          <Share2 className="h-4 w-4" />
-        </button>
+        <div className="ml-auto">
+          <ShareMenu
+            url={`/post/${post.id}`}
+            title={post.authorName}
+            text={post.content ?? ""}
+            className="rounded-full p-2 hover:bg-white/5"
+          />
+        </div>
       </footer>
     </article>
   );
