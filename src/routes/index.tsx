@@ -32,11 +32,27 @@ function HomePage() {
       setLoading(false);
     });
     const ch = supabase
-      .channel("home-posts")
-      .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, () => reloadPosts())
+      .channel("home-posts-rt")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "posts" }, (payload) => {
+        const row = payload.new as { id: string; likes_count: number; comments_count: number; reposts_count: number; content: string | null };
+        setPosts((prev) => prev.map((x) => (x.id === row.id ? { ...x, likes_count: row.likes_count, comments_count: row.comments_count, reposts_count: row.reposts_count, content: row.content } : x)));
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, () => reloadPosts())
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "posts" }, (payload) => {
+        const row = payload.old as { id: string };
+        setPosts((prev) => prev.filter((x) => x.id !== row.id));
+      })
+      .subscribe();
+    const ch2 = supabase
+      .channel("home-tracks-rt")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "tracks" }, (payload) => {
+        const row = payload.new as { id: string; plays: number };
+        setTracks((prev) => prev.map((x) => (x.id === row.id ? { ...x, plays: row.plays } : x)));
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
+      supabase.removeChannel(ch2);
     };
   }, []);
 

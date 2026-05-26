@@ -52,6 +52,12 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
   };
 
   useEffect(() => {
+    setLikes(post.likes_count);
+    setReposts(post.reposts_count);
+    setContent(post.content);
+  }, [post.likes_count, post.reposts_count, post.content]);
+
+  useEffect(() => {
     if (!user) return;
     (async () => {
       const [{ data: l }, { data: r }] = await Promise.all([
