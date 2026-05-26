@@ -71,12 +71,12 @@ export function ShareMenu({ url, title, text, className, label }: Props) {
         <DropdownMenuItem
           onClick={() => open(`https://www.facebook.com/sharer/sharer.php?u=${enc(fullUrl)}`)}
         >
-          <Facebook className="mr-2 h-4 w-4" /> Facebook
+          <Send className="mr-2 h-4 w-4" /> Facebook
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => open(`https://twitter.com/intent/tweet?url=${enc(fullUrl)}&text=${enc(text ?? title ?? "")}`)}
         >
-          <Twitter className="mr-2 h-4 w-4" /> X / Twitter
+          <Send className="mr-2 h-4 w-4" /> X / Twitter
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => open(`https://t.me/share/url?url=${enc(fullUrl)}&text=${enc(text ?? title ?? "")}`)}
