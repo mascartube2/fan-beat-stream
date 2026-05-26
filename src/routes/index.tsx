@@ -159,7 +159,8 @@ function HomePage() {
                   <p className="truncate text-xs font-semibold">{t.title}</p>
                   <p className="truncate text-[10px] text-muted-foreground">{t.artistName}</p>
                 </button>
-                <div className="mt-1 flex justify-end">
+                <div className="mt-1 flex items-center justify-end gap-1">
+                  <ShareMenu url={`/track/${t.id}`} title={t.title} text={`${t.title} — ${t.artistName}`} />
                   <OfflineTrackButton track={t} compact />
                 </div>
               </div>
