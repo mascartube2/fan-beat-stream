@@ -195,6 +195,7 @@ function HomePage() {
                   </span>
                   <Play className="h-4 w-4 fill-current text-primary-glow" />
                 </button>
+                <ShareMenu url={`/track/${t.id}`} title={t.title} text={`${t.title} — ${t.artistName}`} />
                 <OfflineTrackButton track={t} compact />
               </div>
             ))}
