@@ -1,4 +1,4 @@
-import { Share2, Link2, Facebook, Twitter, Send } from "lucide-react";
+import { Share2, Link2, Send } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
