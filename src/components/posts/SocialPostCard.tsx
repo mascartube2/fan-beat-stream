@@ -1,4 +1,5 @@
-import { Heart, MessageCircle, Repeat2, Share2, Trash2, Pencil, Check, X } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Trash2, Pencil, Check, X } from "lucide-react";
+import { ShareMenu } from "@/components/share/ShareMenu";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
