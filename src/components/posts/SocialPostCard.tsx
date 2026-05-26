@@ -103,19 +103,6 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
     }
   };
 
-  const share = async () => {
-    const url = `${window.location.origin}/post/${post.id}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: post.authorName, text: post.content ?? "", url });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast.success("Lien copié");
-      }
-    } catch {
-      /* ignore */
-    }
-  };
 
   const remove = async () => {
     if (!confirm("Supprimer cette publication ?")) return;
