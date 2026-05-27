@@ -18,8 +18,13 @@ type Props = {
   label?: string;
 };
 
-export function ShareMenu({ url, title, text, className, label }: Props) {
+export function ShareMenu({ url, title, text, authorUrl, authorName, className, label }: Props) {
   const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
+  const fullAuthorUrl = authorUrl
+    ? authorUrl.startsWith("http")
+      ? authorUrl
+      : `${window.location.origin}${authorUrl}`
+    : null;
   const enc = encodeURIComponent;
   const msg = text ? `${text} — ${fullUrl}` : fullUrl;
 
