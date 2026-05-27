@@ -194,6 +194,8 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
             url={`/post/${post.id}`}
             title={post.authorName}
             text={post.content ?? ""}
+            authorUrl={`/members?user=${post.user_id}`}
+            authorName={post.authorName}
             className="rounded-full p-2 hover:bg-white/5"
           />
         </div>
