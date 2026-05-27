@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Film } from "lucide-react";
+import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Film, Search, Library } from "lucide-react";
 import { useEffect, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
