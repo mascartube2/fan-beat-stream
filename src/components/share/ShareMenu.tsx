@@ -72,8 +72,15 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
           <Share2 className="mr-2 h-4 w-4" /> Partager…
         </DropdownMenuItem>
         <DropdownMenuItem onClick={copy}>
-          <Link2 className="mr-2 h-4 w-4" /> Copier le lien
+          <Link2 className="mr-2 h-4 w-4" /> Copier le lien de la publication
         </DropdownMenuItem>
+        {fullAuthorUrl && (
+          <DropdownMenuItem onClick={copyAuthor}>
+            <User className="mr-2 h-4 w-4" /> Copier le lien de l'auteur
+            {authorName ? ` (${authorName})` : ""}
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => open(`https://wa.me/?text=${enc(msg)}`)}
         >
