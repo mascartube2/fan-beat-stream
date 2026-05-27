@@ -237,3 +237,121 @@ function ProfilePage() {
     </div>
   );
 }
+
+function LibrarySection({ tracks, onPlay }: { tracks: TrackWithArtist[]; onPlay: (t: TrackWithArtist) => void }) {
+  const [query, setQuery] = useState("");
+  const [activeGenre, setActiveGenre] = useState<string>("Tous");
+
+  const totalPlays = tracks.reduce((sum, t) => sum + (t.plays ?? 0), 0);
+
+  const genresPresent = Array.from(
+    new Set(tracks.map((t) => t.genre || "Autre")),
+  ).sort();
+  const genres = ["Tous", ...genresPresent];
+
+  const filtered = tracks.filter((t) => {
+    const q = query.trim().toLowerCase();
+    const matchQ = !q || t.title.toLowerCase().includes(q);
+    const g = t.genre || "Autre";
+    const matchG = activeGenre === "Tous" || g === activeGenre;
+    return matchQ && matchG;
+  });
+
+  const grouped = filtered.reduce<Record<string, TrackWithArtist[]>>((acc, t) => {
+    const g = t.genre || "Autre";
+    (acc[g] ||= []).push(t);
+    return acc;
+  }, {});
+  const groupKeys = Object.keys(grouped).sort();
+
+  return (
+    <section className="mt-6">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+          <Library className="h-4 w-4 text-primary" /> Ma bibliothèque
+        </h2>
+        <span className="text-[10px] text-muted-foreground">
+          {tracks.length} titres · {totalPlays} lectures
+        </span>
+      </div>
+
+      {tracks.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-border/60 p-6 text-center text-sm text-muted-foreground">
+          Aucun titre uploadé pour l'instant.
+        </p>
+      ) : (
+        <>
+          <div className="relative mb-3">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Rechercher un titre…"
+              className="w-full rounded-full border border-border bg-background/60 py-2 pl-9 pr-3 text-xs outline-none focus:border-primary"
+            />
+          </div>
+
+          <div className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1">
+            {genres.map((g) => (
+              <button
+                key={g}
+                onClick={() => setActiveGenre(g)}
+                className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold transition ${
+                  activeGenre === g
+                    ? "border-primary bg-primary text-primary-foreground shadow-glow"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {g} {g !== "Tous" && <span className="opacity-60">({grouped[g]?.length ?? 0})</span>}
+              </button>
+            ))}
+          </div>
+
+          {filtered.length === 0 ? (
+            <p className="text-center text-xs text-muted-foreground">Aucun résultat.</p>
+          ) : (
+            <div className="space-y-5">
+              {groupKeys.map((g) => (
+                <div key={g}>
+                  <h3 className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="h-px flex-1 bg-border/60" />
+                    {g}
+                    <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px]">{grouped[g].length}</span>
+                    <span className="h-px flex-1 bg-border/60" />
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {grouped[g].map((t) => (
+                      <div key={t.id} className="bg-gradient-card group rounded-xl border border-border/50 p-2">
+                        <button onClick={() => onPlay(t)} className="w-full text-left">
+                          <div className="relative mb-2 overflow-hidden rounded-lg">
+                            <img
+                              src={t.coverUrl}
+                              alt={t.title}
+                              width={200}
+                              height={200}
+                              loading="lazy"
+                              className="aspect-square w-full object-cover transition group-hover:scale-105"
+                            />
+                            <span className="absolute bottom-1.5 right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary opacity-0 shadow-glow transition group-hover:opacity-100">
+                              <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
+                            </span>
+                          </div>
+                          <p className="truncate text-xs font-semibold">{t.title}</p>
+                          <p className="truncate text-[10px] text-muted-foreground">{t.plays} lectures</p>
+                        </button>
+                        <div className="mt-1 flex justify-end">
+                          <OfflineTrackButton track={t} compact />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
