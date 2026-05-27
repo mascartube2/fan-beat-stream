@@ -1,9 +1,10 @@
-import { Share2, Link2, Send } from "lucide-react";
+import { Share2, Link2, Send, User } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -11,12 +12,19 @@ type Props = {
   url: string;
   title?: string;
   text?: string;
+  authorUrl?: string;
+  authorName?: string;
   className?: string;
   label?: string;
 };
 
-export function ShareMenu({ url, title, text, className, label }: Props) {
+export function ShareMenu({ url, title, text, authorUrl, authorName, className, label }: Props) {
   const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
+  const fullAuthorUrl = authorUrl
+    ? authorUrl.startsWith("http")
+      ? authorUrl
+      : `${window.location.origin}${authorUrl}`
+    : null;
   const enc = encodeURIComponent;
   const msg = text ? `${text} — ${fullUrl}` : fullUrl;
 
@@ -33,14 +41,17 @@ export function ShareMenu({ url, title, text, className, label }: Props) {
     }
   };
 
-  const copy = async () => {
+  const copyText = async (value: string, label: string) => {
     try {
-      await navigator.clipboard.writeText(fullUrl);
-      toast.success("Lien copié");
+      await navigator.clipboard.writeText(value);
+      toast.success(`${label} copié`);
     } catch {
       toast.error("Impossible de copier");
     }
   };
+
+  const copy = () => copyText(fullUrl, "Lien");
+  const copyAuthor = () => fullAuthorUrl && copyText(fullAuthorUrl, "Lien de l'auteur");
 
   const open = (href: string) => window.open(href, "_blank", "noopener,noreferrer");
 
@@ -61,8 +72,15 @@ export function ShareMenu({ url, title, text, className, label }: Props) {
           <Share2 className="mr-2 h-4 w-4" /> Partager…
         </DropdownMenuItem>
         <DropdownMenuItem onClick={copy}>
-          <Link2 className="mr-2 h-4 w-4" /> Copier le lien
+          <Link2 className="mr-2 h-4 w-4" /> Copier le lien de la publication
         </DropdownMenuItem>
+        {fullAuthorUrl && (
+          <DropdownMenuItem onClick={copyAuthor}>
+            <User className="mr-2 h-4 w-4" /> Copier le lien de l'auteur
+            {authorName ? ` (${authorName})` : ""}
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => open(`https://wa.me/?text=${enc(msg)}`)}
         >
