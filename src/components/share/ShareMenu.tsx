@@ -41,14 +41,17 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
     }
   };
 
-  const copy = async () => {
+  const copyText = async (value: string, label: string) => {
     try {
-      await navigator.clipboard.writeText(fullUrl);
-      toast.success("Lien copié");
+      await navigator.clipboard.writeText(value);
+      toast.success(`${label} copié`);
     } catch {
       toast.error("Impossible de copier");
     }
   };
+
+  const copy = () => copyText(fullUrl, "Lien");
+  const copyAuthor = () => fullAuthorUrl && copyText(fullAuthorUrl, "Lien de l'auteur");
 
   const open = (href: string) => window.open(href, "_blank", "noopener,noreferrer");
 
