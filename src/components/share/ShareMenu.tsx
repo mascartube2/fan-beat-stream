@@ -59,6 +59,7 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
   const open = (href: string) => window.open(href, "_blank", "noopener,noreferrer");
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger
         className={
