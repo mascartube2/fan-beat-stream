@@ -1,4 +1,5 @@
-import { Share2, Link2, Send, User } from "lucide-react";
+import { Share2, Link2, Send, User, QrCode } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -7,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { QrDialog } from "@/components/share/QrDialog";
 
 type Props = {
   url: string;
@@ -19,6 +21,7 @@ type Props = {
 };
 
 export function ShareMenu({ url, title, text, authorUrl, authorName, className, label }: Props) {
+  const [qr, setQr] = useState<{ url: string; title: string } | null>(null);
   const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
   const fullAuthorUrl = authorUrl
     ? authorUrl.startsWith("http")
@@ -56,6 +59,7 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
   const open = (href: string) => window.open(href, "_blank", "noopener,noreferrer");
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger
         className={
@@ -81,6 +85,15 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setQr({ url: fullUrl, title: title ?? "Publication" })}>
+          <QrCode className="mr-2 h-4 w-4" /> QR code de la publication
+        </DropdownMenuItem>
+        {fullAuthorUrl && (
+          <DropdownMenuItem onClick={() => setQr({ url: fullAuthorUrl, title: authorName ?? "Auteur" })}>
+            <QrCode className="mr-2 h-4 w-4" /> QR code de l'auteur
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => open(`https://wa.me/?text=${enc(msg)}`)}
         >
@@ -103,5 +116,14 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    {qr && (
+      <QrDialog
+        open={!!qr}
+        onOpenChange={(o) => !o && setQr(null)}
+        url={qr.url}
+        title={qr.title}
+      />
+    )}
+    </>
   );
 }
