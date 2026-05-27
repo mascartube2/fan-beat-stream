@@ -21,6 +21,7 @@ type Props = {
 };
 
 export function ShareMenu({ url, title, text, authorUrl, authorName, className, label }: Props) {
+  const [qr, setQr] = useState<{ url: string; title: string } | null>(null);
   const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
   const fullAuthorUrl = authorUrl
     ? authorUrl.startsWith("http")
