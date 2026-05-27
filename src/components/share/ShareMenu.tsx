@@ -1,9 +1,10 @@
-import { Share2, Link2, Send } from "lucide-react";
+import { Share2, Link2, Send, User } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -11,6 +12,8 @@ type Props = {
   url: string;
   title?: string;
   text?: string;
+  authorUrl?: string;
+  authorName?: string;
   className?: string;
   label?: string;
 };
