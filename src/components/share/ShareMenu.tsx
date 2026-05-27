@@ -85,6 +85,15 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setQr({ url: fullUrl, title: title ?? "Publication" })}>
+          <QrCode className="mr-2 h-4 w-4" /> QR code de la publication
+        </DropdownMenuItem>
+        {fullAuthorUrl && (
+          <DropdownMenuItem onClick={() => setQr({ url: fullAuthorUrl, title: authorName ?? "Auteur" })}>
+            <QrCode className="mr-2 h-4 w-4" /> QR code de l'auteur
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => open(`https://wa.me/?text=${enc(msg)}`)}
         >
@@ -107,5 +116,14 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    {qr && (
+      <QrDialog
+        open={!!qr}
+        onOpenChange={(o) => !o && setQr(null)}
+        url={qr.url}
+        title={qr.title}
+      />
+    )}
+    </>
   );
 }
