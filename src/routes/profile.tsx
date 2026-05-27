@@ -195,37 +195,8 @@ function ProfilePage() {
           </button>
         </div>
 
-        <h2 className="mb-3 mt-6 text-sm font-semibold text-muted-foreground">Your tracks</h2>
-        {myTracks.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No uploads yet.</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {myTracks.map((t) => (
-              <div key={t.id} className="bg-gradient-card group rounded-xl border border-border/50 p-2">
-                <button onClick={() => playTrack(toPlayable(t), queue)} className="w-full text-left">
-                  <div className="relative mb-2 overflow-hidden rounded-lg">
-                    <img
-                      src={t.coverUrl}
-                      alt={t.title}
-                      width={200}
-                      height={200}
-                      loading="lazy"
-                      className="aspect-square w-full object-cover transition group-hover:scale-105"
-                    />
-                    <span className="absolute bottom-1.5 right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary opacity-0 shadow-glow transition group-hover:opacity-100">
-                      <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
-                    </span>
-                  </div>
-                  <p className="truncate text-xs font-semibold">{t.title}</p>
-                  <p className="truncate text-[10px] text-muted-foreground">{t.plays} plays</p>
-                </button>
-                <div className="mt-1 flex justify-end">
-                  <OfflineTrackButton track={t} compact />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <LibrarySection tracks={myTracks} onPlay={(t) => playTrack(toPlayable(t), queue)} />
+
 
         {(myShorts.length > 0 || archivedShorts.length > 0) && (
           <>
