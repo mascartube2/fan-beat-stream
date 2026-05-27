@@ -1,4 +1,5 @@
-import { Share2, Link2, Send, User } from "lucide-react";
+import { Share2, Link2, Send, User, QrCode } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -7,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { QrDialog } from "@/components/share/QrDialog";
 
 type Props = {
   url: string;
