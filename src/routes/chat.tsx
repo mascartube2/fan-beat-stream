@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Send, Search, ArrowLeft, Loader2, Video, PhoneIncoming, Paperclip, Mic, Smile, Check, CheckCheck, X } from "lucide-react";
+import { Send, Search, ArrowLeft, Loader2, Video, Paperclip, Mic, Smile, Check, CheckCheck, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
-import { VideoCall } from "@/components/chat/VideoCall";
+import { useCall } from "@/components/chat/CallProvider";
 import { ReactionPicker } from "@/components/chat/ReactionPicker";
 import { uploadChatMedia } from "@/lib/chat-media";
 import { isOnline } from "@/hooks/use-presence";
@@ -50,8 +50,8 @@ function ChatPage() {
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [call, setCall] = useState<{ callId: string; peerId: string; isInitiator: boolean } | null>(null);
-  const [incoming, setIncoming] = useState<{ callId: string; peerId: string } | null>(null);
+  const { startCall } = useCall();
+
 
   const loadAll = async () => {
     if (!user) return;
@@ -106,26 +106,7 @@ function ChatPage() {
     };
   }, [user?.id]);
 
-  // Incoming calls
-  useEffect(() => {
-    if (!user) return;
-    const ch = supabase
-      .channel("incoming-calls")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "call_signals", filter: `to_user=eq.${user.id}` },
-        (payload) => {
-          const s = payload.new as { call_id: string; from_user: string; type: string };
-          if (s.type === "offer" && !call && (!incoming || incoming.callId !== s.call_id)) {
-            setIncoming({ callId: s.call_id, peerId: s.from_user });
-          }
-        },
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, [user?.id, call, incoming]);
+
 
   // Typing channel per active thread
   useEffect(() => {
@@ -155,11 +136,7 @@ function ChatPage() {
     }, 1500);
   };
 
-  const startCall = (peerId: string) => {
-    if (!user) return;
-    const callId = `${[user.id, peerId].sort().join("-")}-${Date.now()}`;
-    setCall({ callId, peerId, isInitiator: true });
-  };
+
 
   const conversations = useMemo(() => {
     if (!user) return [];
@@ -307,26 +284,8 @@ function ChatPage() {
     const peerOnline = isOnline(presence.get(activePeer));
     return (
       <>
-        {call && (
-          <VideoCall
-            callId={call.callId}
-            selfId={user.id}
-            peerId={call.peerId}
-            isInitiator={call.isInitiator}
-            onClose={() => setCall(null)}
-          />
-        )}
-        {incoming && !call && (
-          <IncomingCallModal
-            peerName={profiles.get(incoming.peerId)?.display_name ?? "Utilisateur"}
-            onAccept={() => {
-              setCall({ callId: incoming.callId, peerId: incoming.peerId, isInitiator: false });
-              setIncoming(null);
-            }}
-            onDecline={() => setIncoming(null)}
-          />
-        )}
         <div className="flex h-[calc(100vh-9rem)] flex-col">
+
           <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur">
             <button onClick={() => setActivePeer(null)} className="rounded-full p-1 hover:bg-white/5">
               <ArrowLeft className="h-5 w-5" />
@@ -511,17 +470,7 @@ function ChatPage() {
   // CONVERSATION LIST
   return (
     <>
-      {incoming && !call && (
-        <IncomingCallModal
-          peerName={profiles.get(incoming.peerId)?.display_name ?? "Utilisateur"}
-          onAccept={() => {
-            setActivePeer(incoming.peerId);
-            setCall({ callId: incoming.callId, peerId: incoming.peerId, isInitiator: false });
-            setIncoming(null);
-          }}
-          onDecline={() => setIncoming(null)}
-        />
-      )}
+
       <div className="px-4 pt-4">
         <h1 className="mb-4 text-2xl font-bold">Messages</h1>
 
@@ -620,32 +569,3 @@ function ChatPage() {
   );
 }
 
-function IncomingCallModal({
-  peerName,
-  onAccept,
-  onDecline,
-}: {
-  peerName: string;
-  onAccept: () => void;
-  onDecline: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-6">
-      <div className="bg-gradient-card w-full max-w-xs rounded-2xl border border-border/50 p-5 text-center shadow-glow">
-        <div className="mx-auto mb-3 flex h-14 w-14 animate-pulse items-center justify-center rounded-full bg-gradient-primary">
-          <PhoneIncoming className="h-6 w-6" />
-        </div>
-        <p className="text-sm text-muted-foreground">Appel entrant de</p>
-        <p className="mb-4 text-lg font-bold">{peerName}</p>
-        <div className="flex gap-2">
-          <button onClick={onDecline} className="flex-1 rounded-full border border-border px-3 py-2.5 text-sm font-semibold">
-            Refuser
-          </button>
-          <button onClick={onAccept} className="flex-1 rounded-full bg-gradient-primary px-3 py-2.5 text-sm font-bold shadow-glow">
-            Accepter
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
