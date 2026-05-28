@@ -106,26 +106,7 @@ function ChatPage() {
     };
   }, [user?.id]);
 
-  // Incoming calls
-  useEffect(() => {
-    if (!user) return;
-    const ch = supabase
-      .channel("incoming-calls")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "call_signals", filter: `to_user=eq.${user.id}` },
-        (payload) => {
-          const s = payload.new as { call_id: string; from_user: string; type: string };
-          if (s.type === "offer" && !call && (!incoming || incoming.callId !== s.call_id)) {
-            setIncoming({ callId: s.call_id, peerId: s.from_user });
-          }
-        },
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, [user?.id, call, incoming]);
+
 
   // Typing channel per active thread
   useEffect(() => {
