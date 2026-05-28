@@ -50,8 +50,8 @@ function ChatPage() {
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [call, setCall] = useState<{ callId: string; peerId: string; isInitiator: boolean } | null>(null);
-  const [incoming, setIncoming] = useState<{ callId: string; peerId: string } | null>(null);
+  const { startCall } = useCall();
+
 
   const loadAll = async () => {
     if (!user) return;
