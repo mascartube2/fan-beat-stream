@@ -136,11 +136,7 @@ function ChatPage() {
     }, 1500);
   };
 
-  const startCall = (peerId: string) => {
-    if (!user) return;
-    const callId = `${[user.id, peerId].sort().join("-")}-${Date.now()}`;
-    setCall({ callId, peerId, isInitiator: true });
-  };
+
 
   const conversations = useMemo(() => {
     if (!user) return [];
