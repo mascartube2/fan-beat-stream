@@ -129,8 +129,13 @@ function HomePage() {
         )}
       </section>
 
-      <section className="mb-5">
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Fresh uploads</h2>
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-muted-foreground">Nouveautés musique</h2>
+          <Link to="/discover" className="text-xs font-semibold text-primary-glow">
+            Voir tout
+          </Link>
+        </div>
         {loading ? (
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         ) : tracks.length === 0 ? (
@@ -168,40 +173,10 @@ function HomePage() {
           </div>
         )}
       </section>
+    </div>
+  );
+}
 
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Toute la musique</h2>
-        {!loading && tracks.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Le feed sera rempli dès que des artistes uploadent leur musique.</p>
-        ) : (
-          <div className="space-y-2">
-            {tracks.map((t) => (
-              <div
-                key={t.id}
-                className="flex items-center gap-3 rounded-xl bg-surface/50 p-2 transition hover:bg-surface"
-              >
-                <button onClick={() => playTrack(toPlayable(t), queue)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                  <img
-                    src={t.coverUrl}
-                    alt={t.title}
-                    width={48}
-                    height={48}
-                    loading="lazy"
-                    className="h-12 w-12 rounded-lg object-cover"
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">{t.title}</span>
-                    <span className="block truncate text-xs text-muted-foreground">{t.artistName}</span>
-                  </span>
-                  <Play className="h-4 w-4 fill-current text-primary-glow" />
-                </button>
-                <ShareMenu url={`/track/${t.id}`} title={t.title} text={`${t.title} — ${t.artistName}`} />
-                <OfflineTrackButton track={t} compact />
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
     </div>
   );
 }
