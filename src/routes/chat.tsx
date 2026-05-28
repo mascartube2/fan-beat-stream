@@ -470,17 +470,7 @@ function ChatPage() {
   // CONVERSATION LIST
   return (
     <>
-      {incoming && !call && (
-        <IncomingCallModal
-          peerName={profiles.get(incoming.peerId)?.display_name ?? "Utilisateur"}
-          onAccept={() => {
-            setActivePeer(incoming.peerId);
-            setCall({ callId: incoming.callId, peerId: incoming.peerId, isInitiator: false });
-            setIncoming(null);
-          }}
-          onDecline={() => setIncoming(null)}
-        />
-      )}
+
       <div className="px-4 pt-4">
         <h1 className="mb-4 text-2xl font-bold">Messages</h1>
 
