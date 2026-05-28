@@ -36,8 +36,8 @@ export function CallProvider({ children }: { children: ReactNode }) {
           if (s.type !== "offer") return;
           if (callRef.current) return;
           if (incomingRef.current?.callId === s.call_id) return;
-          // Ignore stale offers (older than 60s) coming from a backlog
           let peerName = "Utilisateur";
+
           const { data } = await supabase
             .from("profiles")
             .select("display_name")
