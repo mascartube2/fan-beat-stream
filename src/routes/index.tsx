@@ -117,6 +117,8 @@ function HomePage() {
         )}
       </div>
 
+      <UsersPanel />
+
       <section className="mb-5">
         <StoriesRow />
       </section>
