@@ -5,6 +5,7 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadProfileAvatar } from "@/lib/avatar";
 import { publicUrl } from "@/lib/tracks";
+import { COUNTRIES } from "@/lib/countries";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile/edit")({
@@ -17,6 +18,7 @@ function EditProfilePage() {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
+  const [country, setCountry] = useState<string>("");
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -26,12 +28,13 @@ function EditProfilePage() {
   const loadProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("display_name, avatar_url, bio")
+      .select("display_name, avatar_url, bio, country")
       .eq("user_id", userId)
       .maybeSingle();
 
     setDisplayName(data?.display_name ?? "");
     setBio(data?.bio ?? "");
+    setCountry((data as { country: string | null } | null)?.country ?? "");
     setAvatarPath(data?.avatar_url ?? null);
     setLoading(false);
   };
@@ -96,6 +99,7 @@ function EditProfilePage() {
         .update({
           display_name: displayName.trim() || null,
           bio: bio.trim() || null,
+          country: country || null,
           avatar_url: avatarPath,
         })
         .eq("user_id", user.id);
@@ -186,6 +190,21 @@ function EditProfilePage() {
             maxLength={50}
             className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
           />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Pays</label>
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          >
+            <option value="">— Sélectionner —</option>
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.flag} {c.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Bio</label>

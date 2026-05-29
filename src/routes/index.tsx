@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StoriesRow } from "@/components/feed/StoriesRow";
+import { UsersPanel } from "@/components/feed/UsersPanel";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { ShareMenu } from "@/components/share/ShareMenu";
 import { PostComposer } from "@/components/posts/PostComposer";
@@ -115,6 +116,8 @@ function HomePage() {
           </Link>
         )}
       </div>
+
+      <UsersPanel />
 
       <section className="mb-5">
         <StoriesRow />
