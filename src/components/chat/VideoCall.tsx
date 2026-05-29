@@ -38,6 +38,12 @@ export function VideoCall({ callId, selfId, peerId, isInitiator, onClose }: Prop
     const start = async () => {
       let pc: RTCPeerConnection;
       try {
+    const start = async () => {
+      let pc: RTCPeerConnection;
+      try {
+        if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
+          throw new Error("Caméra/micro non disponibles dans ce navigateur. Sur l'app mobile ou un domaine HTTPS, l'appel fonctionnera.");
+        }
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         if (!alive) {
           stream.getTracks().forEach((t) => t.stop());
@@ -64,15 +70,11 @@ export function VideoCall({ callId, selfId, peerId, isInitiator, onClose }: Prop
           }
         };
       } catch (e) {
-        toast.error("Caméra/micro refusé — autorise l'accès dans ton navigateur");
+        const msg = e instanceof Error ? e.message : "Caméra/micro refusé";
+        toast.error(msg);
         onClose();
         return;
       }
-
-      const drainIce = async () => {
-        while (pendingIce.length) {
-          const c = pendingIce.shift()!;
-          try {
             await pc.addIceCandidate(new RTCIceCandidate(c));
           } catch (err) {
             console.error("ice err", err);
