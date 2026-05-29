@@ -80,6 +80,24 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_visits: {
+        Row: {
+          count: number
+          created_at: string
+          day: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          day?: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          day?: string
+        }
+        Relationships: []
+      }
       deposits: {
         Row: {
           amount_ar: number
@@ -625,6 +643,7 @@ export type Database = {
     Functions: {
       approve_deposit: { Args: { _deposit_id: string }; Returns: Json }
       approve_withdrawal: { Args: { _withdrawal_id: string }; Returns: Json }
+      get_today_visits: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -632,8 +651,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_daily_visit: { Args: never; Returns: number }
       increment_short_view: { Args: { _short_id: string }; Returns: undefined }
       increment_track_play: { Args: { _track_id: string }; Returns: undefined }
+      publish_daily_visits_recap: { Args: never; Returns: undefined }
       reject_withdrawal: { Args: { _withdrawal_id: string }; Returns: Json }
       request_withdrawal: {
         Args: { _amount: number; _mvola: string }
