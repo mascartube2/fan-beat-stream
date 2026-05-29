@@ -16,6 +16,7 @@ export const Route = createFileRoute("/profile/edit")({
 function EditProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [country, setCountry] = useState<string>("");
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
@@ -36,7 +37,6 @@ function EditProfilePage() {
     setCountry((data as { country: string | null } | null)?.country ?? "");
     setAvatarPath(data?.avatar_url ?? null);
     setLoading(false);
-  };
   };
 
   useEffect(() => {
