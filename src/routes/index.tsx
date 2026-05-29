@@ -118,6 +118,8 @@ function HomePage() {
         )}
       </div>
 
+      <VisitorCounter />
+
       <UsersPanel />
 
       <section className="mb-5">
