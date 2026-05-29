@@ -3,6 +3,7 @@ import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck } from "lucide-
 import { useEffect, useState } from "react";
 import { StoriesRow } from "@/components/feed/StoriesRow";
 import { UsersPanel } from "@/components/feed/UsersPanel";
+import { VisitorCounter } from "@/components/feed/VisitorCounter";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { ShareMenu } from "@/components/share/ShareMenu";
 import { PostComposer } from "@/components/posts/PostComposer";
