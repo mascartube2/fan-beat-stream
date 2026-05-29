@@ -5,6 +5,7 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadProfileAvatar } from "@/lib/avatar";
 import { publicUrl } from "@/lib/tracks";
+import { COUNTRIES } from "@/lib/countries";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile/edit")({
