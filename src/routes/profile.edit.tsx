@@ -99,6 +99,7 @@ function EditProfilePage() {
         .update({
           display_name: displayName.trim() || null,
           bio: bio.trim() || null,
+          country: country || null,
           avatar_url: avatarPath,
         })
         .eq("user_id", user.id);
