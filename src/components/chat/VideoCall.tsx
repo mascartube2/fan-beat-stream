@@ -38,9 +38,6 @@ export function VideoCall({ callId, selfId, peerId, isInitiator, onClose }: Prop
     const start = async () => {
       let pc: RTCPeerConnection;
       try {
-    const start = async () => {
-      let pc: RTCPeerConnection;
-      try {
         if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
           throw new Error("Caméra/micro non disponibles dans ce navigateur. Sur l'app mobile ou un domaine HTTPS, l'appel fonctionnera.");
         }
