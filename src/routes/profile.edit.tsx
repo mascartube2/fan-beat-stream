@@ -192,6 +192,21 @@ function EditProfilePage() {
           />
         </div>
         <div>
+          <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Pays</label>
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          >
+            <option value="">— Sélectionner —</option>
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.flag} {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
           <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Bio</label>
           <textarea
             value={bio}
