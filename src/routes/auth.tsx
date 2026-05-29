@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
 import { Loader2 } from "lucide-react";
 import { LogoIcon } from "@/components/brand/Logo";
+import { COUNTRIES } from "@/lib/countries";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -15,6 +16,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [country, setCountry] = useState("MG");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -31,15 +33,23 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        if (!country) {
+          throw new Error("Sélectionne ton pays");
+        }
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
-            data: { display_name: displayName || email.split("@")[0] },
+            data: { display_name: displayName || email.split("@")[0], country },
           },
         });
         if (error) throw error;
+        // Persist country onto the auto-created profile (handle_new_user trigger only sets display_name).
+        const newUserId = data.user?.id;
+        if (newUserId) {
+          await supabase.from("profiles").update({ country }).eq("user_id", newUserId);
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
