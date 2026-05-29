@@ -75,6 +75,11 @@ export function VideoCall({ callId, selfId, peerId, isInitiator, onClose }: Prop
         onClose();
         return;
       }
+
+      const drainIce = async () => {
+        while (pendingIce.length) {
+          const c = pendingIce.shift()!;
+          try {
             await pc.addIceCandidate(new RTCIceCandidate(c));
           } catch (err) {
             console.error("ice err", err);
