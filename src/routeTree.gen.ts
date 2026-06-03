@@ -26,6 +26,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TrackTrackIdRouteImport } from './routes/track.$trackId'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
+import { Route as ApiPublicAutoClipRouteImport } from './routes/api/public/auto-clip'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
@@ -112,6 +113,11 @@ const PostPostIdRoute = PostPostIdRouteImport.update({
   path: '/post/$postId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAutoClipRoute = ApiPublicAutoClipRouteImport.update({
+  id: '/api/public/auto-clip',
+  path: '/api/public/auto-clip',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
+  '/api/public/auto-clip': typeof ApiPublicAutoClipRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
+  '/api/public/auto-clip': typeof ApiPublicAutoClipRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
+  '/api/public/auto-clip': typeof ApiPublicAutoClipRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/profile/edit'
     | '/track/$trackId'
+    | '/api/public/auto-clip'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/profile/edit'
     | '/track/$trackId'
+    | '/api/public/auto-clip'
   id:
     | '__root__'
     | '/'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/profile/edit'
     | '/track/$trackId'
+    | '/api/public/auto-clip'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   UploadRoute: typeof UploadRoute
   PostPostIdRoute: typeof PostPostIdRoute
   TrackTrackIdRoute: typeof TrackTrackIdRoute
+  ApiPublicAutoClipRoute: typeof ApiPublicAutoClipRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostPostIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auto-clip': {
+      id: '/api/public/auto-clip'
+      path: '/api/public/auto-clip'
+      fullPath: '/api/public/auto-clip'
+      preLoaderRoute: typeof ApiPublicAutoClipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -402,7 +422,17 @@ const rootRouteChildren: RootRouteChildren = {
   UploadRoute: UploadRoute,
   PostPostIdRoute: PostPostIdRoute,
   TrackTrackIdRoute: TrackTrackIdRoute,
+  ApiPublicAutoClipRoute: ApiPublicAutoClipRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
