@@ -50,6 +50,24 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_clip_rotation: {
+        Row: {
+          id: number
+          last_published_at: string | null
+          last_track_id: string | null
+        }
+        Insert: {
+          id?: number
+          last_published_at?: string | null
+          last_track_id?: string | null
+        }
+        Update: {
+          id?: number
+          last_published_at?: string | null
+          last_track_id?: string | null
+        }
+        Relationships: []
+      }
       call_signals: {
         Row: {
           call_id: string
@@ -655,6 +673,7 @@ export type Database = {
       increment_short_view: { Args: { _short_id: string }; Returns: undefined }
       increment_track_play: { Args: { _track_id: string }; Returns: undefined }
       publish_daily_visits_recap: { Args: never; Returns: undefined }
+      publish_next_auto_clip: { Args: never; Returns: undefined }
       reject_withdrawal: { Args: { _withdrawal_id: string }; Returns: Json }
       request_withdrawal: {
         Args: { _amount: number; _mvola: string }
