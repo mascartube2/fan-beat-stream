@@ -135,6 +135,81 @@ async function handle() {
     .single();
   if (postErr) return Response.json({ error: postErr.message }, { status: 500 });
 
+  // ===== Générateur externe : vidéo Réel =====
+  // Si un webhook externe est configuré (EXTERNAL_VIDEO_GENERATOR_URL),
+  // on lui envoie la piste + l'affiche IA, et il doit renvoyer { video_url }.
+  // On télécharge la vidéo, on l'upload sur le bucket "shorts", puis on crée
+  // un Réel automatiquement.
+  let shortId: string | null = null;
+  let videoUrl: string | null = null;
+  const generatorUrl = process.env.EXTERNAL_VIDEO_GENERATOR_URL;
+  const generatorKey = process.env.EXTERNAL_VIDEO_GENERATOR_KEY;
+
+  if (generatorUrl) {
+    try {
+      const posterPublicUrl = mediaPath
+        ? admin.storage.from("posts").getPublicUrl(mediaPath).data.publicUrl
+        : null;
+      const audioPublicUrl = track.audio_path
+        ? admin.storage.from("audio-tracks").getPublicUrl(track.audio_path).data.publicUrl
+        : null;
+
+      const genRes = await fetch(generatorUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(generatorKey ? { Authorization: `Bearer ${generatorKey}` } : {}),
+        },
+        body: JSON.stringify({
+          title: track.title,
+          artist: artistName,
+          genre: track.genre ?? null,
+          poster_url: posterPublicUrl,
+          audio_url: audioPublicUrl,
+          duration: 15,
+          aspect_ratio: "9:16",
+        }),
+      });
+
+      if (genRes.ok) {
+        const gen: any = await genRes.json();
+        videoUrl = gen?.video_url ?? gen?.url ?? null;
+        if (videoUrl) {
+          const vRes = await fetch(videoUrl);
+          if (vRes.ok) {
+            const bytes = new Uint8Array(await vRes.arrayBuffer());
+            const ext = (videoUrl.split("?")[0].split(".").pop() || "mp4").slice(0, 5);
+            const vPath = `auto-clip/${track.id}-${Date.now()}.${ext}`;
+            const { error: vUpErr } = await admin.storage
+              .from("shorts")
+              .upload(vPath, bytes, {
+                contentType: ext === "webm" ? "video/webm" : "video/mp4",
+                upsert: true,
+              });
+            if (!vUpErr) {
+              const { data: shortRow, error: shortErr } = await admin
+                .from("shorts")
+                .insert({
+                  user_id: track.user_id,
+                  video_path: vPath,
+                  thumbnail_path: mediaPath,
+                  caption: `🎬 ${track.title} — ${artistName}\n#Mascartube #ClipDuMois ${hashtag}`,
+                })
+                .select()
+                .single();
+              if (!shortErr) shortId = shortRow.id;
+              else console.error("short insert err", shortErr);
+            } else console.error("video upload err", vUpErr);
+          } else console.error("video download failed:", vRes.status);
+        } else console.error("generator returned no video_url", gen);
+      } else {
+        console.error("external generator failed:", genRes.status, await genRes.text());
+      }
+    } catch (e) {
+      console.error("external generator error:", e);
+    }
+  }
+
   await admin
     .from("auto_clip_rotation")
     .update({ last_track_id: track.id, last_published_at: new Date().toISOString() })
@@ -144,7 +219,11 @@ async function handle() {
     success: true,
     track_id: track.id,
     post_id: post.id,
+    short_id: shortId,
     media_path: mediaPath,
     ai_image: !!imageBytes,
+    external_generator: !!generatorUrl,
+    video_published: !!shortId,
   });
 }
+
