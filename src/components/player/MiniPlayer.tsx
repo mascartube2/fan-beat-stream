@@ -64,7 +64,8 @@ export function MiniPlayer() {
             <SkipForward className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-1.5 flex items-center gap-2 px-1">
+        <TrackStatsWidget trackId={current.id} initialPlays={current.plays} />
+        <div className="mt-1 flex items-center gap-2 px-1">
           <span className="w-8 text-[10px] tabular-nums text-muted-foreground">{fmt(currentTime)}</span>
           <input
             type="range"
