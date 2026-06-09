@@ -1,7 +1,8 @@
-import { Pause, Play, SkipBack, SkipForward, Heart, Download } from "lucide-react";
+import { Pause, Play, SkipBack, SkipForward, Heart } from "lucide-react";
 import { usePlayer } from "./PlayerContext";
 import { useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
+import { TrackStatsWidget } from "./TrackStatsWidget";
 
 function fmt(s: number) {
   if (!isFinite(s) || s < 0) return "0:00";
