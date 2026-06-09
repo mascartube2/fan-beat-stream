@@ -540,6 +540,35 @@ export type Database = {
           },
         ]
       }
+      track_daily_plays: {
+        Row: {
+          count: number
+          day: string
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          count?: number
+          day: string
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          count?: number
+          day?: string
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_daily_plays_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracks: {
         Row: {
           audio_path: string
@@ -673,6 +702,7 @@ export type Database = {
       increment_short_view: { Args: { _short_id: string }; Returns: undefined }
       increment_track_play: { Args: { _track_id: string }; Returns: undefined }
       publish_daily_visits_recap: { Args: never; Returns: undefined }
+      publish_monthly_leaderboard: { Args: never; Returns: undefined }
       publish_next_auto_clip: { Args: never; Returns: undefined }
       reject_withdrawal: { Args: { _withdrawal_id: string }; Returns: Json }
       request_withdrawal: {
