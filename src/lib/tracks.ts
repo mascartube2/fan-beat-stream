@@ -152,5 +152,6 @@ export function toPlayable(t: TrackWithArtist): PlayableTrack {
     cover: t.coverUrl,
     audioUrl: t.audioUrl,
     duration: t.duration_seconds ?? undefined,
+    plays: t.plays,
   };
 }
