@@ -1,7 +1,8 @@
-import { Pause, Play, SkipBack, SkipForward, Heart, Download } from "lucide-react";
+import { Pause, Play, SkipBack, SkipForward, Heart } from "lucide-react";
 import { usePlayer } from "./PlayerContext";
 import { useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
+import { TrackStatsWidget } from "./TrackStatsWidget";
 
 function fmt(s: number) {
   if (!isFinite(s) || s < 0) return "0:00";
@@ -63,7 +64,8 @@ export function MiniPlayer() {
             <SkipForward className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-1.5 flex items-center gap-2 px-1">
+        <TrackStatsWidget trackId={current.id} initialPlays={current.plays} />
+        <div className="mt-1 flex items-center gap-2 px-1">
           <span className="w-8 text-[10px] tabular-nums text-muted-foreground">{fmt(currentTime)}</span>
           <input
             type="range"

@@ -9,6 +9,7 @@ export type PlayableTrack = {
   cover: string;
   audioUrl: string;
   duration?: number;
+  plays: number;
 };
 
 type PlayerCtx = {
