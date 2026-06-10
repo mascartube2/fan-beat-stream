@@ -102,7 +102,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setCurrent((c) => (c?.id === track.id ? { ...c, plays: playsAfter } : c));
       setQueue((prev) => prev.map((t) => (t.id === track.id ? { ...t, plays: playsAfter } : t)));
       if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("track-play-recorded", { detail: { trackId: track.id, playsAfter } }));
+        window.dispatchEvent(new CustomEvent("track-play-recorded", { detail: { trackId: track.id, playsAfter, dailyAfter } }));
       }
     }
   };
