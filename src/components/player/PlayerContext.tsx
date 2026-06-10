@@ -78,15 +78,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const loadAndPlay = async (track: PlayableTrack) => {
     const a = audioRef.current;
     if (!a) return;
+    // Fire-and-forget: count every click on Play, even if the browser
+    // blocks autoplay or the user stops after a few seconds.
+    void supabase.rpc("increment_track_play", { _track_id: track.id });
     const preferredUrl = await resolveTrackPlaybackUrl(track);
     if (a.src !== preferredUrl) {
       a.src = preferredUrl;
     }
     a.play()
-      .then(() => {
-        setIsPlaying(true);
-        void supabase.rpc("increment_track_play", { _track_id: track.id });
-      })
+      .then(() => setIsPlaying(true))
       .catch(() => setIsPlaying(false));
   };
 
