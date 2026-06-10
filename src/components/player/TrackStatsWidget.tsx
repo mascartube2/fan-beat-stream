@@ -12,6 +12,10 @@ export function TrackStatsWidget({ trackId, initialPlays }: { trackId: string; i
   const [totalPlays, setTotalPlays] = useState(initialPlays);
   const [dailyCount, setDailyCount] = useState(0);
 
+  useEffect(() => {
+    setTotalPlays(initialPlays);
+  }, [initialPlays, trackId]);
+
   // Fetch today's daily plays once on mount / track change
   useEffect(() => {
     let cancelled = false;
@@ -63,6 +67,17 @@ export function TrackStatsWidget({ trackId, initialPlays }: { trackId: string; i
       )
       .subscribe();
     return () => { void supabase.removeChannel(channel); };
+  }, [trackId]);
+
+  useEffect(() => {
+    const onRecorded = (event: Event) => {
+      const detail = (event as CustomEvent<{ trackId: string; playsAfter?: number; dailyAfter?: number }>).detail;
+      if (detail?.trackId !== trackId) return;
+      if (typeof detail.playsAfter === "number") setTotalPlays(detail.playsAfter);
+      if (typeof detail.dailyAfter === "number") setDailyCount(detail.dailyAfter);
+    };
+    window.addEventListener("track-play-recorded", onRecorded);
+    return () => window.removeEventListener("track-play-recorded", onRecorded);
   }, [trackId]);
 
   // Daily progress: simple bar with a soft target (e.g. 50 plays/day)
