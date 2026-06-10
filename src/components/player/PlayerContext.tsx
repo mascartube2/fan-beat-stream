@@ -101,6 +101,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const a = audioRef.current;
     if (!a || !current) return;
     if (a.paused) {
+      // Each resume counts as a new listen
+      void supabase.rpc("increment_track_play", { _track_id: current.id });
       a.play().then(() => setIsPlaying(true));
     } else {
       a.pause();
