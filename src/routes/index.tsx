@@ -53,9 +53,16 @@ function HomePage() {
         setTracks((prev) => prev.map((x) => (x.id === row.id ? { ...x, plays: row.plays } : x)));
       })
       .subscribe();
+    const onRecorded = (event: Event) => {
+      const detail = (event as CustomEvent<{ trackId: string; playsAfter?: number }>).detail;
+      if (!detail?.trackId || typeof detail.playsAfter !== "number") return;
+      setTracks((prev) => prev.map((x) => (x.id === detail.trackId ? { ...x, plays: detail.playsAfter! } : x)));
+    };
+    window.addEventListener("track-play-recorded", onRecorded);
     return () => {
       supabase.removeChannel(ch);
       supabase.removeChannel(ch2);
+      window.removeEventListener("track-play-recorded", onRecorded);
     };
   }, []);
 
@@ -168,7 +175,9 @@ function HomePage() {
                     </span>
                   </div>
                   <p className="truncate text-xs font-semibold">{t.title}</p>
-                  <p className="truncate text-[10px] text-muted-foreground">{t.artistName}</p>
+                  <p className="truncate text-[10px] text-muted-foreground">
+                    {t.artistName} · {t.plays} lectures
+                  </p>
                 </button>
                 <div className="mt-1 flex items-center justify-end gap-1">
                   <ShareMenu url={`/track/${t.id}`} title={t.title} text={`${t.title} — ${t.artistName}`} />

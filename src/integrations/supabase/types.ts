@@ -569,6 +569,47 @@ export type Database = {
           },
         ]
       }
+      track_play_events: {
+        Row: {
+          created_at: string
+          daily_after: number | null
+          id: string
+          message: string | null
+          plays_after: number | null
+          reason: string
+          status: string
+          track_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_after?: number | null
+          id?: string
+          message?: string | null
+          plays_after?: number | null
+          reason: string
+          status?: string
+          track_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_after?: number | null
+          id?: string
+          message?: string | null
+          plays_after?: number | null
+          reason?: string
+          status?: string
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_play_events_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracks: {
         Row: {
           audio_path: string
@@ -700,7 +741,9 @@ export type Database = {
       }
       increment_daily_visit: { Args: never; Returns: number }
       increment_short_view: { Args: { _short_id: string }; Returns: undefined }
-      increment_track_play: { Args: { _track_id: string }; Returns: undefined }
+      increment_track_play:
+        | { Args: { _track_id: string }; Returns: undefined }
+        | { Args: { _reason?: string; _track_id: string }; Returns: Json }
       publish_daily_visits_recap: { Args: never; Returns: undefined }
       publish_monthly_leaderboard: { Args: never; Returns: undefined }
       publish_next_auto_clip: { Args: never; Returns: undefined }

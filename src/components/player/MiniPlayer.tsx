@@ -3,6 +3,7 @@ import { usePlayer } from "./PlayerContext";
 import { useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { TrackStatsWidget } from "./TrackStatsWidget";
+import { TrackPlayDiagnostics } from "./TrackPlayDiagnostics";
 
 function fmt(s: number) {
   if (!isFinite(s) || s < 0) return "0:00";
@@ -65,6 +66,7 @@ export function MiniPlayer() {
           </button>
         </div>
         <TrackStatsWidget trackId={current.id} initialPlays={current.plays} />
+        <TrackPlayDiagnostics />
         <div className="mt-1 flex items-center gap-2 px-1">
           <span className="w-8 text-[10px] tabular-nums text-muted-foreground">{fmt(currentTime)}</span>
           <input
