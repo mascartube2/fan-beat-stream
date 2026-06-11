@@ -158,25 +158,40 @@ function ShortCard({
     };
   }, [short]);
 
+  const [pulse, setPulse] = useState(false);
+
   const handlePlay = () => {
     if (viewed) return;
     setViewed(true);
+    setPulse(true);
+    setTimeout(() => setPulse(false), 900);
     void supabase.rpc("increment_short_view", { _short_id: short.id });
   };
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-surface">
-      <video
-        src={videoSrc}
-        poster={short.thumbnailUrl ?? undefined}
-        controls
-        playsInline
-        autoPlay
-        muted
-        loop
-        onPlay={handlePlay}
-        className="aspect-[9/16] w-full bg-black object-cover"
-      />
+      <div className="relative">
+        <video
+          src={videoSrc}
+          poster={short.thumbnailUrl ?? undefined}
+          controls
+          playsInline
+          autoPlay
+          muted
+          loop
+          onPlay={handlePlay}
+          className="aspect-[9/16] w-full bg-black object-cover"
+        />
+        <div className={`pointer-events-none absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur transition-transform ${pulse ? "scale-110" : "scale-100"}`}>
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+          </span>
+          <Play className="h-3 w-3" />
+          {short.views_count.toLocaleString()}
+        </div>
+      </div>
+
       <div className="p-3">
         <div className="flex items-center gap-1.5">
           {short.authorAvatar ? (
