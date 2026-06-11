@@ -213,18 +213,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const progress = duration > 0 ? currentTime / duration : 0;
 
+  const toggleMinimize = () => setIsMinimized((m) => !m);
+
   return (
     <Ctx.Provider
       value={{
         current,
         queue,
         isPlaying,
+        isMinimized,
         progress,
         currentTime,
         duration,
         diagnostics,
         playTrack,
         toggle,
+        toggleMinimize,
         next: () => shift(1),
         prev: () => shift(-1),
         seek,
