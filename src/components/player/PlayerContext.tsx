@@ -30,12 +30,14 @@ type PlayerCtx = {
   current: PlayableTrack | null;
   queue: PlayableTrack[];
   isPlaying: boolean;
+  isMinimized: boolean;
   progress: number; // 0..1
   currentTime: number;
   duration: number;
   diagnostics: PlayDiagnosticEvent[];
   playTrack: (track: PlayableTrack, queue?: PlayableTrack[]) => void;
   toggle: () => void;
+  toggleMinimize: () => void;
   next: () => void;
   prev: () => void;
   seek: (ratio: number) => void;
@@ -48,6 +50,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [current, setCurrent] = useState<PlayableTrack | null>(null);
   const [queue, setQueue] = useState<PlayableTrack[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [diagnostics, setDiagnostics] = useState<PlayDiagnosticEvent[]>([]);
@@ -210,18 +213,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const progress = duration > 0 ? currentTime / duration : 0;
 
+  const toggleMinimize = () => setIsMinimized((m) => !m);
+
   return (
     <Ctx.Provider
       value={{
         current,
         queue,
         isPlaying,
+        isMinimized,
         progress,
         currentTime,
         duration,
         diagnostics,
         playTrack,
         toggle,
+        toggleMinimize,
         next: () => shift(1),
         prev: () => shift(-1),
         seek,

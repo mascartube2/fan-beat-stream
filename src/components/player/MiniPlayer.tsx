@@ -1,4 +1,4 @@
-import { Pause, Play, SkipBack, SkipForward, Heart } from "lucide-react";
+import { Pause, Play, SkipBack, SkipForward, Heart, Minimize2, Maximize2 } from "lucide-react";
 import { usePlayer } from "./PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
 import { useState } from "react";
@@ -14,17 +14,63 @@ function fmt(s: number) {
 }
 
 export function MiniPlayer() {
-  const { current, isPlaying, toggle, next, prev, progress, currentTime, duration, seek } =
+  const { current, isPlaying, toggle, toggleMinimize, isMinimized, next, prev, progress, currentTime, duration, seek } =
     usePlayer();
   const { isAdmin } = useAuth();
   const [liked, setLiked] = useState(false);
 
   if (!current) return null;
 
+  if (isMinimized) {
+    return (
+      <div className="fixed bottom-16 left-0 right-0 z-40 px-3 pb-2">
+        <div className="glass mx-auto max-w-md rounded-2xl p-2 shadow-elevated">
+          <div className="flex items-center gap-3">
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+              <img
+                src={current.cover}
+                alt={current.title}
+                width={40}
+                height={40}
+                className="h-full w-full object-cover"
+              />
+              {isPlaying && (
+                <div className="absolute inset-0 flex items-end justify-center gap-0.5 bg-background/40 pb-1">
+                  <span className="eq-bar h-2 w-0.5 rounded-full bg-primary-glow" style={{ animationDelay: "0ms" }} />
+                  <span className="eq-bar h-2 w-0.5 rounded-full bg-primary-glow" style={{ animationDelay: "150ms" }} />
+                  <span className="eq-bar h-2 w-0.5 rounded-full bg-primary-glow" style={{ animationDelay: "300ms" }} />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{current.title}</p>
+              <p className="truncate text-xs text-muted-foreground">{current.artistName}</p>
+            </div>
+            <TrackStatsWidget trackId={current.id} initialPlays={current.plays} />
+            <button
+              onClick={toggle}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary shadow-glow transition active:scale-95"
+              aria-label={isPlaying ? "Pause" : "Play"}
+            >
+              {isPlaying ? <Pause className="h-3.5 w-3.5 fill-current" /> : <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />}
+            </button>
+            <button
+              onClick={toggleMinimize}
+              className="rounded-full p-2 transition hover:bg-white/10"
+              aria-label="Agrandir"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed bottom-16 left-0 right-0 z-40 px-3 pb-2">
       <div className="glass mx-auto max-w-md rounded-2xl p-2 shadow-elevated">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl">
             <img
               src={current.cover}
@@ -65,6 +111,13 @@ export function MiniPlayer() {
           </button>
           <button onClick={next} className="rounded-full p-1.5 hover:bg-white/10" aria-label="Next">
             <SkipForward className="h-4 w-4" />
+          </button>
+          <button
+            onClick={toggleMinimize}
+            className="rounded-full p-2 transition hover:bg-white/10"
+            aria-label="Minimiser"
+          >
+            <Minimize2 className="h-4 w-4" />
           </button>
         </div>
         <TrackStatsWidget trackId={current.id} initialPlays={current.plays} />
