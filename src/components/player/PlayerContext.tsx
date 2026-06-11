@@ -50,6 +50,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [current, setCurrent] = useState<PlayableTrack | null>(null);
   const [queue, setQueue] = useState<PlayableTrack[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [diagnostics, setDiagnostics] = useState<PlayDiagnosticEvent[]>([]);
