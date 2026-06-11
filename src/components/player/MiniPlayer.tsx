@@ -1,5 +1,6 @@
 import { Pause, Play, SkipBack, SkipForward, Heart } from "lucide-react";
 import { usePlayer } from "./PlayerContext";
+import { useAuth } from "@/components/auth/AuthContext";
 import { useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { TrackStatsWidget } from "./TrackStatsWidget";
@@ -15,6 +16,7 @@ function fmt(s: number) {
 export function MiniPlayer() {
   const { current, isPlaying, toggle, next, prev, progress, currentTime, duration, seek } =
     usePlayer();
+  const { isAdmin } = useAuth();
   const [liked, setLiked] = useState(false);
 
   if (!current) return null;
@@ -66,7 +68,7 @@ export function MiniPlayer() {
           </button>
         </div>
         <TrackStatsWidget trackId={current.id} initialPlays={current.plays} />
-        <TrackPlayDiagnostics />
+        {isAdmin && <TrackPlayDiagnostics />}
         <div className="mt-1 flex items-center gap-2 px-1">
           <span className="w-8 text-[10px] tabular-nums text-muted-foreground">{fmt(currentTime)}</span>
           <input
