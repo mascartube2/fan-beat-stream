@@ -1,5 +1,6 @@
 import { Pause, Play, SkipBack, SkipForward, Heart } from "lucide-react";
 import { usePlayer } from "./PlayerContext";
+import { useAuth } from "@/components/auth/AuthContext";
 import { useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { TrackStatsWidget } from "./TrackStatsWidget";
