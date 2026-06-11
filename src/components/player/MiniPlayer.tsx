@@ -1,4 +1,4 @@
-import { Pause, Play, SkipBack, SkipForward, Heart } from "lucide-react";
+import { Pause, Play, SkipBack, SkipForward, Heart, Minimize2, Maximize2 } from "lucide-react";
 import { usePlayer } from "./PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
 import { useState } from "react";
