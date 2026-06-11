@@ -30,12 +30,14 @@ type PlayerCtx = {
   current: PlayableTrack | null;
   queue: PlayableTrack[];
   isPlaying: boolean;
+  isMinimized: boolean;
   progress: number; // 0..1
   currentTime: number;
   duration: number;
   diagnostics: PlayDiagnosticEvent[];
   playTrack: (track: PlayableTrack, queue?: PlayableTrack[]) => void;
   toggle: () => void;
+  toggleMinimize: () => void;
   next: () => void;
   prev: () => void;
   seek: (ratio: number) => void;
