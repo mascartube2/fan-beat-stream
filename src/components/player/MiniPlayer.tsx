@@ -16,6 +16,7 @@ function fmt(s: number) {
 export function MiniPlayer() {
   const { current, isPlaying, toggle, next, prev, progress, currentTime, duration, seek } =
     usePlayer();
+  const { isAdmin } = useAuth();
   const [liked, setLiked] = useState(false);
 
   if (!current) return null;
