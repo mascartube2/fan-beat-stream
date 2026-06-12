@@ -7,6 +7,7 @@ import { fetchShorts, resolveShortPlaybackUrl, type ShortWithAuthor } from "@/li
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { ShortMediaMenu } from "@/components/player/ShortMediaMenu";
 import { toast } from "sonner";
+import { MediaViewsChart } from "@/components/analytics/MediaViewsChart";
 
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20 Mo
 const MAX_VIDEO_SECONDS = 60;
