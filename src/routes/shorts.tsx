@@ -140,7 +140,6 @@ function ShortCard({
   onDelete: () => void;
 }) {
   const [videoSrc, setVideoSrc] = useState(short.videoUrl);
-  const [viewed, setViewed] = useState(false);
 
   useEffect(() => {
     let mounted = true;
