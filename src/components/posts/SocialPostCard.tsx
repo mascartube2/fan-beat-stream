@@ -170,11 +170,14 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
       {post.mediaUrl && (
         <div className="mb-3 overflow-hidden rounded-xl">
           {post.media_type === "video" ? (
-            <video src={post.mediaUrl} controls className="w-full" />
+            <VideoWithViews src={post.mediaUrl} postId={post.id} />
           ) : (
             <img src={post.mediaUrl} alt="" loading="lazy" className="w-full object-cover" />
           )}
         </div>
+      )}
+      {post.media_type === "video" && post.mediaUrl && (
+        <MediaViewsChart mediaType="post" mediaId={post.id} className="mb-3" />
       )}
 
       <footer className="flex items-center gap-1 text-muted-foreground">
