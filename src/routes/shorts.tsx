@@ -230,6 +230,7 @@ function ShortCard({
             </button>
           )}
         </div>
+        <MediaViewsChart mediaType="short" mediaId={short.id} className="mt-2.5" />
       </div>
     </div>
   );
