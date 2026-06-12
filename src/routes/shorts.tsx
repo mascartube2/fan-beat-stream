@@ -161,8 +161,6 @@ function ShortCard({
   const [pulse, setPulse] = useState(false);
 
   const handlePlay = () => {
-    if (viewed) return;
-    setViewed(true);
     setPulse(true);
     setTimeout(() => setPulse(false), 900);
     void supabase.rpc("log_media_view", { _media_type: "short", _media_id: short.id });
