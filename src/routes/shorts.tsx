@@ -165,7 +165,7 @@ function ShortCard({
     setViewed(true);
     setPulse(true);
     setTimeout(() => setPulse(false), 900);
-    void supabase.rpc("increment_short_view", { _short_id: short.id });
+    void supabase.rpc("log_media_view", { _media_type: "short", _media_id: short.id });
   };
 
   return (
