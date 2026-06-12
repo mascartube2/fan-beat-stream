@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { BarChart3, Radio } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthContext";
 
 type Range = "24h" | "7d";
 
@@ -14,6 +15,7 @@ export function MediaViewsChart({
   mediaId: string;
   className?: string;
 }) {
+  const { isAdmin } = useAuth();
   const [range, setRange] = useState<Range>("24h");
   const [events, setEvents] = useState<string[]>([]); // viewed_at ISO strings
   const [live, setLive] = useState(false);
@@ -57,6 +59,8 @@ export function MediaViewsChart({
 
   const data = useMemo(() => buildBuckets(events, range), [events, range]);
   const total = events.length;
+
+  if (!isAdmin) return null;
 
   return (
     <div className={`rounded-xl border border-border/60 bg-gradient-card p-2.5 ${className ?? ""}`}>
