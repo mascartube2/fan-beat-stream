@@ -158,6 +158,27 @@ export type Database = {
         }
         Relationships: []
       }
+      media_view_events: {
+        Row: {
+          id: string
+          media_id: string
+          media_type: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          media_id: string
+          media_type: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          media_id?: string
+          media_type?: string
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string
@@ -336,6 +357,7 @@ export type Database = {
           reposted_from: string | null
           reposts_count: number
           user_id: string
+          views_count: number
         }
         Insert: {
           comments_count?: number
@@ -348,6 +370,7 @@ export type Database = {
           reposted_from?: string | null
           reposts_count?: number
           user_id: string
+          views_count?: number
         }
         Update: {
           comments_count?: number
@@ -360,6 +383,7 @@ export type Database = {
           reposted_from?: string | null
           reposts_count?: number
           user_id?: string
+          views_count?: number
         }
         Relationships: [
           {
@@ -744,6 +768,10 @@ export type Database = {
       increment_track_play:
         | { Args: { _track_id: string }; Returns: undefined }
         | { Args: { _reason?: string; _track_id: string }; Returns: Json }
+      log_media_view: {
+        Args: { _media_id: string; _media_type: string }
+        Returns: undefined
+      }
       publish_daily_visits_recap: { Args: never; Returns: undefined }
       publish_monthly_leaderboard: { Args: never; Returns: undefined }
       publish_next_auto_clip: { Args: never; Returns: undefined }
