@@ -1,10 +1,11 @@
 import { Heart, MessageCircle, Repeat2, Trash2, Pencil, Check, X } from "lucide-react";
 import { ShareMenu } from "@/components/share/ShareMenu";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
+import { MediaViewsChart } from "@/components/analytics/MediaViewsChart";
 import { toast } from "sonner";
 
 export type FeedPost = {
