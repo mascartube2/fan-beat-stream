@@ -1,10 +1,11 @@
 import { Heart, MessageCircle, Repeat2, Trash2, Pencil, Check, X } from "lucide-react";
 import { ShareMenu } from "@/components/share/ShareMenu";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
+import { MediaViewsChart } from "@/components/analytics/MediaViewsChart";
 import { toast } from "sonner";
 
 export type FeedPost = {
@@ -169,11 +170,14 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
       {post.mediaUrl && (
         <div className="mb-3 overflow-hidden rounded-xl">
           {post.media_type === "video" ? (
-            <video src={post.mediaUrl} controls className="w-full" />
+            <VideoWithViews src={post.mediaUrl} postId={post.id} />
           ) : (
             <img src={post.mediaUrl} alt="" loading="lazy" className="w-full object-cover" />
           )}
         </div>
+      )}
+      {post.media_type === "video" && post.mediaUrl && (
+        <MediaViewsChart mediaType="post" mediaId={post.id} className="mb-3" />
       )}
 
       <footer className="flex items-center gap-1 text-muted-foreground">
@@ -202,4 +206,14 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
       </footer>
     </article>
   );
+}
+
+function VideoWithViews({ src, postId }: { src: string; postId: string }) {
+  const logged = useRef(false);
+  const onPlay = () => {
+    if (logged.current) return;
+    logged.current = true;
+    void supabase.rpc("log_media_view", { _media_type: "post", _media_id: postId });
+  };
+  return <video src={src} controls onPlay={onPlay} className="w-full" />;
 }

@@ -7,6 +7,7 @@ import { fetchShorts, resolveShortPlaybackUrl, type ShortWithAuthor } from "@/li
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { ShortMediaMenu } from "@/components/player/ShortMediaMenu";
 import { toast } from "sonner";
+import { MediaViewsChart } from "@/components/analytics/MediaViewsChart";
 
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20 Mo
 const MAX_VIDEO_SECONDS = 60;
@@ -165,7 +166,7 @@ function ShortCard({
     setViewed(true);
     setPulse(true);
     setTimeout(() => setPulse(false), 900);
-    void supabase.rpc("increment_short_view", { _short_id: short.id });
+    void supabase.rpc("log_media_view", { _media_type: "short", _media_id: short.id });
   };
 
   return (
@@ -229,6 +230,7 @@ function ShortCard({
             </button>
           )}
         </div>
+        <MediaViewsChart mediaType="short" mediaId={short.id} className="mt-2.5" />
       </div>
     </div>
   );
