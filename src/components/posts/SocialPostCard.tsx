@@ -209,10 +209,7 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
 }
 
 function VideoWithViews({ src, postId }: { src: string; postId: string }) {
-  const logged = useRef(false);
   const onPlay = () => {
-    if (logged.current) return;
-    logged.current = true;
     void supabase.rpc("log_media_view", { _media_type: "post", _media_id: postId });
   };
   return <video src={src} controls onPlay={onPlay} className="w-full" />;
