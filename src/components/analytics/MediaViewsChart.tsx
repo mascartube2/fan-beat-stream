@@ -60,6 +60,8 @@ export function MediaViewsChart({
   const data = useMemo(() => buildBuckets(events, range), [events, range]);
   const total = events.length;
 
+  if (!isAdmin) return null;
+
   return (
     <div className={`rounded-xl border border-border/60 bg-gradient-card p-2.5 ${className ?? ""}`}>
       <div className="mb-1.5 flex items-center justify-between">
