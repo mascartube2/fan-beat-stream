@@ -241,13 +241,18 @@ function VideoWithViews({ src, postId }: { src: string; postId: string }) {
     };
   }, [postId]);
 
-  const onPlay = () => {
-    void supabase.rpc("log_media_view", { _media_type: "post", _media_id: postId });
+  const recordView = () => {
+    setViews((v) => v + 1);
+    setPulse(true);
+    setTimeout(() => setPulse(false), 900);
+    void supabase.rpc("log_media_view", { _media_type: "post", _media_id: postId }).then(({ error }) => {
+      if (error) setViews((v) => Math.max(v - 1, 0));
+    });
   };
 
   return (
     <div className="relative">
-      <video src={src} controls onPlay={onPlay} className="w-full" />
+      <video src={src} controls onPointerDown={recordView} className="w-full" />
       <div
         className={`pointer-events-none absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur transition-transform ${pulse ? "scale-110" : "scale-100"}`}
       >
