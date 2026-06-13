@@ -48,3 +48,41 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
     authorIsArtist: !!profMap.get(r.user_id)?.is_certified,
   }));
 }
+
+export async function fetchUserPosts(userId: string, limit = 100): Promise<FeedPost[]> {
+  const { data: rows } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (!rows?.length) return [];
+
+  const { data: prof } = await supabase
+    .from("profiles")
+    .select("user_id,display_name,avatar_url,is_certified")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  return rows.map((r) => ({
+    id: r.id,
+    user_id: r.user_id,
+    content: r.content,
+    media_path: r.media_path,
+    media_type: r.media_type,
+    likes_count: r.likes_count,
+    comments_count: r.comments_count,
+    reposts_count: r.reposts_count,
+    reposted_from: r.reposted_from,
+    created_at: r.created_at,
+    authorName: prof?.display_name ?? "Utilisateur",
+    authorAvatar: (() => {
+      const a = prof?.avatar_url;
+      if (!a) return null;
+      if (a.startsWith("http")) return a;
+      return supabase.storage.from("track-covers").getPublicUrl(a).data.publicUrl;
+    })(),
+    mediaUrl: r.media_path ? supabase.storage.from("posts").getPublicUrl(r.media_path).data.publicUrl : null,
+    authorIsArtist: !!prof?.is_certified,
+  }));
+}
