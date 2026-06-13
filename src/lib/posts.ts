@@ -19,14 +19,14 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
   });
   if (!filteredRows.length) return [];
 
-  const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+  const userIds = Array.from(new Set(filteredRows.map((r) => r.user_id)));
   const { data: profs } = await supabase
     .from("profiles")
     .select("user_id,display_name,avatar_url,is_certified")
     .in("user_id", userIds);
   const profMap = new Map((profs ?? []).map((p) => [p.user_id, p]));
 
-  return rows.map((r) => ({
+  return filteredRows.map((r) => ({
     id: r.id,
     user_id: r.user_id,
     content: r.content,
