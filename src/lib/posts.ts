@@ -9,6 +9,16 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
     .limit(limit);
   if (!rows?.length) return [];
 
+  // Les publications texte (sans média) disparaissent du feed après 20 jours,
+  // mais restent visibles sur le mur de leur auteur (route /u/$userId).
+  const cutoff = Date.now() - 20 * 24 * 60 * 60 * 1000;
+  const filteredRows = rows.filter((r) => {
+    const isTextOnly = !r.media_path;
+    if (!isTextOnly) return true;
+    return new Date(r.created_at).getTime() >= cutoff;
+  });
+  if (!filteredRows.length) return [];
+
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
   const { data: profs } = await supabase
     .from("profiles")
