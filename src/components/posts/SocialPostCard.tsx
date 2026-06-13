@@ -209,8 +209,55 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
 }
 
 function VideoWithViews({ src, postId }: { src: string; postId: string }) {
+  const [views, setViews] = useState<number>(0);
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    void supabase
+      .from("posts")
+      .select("views_count")
+      .eq("id", postId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (mounted && data) setViews((data as { views_count: number | null }).views_count ?? 0);
+      });
+    const ch = supabase
+      .channel(`post-views-${postId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "posts", filter: `id=eq.${postId}` },
+        (payload) => {
+          const row = payload.new as { views_count: number | null };
+          setViews(row.views_count ?? 0);
+          setPulse(true);
+          setTimeout(() => setPulse(false), 900);
+        }
+      )
+      .subscribe();
+    return () => {
+      mounted = false;
+      void supabase.removeChannel(ch);
+    };
+  }, [postId]);
+
   const onPlay = () => {
     void supabase.rpc("log_media_view", { _media_type: "post", _media_id: postId });
   };
-  return <video src={src} controls onPlay={onPlay} className="w-full" />;
+
+  return (
+    <div className="relative">
+      <video src={src} controls onPlay={onPlay} className="w-full" />
+      <div
+        className={`pointer-events-none absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur transition-transform ${pulse ? "scale-110" : "scale-100"}`}
+      >
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+        </span>
+        <Play className="h-3 w-3" />
+        {views.toLocaleString()} vues
+      </div>
+    </div>
+  );
 }
