@@ -118,18 +118,20 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
   return (
     <article className="bg-gradient-card mb-3 rounded-2xl border border-border/50 p-4 shadow-soft">
       <header className="mb-3 flex items-center gap-3">
-        {post.authorAvatar ? (
-          <img src={post.authorAvatar} alt={post.authorName} className="h-10 w-10 rounded-full object-cover" />
-        ) : (
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-xs font-bold">
-            {post.authorName.slice(0, 2).toUpperCase()}
-          </span>
-        )}
+        <Link to="/u/$userId" params={{ userId: post.user_id }} className="shrink-0">
+          {post.authorAvatar ? (
+            <img src={post.authorAvatar} alt={post.authorName} className="h-10 w-10 rounded-full object-cover" />
+          ) : (
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-xs font-bold">
+              {post.authorName.slice(0, 2).toUpperCase()}
+            </span>
+          )}
+        </Link>
         <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-1 truncate text-sm font-semibold">
+          <Link to="/u/$userId" params={{ userId: post.user_id }} className="flex items-center gap-1 truncate text-sm font-semibold hover:underline">
             {post.authorName}
             {post.authorIsArtist && <CertifiedBadge />}
-          </p>
+          </Link>
           <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
         </div>
         {(user?.id === post.user_id || isAdmin) && (
