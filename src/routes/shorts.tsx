@@ -140,6 +140,7 @@ function ShortCard({
   onDelete: () => void;
 }) {
   const [videoSrc, setVideoSrc] = useState(short.videoUrl);
+  const [views, setViews] = useState(short.views_count);
 
   useEffect(() => {
     let mounted = true;
@@ -160,10 +161,17 @@ function ShortCard({
 
   const [pulse, setPulse] = useState(false);
 
-  const handlePlay = () => {
+  useEffect(() => {
+    setViews(short.views_count);
+  }, [short.views_count]);
+
+  const recordView = () => {
+    setViews((v) => v + 1);
     setPulse(true);
     setTimeout(() => setPulse(false), 900);
-    void supabase.rpc("log_media_view", { _media_type: "short", _media_id: short.id });
+    void supabase.rpc("log_media_view", { _media_type: "short", _media_id: short.id }).then(({ error }) => {
+      if (error) setViews((v) => Math.max(v - 1, 0));
+    });
   };
 
   return (
@@ -177,7 +185,7 @@ function ShortCard({
           autoPlay
           muted
           loop
-          onPlay={handlePlay}
+          onPointerDown={recordView}
           className="aspect-[9/16] w-full bg-black object-cover"
         />
         <div className={`pointer-events-none absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur transition-transform ${pulse ? "scale-110" : "scale-100"}`}>
@@ -186,7 +194,7 @@ function ShortCard({
             <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
           </span>
           <Play className="h-3 w-3" />
-          {short.views_count.toLocaleString()}
+          {views.toLocaleString()}
         </div>
       </div>
 
@@ -214,7 +222,7 @@ function ShortCard({
           </button>
           <span className="flex items-center gap-1 text-xs text-muted-foreground">
             <Play className="h-3.5 w-3.5" />
-            {short.views_count} vues
+            {views} vues
           </span>
           {currentUserId && (short.user_id === currentUserId || isAdmin) && (
             <button
