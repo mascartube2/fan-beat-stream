@@ -140,6 +140,13 @@ function ProfilePage() {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
+          <Link
+            to="/u/$userId"
+            params={{ userId: user.id }}
+            className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-bold"
+          >
+            Voir mon mur
+          </Link>
           <label className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-bold">
             {uploadingAvatar ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
             Modifier la photo
