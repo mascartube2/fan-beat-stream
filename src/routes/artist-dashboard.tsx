@@ -142,6 +142,14 @@ function ArtistDashboardPage() {
         <StatCard icon={<Heart className="h-4 w-4" />} label="Likes totaux" value={totalLikes} />
       </section>
 
+      <AlbumManager
+        albums={albums}
+        tracks={myTracks}
+        onChanged={() => user && load(user.id)}
+        currentUserId={user.id}
+      />
+
+
       <div className="mb-3 flex items-center justify-between">
         <div className="inline-flex rounded-full border border-border/50 bg-surface p-1 text-xs">
           <button
