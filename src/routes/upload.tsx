@@ -106,6 +106,8 @@ function UploadPage() {
         cover_path: coverPath,
         duration_seconds: duration ? Math.round(duration) : null,
         genre: genre || null,
+        is_for_sale: forSale,
+        price_ar: forSale ? Math.max(100, Math.round(priceAr)) : 500,
       });
 
       if (dbErr) throw dbErr;
