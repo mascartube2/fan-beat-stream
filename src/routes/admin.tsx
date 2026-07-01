@@ -7,6 +7,7 @@ import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
 import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
 import { BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
+import { AlbumManager } from "@/components/album/AlbumManager";
 
 type ProfileRow = { user_id: string; display_name: string | null; is_certified: boolean };
 
