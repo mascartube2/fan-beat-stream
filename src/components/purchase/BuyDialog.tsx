@@ -47,7 +47,7 @@ export function BuyDialog({
         _item_id: itemId,
         _payment_method: method,
         _payer_number: payerNumber.trim(),
-        _payment_reference: reference.trim() || null,
+        _payment_reference: reference.trim() || "",
       });
       if (error) throw error;
       const res = data as { success?: boolean } | null;
