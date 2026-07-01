@@ -5,6 +5,8 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchShorts, SHORTS_PUBLIC_DAYS, type ShortWithAuthor } from "@/lib/shorts";
 import { toast } from "sonner";
+import { AlbumManager, type AlbumRow } from "@/components/album/AlbumManager";
+import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
 
 export const Route = createFileRoute("/artist-dashboard")({
   component: ArtistDashboardPage,
@@ -16,18 +18,27 @@ function ArtistDashboardPage() {
   const navigate = useNavigate();
   const [active, setActive] = useState<ShortWithAuthor[]>([]);
   const [archived, setArchived] = useState<ShortWithAuthor[]>([]);
+  const [albums, setAlbums] = useState<AlbumRow[]>([]);
+  const [myTracks, setMyTracks] = useState<TrackWithArtist[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [tab, setTab] = useState<"active" | "archived">("active");
 
   const load = async (uid: string) => {
     setLoading(true);
-    const [feed, arch] = await Promise.all([
+    const [feed, arch, { data: albumRows }, allTracks] = await Promise.all([
       fetchShorts({ scope: "feed", userId: uid, limit: 200 }),
       fetchShorts({ scope: "archive", userId: uid, limit: 200 }),
+      supabase.from("albums").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
+      fetchTracksWithArtists(500),
     ]);
     setActive(feed);
     setArchived(arch);
+    setAlbums(((albumRows ?? []) as AlbumRow[]).map((a) => ({
+      ...a,
+      coverUrl: a.cover_path ? supabase.storage.from("track-covers").getPublicUrl(a.cover_path).data.publicUrl : null,
+    })));
+    setMyTracks(allTracks.filter((t) => t.user_id === uid));
     setLoading(false);
   };
 
@@ -130,6 +141,14 @@ function ArtistDashboardPage() {
         <StatCard icon={<Eye className="h-4 w-4" />} label="Vues totales" value={totalViews} />
         <StatCard icon={<Heart className="h-4 w-4" />} label="Likes totaux" value={totalLikes} />
       </section>
+
+      <AlbumManager
+        albums={albums}
+        tracks={myTracks}
+        onChanged={() => user && load(user.id)}
+        currentUserId={user.id}
+      />
+
 
       <div className="mb-3 flex items-center justify-between">
         <div className="inline-flex rounded-full border border-border/50 bg-surface p-1 text-xs">

@@ -7,6 +7,7 @@ import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
 import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
 import { BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
+import { AlbumManager } from "@/components/album/AlbumManager";
 
 type ProfileRow = { user_id: string; display_name: string | null; is_certified: boolean };
 
@@ -37,6 +38,39 @@ type Request = {
 
 type ArtistOption = { user_id: string; display_name: string };
 
+type PurchaseAdmin = {
+  id: string;
+  buyer_id: string;
+  artist_id: string;
+  item_type: "track" | "album";
+  track_id: string | null;
+  album_id: string | null;
+  amount_ar: number;
+  artist_share_ar: number;
+  platform_share_ar: number;
+  payment_method: string;
+  payer_number: string;
+  payment_reference: string | null;
+  status: string;
+  created_at: string;
+  buyerName?: string;
+  artistName?: string;
+  itemTitle?: string;
+};
+
+type AlbumAdmin = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  cover_path: string | null;
+  price_ar: number;
+  is_published: boolean;
+  created_at: string;
+  artistName?: string;
+  coverUrl?: string | null;
+};
+
 function AdminPage() {
   const { isAdmin, loading: authLoading, user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
@@ -46,6 +80,8 @@ function AdminPage() {
   const [shorts, setShorts] = useState<ShortWithAuthor[]>([]);
   const [allProfiles, setAllProfiles] = useState<ProfileRow[]>([]);
   const [profileSearch, setProfileSearch] = useState("");
+  const [purchases, setPurchases] = useState<PurchaseAdmin[]>([]);
+  const [albums, setAlbums] = useState<AlbumAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -60,13 +96,15 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: allProfs }] = await Promise.all([
+    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: allProfs }, { data: purchaseRows }, { data: albumRows }] = await Promise.all([
       supabase.from("artist_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id").eq("role", "artist"),
       fetchTracksWithArtists(200),
       supabase.from("stories").select("*").gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }),
       fetchShorts({ scope: "all", limit: 100 }),
       supabase.from("profiles").select("user_id, display_name, is_certified").order("display_name"),
+      supabase.from("purchases").select("*").order("created_at", { ascending: false }).limit(200),
+      supabase.from("albums").select("*").order("created_at", { ascending: false }),
     ]);
     const nameMap = new Map((allProfs ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
     setAllProfiles((allProfs ?? []) as ProfileRow[]);
@@ -79,6 +117,19 @@ function AdminPage() {
       mediaUrl: supabase.storage.from("stories").getPublicUrl(s.media_path).data.publicUrl,
     })));
     setShorts(shortRows);
+    const trackMap = new Map(allTracks.map((t) => [t.id, t.title]));
+    const albumTitleMap = new Map((albumRows ?? []).map((a) => [a.id, a.title]));
+    setPurchases(((purchaseRows ?? []) as PurchaseAdmin[]).map((p) => ({
+      ...p,
+      buyerName: nameMap.get(p.buyer_id) ?? "Utilisateur",
+      artistName: nameMap.get(p.artist_id) ?? "Artiste",
+      itemTitle: p.item_type === "track" ? (p.track_id ? trackMap.get(p.track_id) : "") : (p.album_id ? albumTitleMap.get(p.album_id) : ""),
+    })));
+    setAlbums(((albumRows ?? []) as AlbumAdmin[]).map((a) => ({
+      ...a,
+      artistName: nameMap.get(a.user_id) ?? "Artiste",
+      coverUrl: a.cover_path ? supabase.storage.from("track-covers").getPublicUrl(a.cover_path).data.publicUrl : null,
+    })));
     setLoading(false);
   };
 
@@ -235,6 +286,25 @@ function AdminPage() {
 
   const pending = requests.filter((r) => r.status === "pending");
   const reviewed = requests.filter((r) => r.status !== "pending");
+  const pendingPurchases = purchases.filter((p) => p.status === "en_attente");
+  const historyPurchases = purchases.filter((p) => p.status !== "en_attente");
+
+  const approvePurchase = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("approve_purchase", { _purchase_id: id });
+    if (error) toast.error(error.message);
+    else { toast.success("Achat validé, artiste crédité (85 %)"); await load(); }
+    setBusyId(null);
+  };
+
+  const rejectPurchase = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("reject_purchase", { _purchase_id: id });
+    if (error) toast.error(error.message);
+    else { toast.success("Achat refusé"); await load(); }
+    setBusyId(null);
+  };
+
 
   return (
     <div className="px-5 pt-6 pb-12">
@@ -242,6 +312,76 @@ function AdminPage() {
         <ShieldCheck className="h-6 w-6 text-primary-glow" />
         <h1 className="text-2xl font-bold">Admin</h1>
       </div>
+
+      {/* Purchases pending approval */}
+      <section className="mb-6 rounded-xl border border-primary/40 bg-primary/5 p-4">
+        <h2 className="mb-3 text-sm font-bold">💰 Achats en attente ({pendingPurchases.length})</h2>
+        {pendingPurchases.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Aucun achat en attente.</p>
+        ) : (
+          <ul className="space-y-2">
+            {pendingPurchases.map((p) => (
+              <li key={p.id} className="rounded-lg border border-border/40 bg-surface p-3 text-xs">
+                <div className="mb-1 flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">
+                      {p.item_type === "track" ? "🎵" : "💿"} {p.itemTitle || "(sans titre)"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Acheteur : <span className="text-foreground">{p.buyerName}</span> · Artiste : <span className="text-foreground">{p.artistName}</span>
+                    </p>
+                  </div>
+                  <p className="shrink-0 font-bold text-primary-glow">{p.amount_ar.toLocaleString()} Ar</p>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {p.payment_method.toUpperCase()} · Payeur : <span className="text-foreground">{p.payer_number}</span>
+                  {p.payment_reference ? <> · Réf : <span className="text-foreground">{p.payment_reference}</span></> : null}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Artiste reçoit : <span className="font-semibold text-foreground">{p.artist_share_ar.toLocaleString()} Ar</span> · Plateforme : {p.platform_share_ar.toLocaleString()} Ar
+                </p>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => approvePurchase(p.id)}
+                    disabled={busyId === p.id}
+                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-gradient-primary py-1.5 text-[11px] font-bold shadow-glow disabled:opacity-60"
+                  >
+                    <Check className="h-3 w-3" /> Valider
+                  </button>
+                  <button
+                    onClick={() => rejectPurchase(p.id)}
+                    disabled={busyId === p.id}
+                    className="flex flex-1 items-center justify-center gap-1 rounded-full border border-border py-1.5 text-[11px] font-bold disabled:opacity-60"
+                  >
+                    <X className="h-3 w-3" /> Refuser
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {historyPurchases.length > 0 && (
+          <details className="mt-3">
+            <summary className="cursor-pointer text-[11px] text-muted-foreground">Historique ({historyPurchases.length})</summary>
+            <ul className="mt-2 space-y-1">
+              {historyPurchases.slice(0, 30).map((p) => (
+                <li key={p.id} className="flex items-center justify-between rounded-lg border border-border/30 px-2 py-1 text-[11px]">
+                  <span className="truncate">
+                    {p.itemTitle} · {p.buyerName} → {p.artistName}
+                  </span>
+                  <span className={p.status === "valide" ? "text-primary-glow" : "text-muted-foreground"}>
+                    {p.status === "valide" ? "✓" : "✕"} {p.amount_ar.toLocaleString()} Ar
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </section>
+
+      {/* Album management */}
+      <AlbumManager artists={artists} albums={albums} tracks={tracks} onChanged={load} isAdmin />
+
 
       {/* Upload directly for any certified artist */}
       <section className="mb-6 rounded-xl border border-border/50 bg-gradient-card p-4">

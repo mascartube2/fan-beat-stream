@@ -18,6 +18,8 @@ function UploadPage() {
   const [genre, setGenre] = useState<string>("");
   const [audio, setAudio] = useState<File | null>(null);
   const [cover, setCover] = useState<File | null>(null);
+  const [forSale, setForSale] = useState(false);
+  const [priceAr, setPriceAr] = useState<number>(500);
   const [loading, setLoading] = useState(false);
 
   const [progress, setProgress] = useState<string | null>(null);
@@ -104,6 +106,8 @@ function UploadPage() {
         cover_path: coverPath,
         duration_seconds: duration ? Math.round(duration) : null,
         genre: genre || null,
+        is_for_sale: forSale,
+        price_ar: forSale ? Math.max(100, Math.round(priceAr)) : 500,
       });
 
       if (dbErr) throw dbErr;
@@ -170,6 +174,35 @@ function UploadPage() {
             className="w-full rounded-xl border border-border bg-input px-4 py-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground"
           />
         </div>
+
+        <div className="rounded-xl border border-border/50 bg-gradient-card p-3">
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input
+              type="checkbox"
+              checked={forSale}
+              onChange={(e) => setForSale(e.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+            Mettre en vente ce morceau (Pay-Per-Download)
+          </label>
+          {forSale && (
+            <div className="mt-3">
+              <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Prix en Ariary (défaut 500 Ar)</label>
+              <input
+                type="number"
+                min={100}
+                step={100}
+                value={priceAr}
+                onChange={(e) => setPriceAr(Number(e.target.value) || 500)}
+                className="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm"
+              />
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                Tu recevras <span className="font-bold text-foreground">{Math.floor(priceAr * 0.85).toLocaleString()} Ar</span> (85 %) par vente.
+              </p>
+            </div>
+          )}
+        </div>
+
 
         {error && <p className="rounded-lg bg-destructive/15 px-3 py-2 text-xs text-destructive">{error}</p>}
         {progress && <p className="text-xs text-muted-foreground">{progress}</p>}
