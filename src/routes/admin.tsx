@@ -46,6 +46,8 @@ function AdminPage() {
   const [shorts, setShorts] = useState<ShortWithAuthor[]>([]);
   const [allProfiles, setAllProfiles] = useState<ProfileRow[]>([]);
   const [profileSearch, setProfileSearch] = useState("");
+  const [purchases, setPurchases] = useState<PurchaseAdmin[]>([]);
+  const [albums, setAlbums] = useState<AlbumAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
