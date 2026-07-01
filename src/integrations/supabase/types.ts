@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      albums: {
+        Row: {
+          cover_path: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          price_ar: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_path?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          price_ar?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_path?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          price_ar?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      artist_earnings: {
+        Row: {
+          amount_ar: number
+          artist_id: string
+          created_at: string
+          id: string
+          purchase_id: string
+        }
+        Insert: {
+          amount_ar: number
+          artist_id: string
+          created_at?: string
+          id?: string
+          purchase_id: string
+        }
+        Update: {
+          amount_ar?: number
+          artist_id?: string
+          created_at?: string
+          id?: string
+          purchase_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_earnings_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       artist_requests: {
         Row: {
           bio: string
@@ -434,6 +502,81 @@ export type Database = {
         }
         Relationships: []
       }
+      purchases: {
+        Row: {
+          album_id: string | null
+          amount_ar: number
+          artist_id: string
+          artist_share_ar: number
+          buyer_id: string
+          created_at: string
+          id: string
+          item_type: string
+          payer_number: string | null
+          payment_method: string
+          payment_reference: string | null
+          platform_share_ar: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          track_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          album_id?: string | null
+          amount_ar: number
+          artist_id: string
+          artist_share_ar: number
+          buyer_id: string
+          created_at?: string
+          id?: string
+          item_type: string
+          payer_number?: string | null
+          payment_method: string
+          payment_reference?: string | null
+          platform_share_ar: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          album_id?: string | null
+          amount_ar?: number
+          artist_id?: string
+          artist_share_ar?: number
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          item_type?: string
+          payer_number?: string | null
+          payment_method?: string
+          payment_reference?: string | null
+          platform_share_ar?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "albums"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchases_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       short_likes: {
         Row: {
           created_at: string
@@ -636,42 +779,59 @@ export type Database = {
       }
       tracks: {
         Row: {
+          album_id: string | null
           audio_path: string
           cover_path: string | null
           created_at: string
           duration_seconds: number | null
           genre: string | null
           id: string
+          is_for_sale: boolean
           plays: number
+          price_ar: number
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          album_id?: string | null
           audio_path: string
           cover_path?: string | null
           created_at?: string
           duration_seconds?: number | null
           genre?: string | null
           id?: string
+          is_for_sale?: boolean
           plays?: number
+          price_ar?: number
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          album_id?: string | null
           audio_path?: string
           cover_path?: string | null
           created_at?: string
           duration_seconds?: number | null
           genre?: string | null
           id?: string
+          is_for_sale?: boolean
           plays?: number
+          price_ar?: number
           title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tracks_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "albums"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_presence: {
         Row: {
@@ -754,6 +914,7 @@ export type Database = {
     }
     Functions: {
       approve_deposit: { Args: { _deposit_id: string }; Returns: Json }
+      approve_purchase: { Args: { _purchase_id: string }; Returns: Json }
       approve_withdrawal: { Args: { _withdrawal_id: string }; Returns: Json }
       get_today_visits: { Args: never; Returns: number }
       has_role: {
@@ -775,7 +936,18 @@ export type Database = {
       publish_daily_visits_recap: { Args: never; Returns: undefined }
       publish_monthly_leaderboard: { Args: never; Returns: undefined }
       publish_next_auto_clip: { Args: never; Returns: undefined }
+      reject_purchase: { Args: { _purchase_id: string }; Returns: Json }
       reject_withdrawal: { Args: { _withdrawal_id: string }; Returns: Json }
+      request_purchase: {
+        Args: {
+          _item_id: string
+          _item_type: string
+          _payer_number: string
+          _payment_method: string
+          _payment_reference: string
+        }
+        Returns: Json
+      }
       request_withdrawal: {
         Args: { _amount: number; _mvola: string }
         Returns: Json
