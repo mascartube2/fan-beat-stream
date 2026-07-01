@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, Play } from "lucide-react";
+import { ArrowLeft, Loader2, Play, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { publicUrl, type TrackWithArtist } from "@/lib/tracks";
@@ -7,6 +7,7 @@ import { toPlayable } from "@/lib/tracks";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { ShareMenu } from "@/components/share/ShareMenu";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
+import { BuyDialog } from "@/components/purchase/BuyDialog";
 
 export const Route = createFileRoute("/track/$trackId")({
   component: TrackPage,
