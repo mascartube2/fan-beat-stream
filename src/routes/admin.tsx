@@ -285,6 +285,25 @@ function AdminPage() {
 
   const pending = requests.filter((r) => r.status === "pending");
   const reviewed = requests.filter((r) => r.status !== "pending");
+  const pendingPurchases = purchases.filter((p) => p.status === "en_attente");
+  const historyPurchases = purchases.filter((p) => p.status !== "en_attente");
+
+  const approvePurchase = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("approve_purchase", { _purchase_id: id });
+    if (error) toast.error(error.message);
+    else { toast.success("Achat validé, artiste crédité (85 %)"); await load(); }
+    setBusyId(null);
+  };
+
+  const rejectPurchase = async (id: string) => {
+    setBusyId(id);
+    const { error } = await supabase.rpc("reject_purchase", { _purchase_id: id });
+    if (error) toast.error(error.message);
+    else { toast.success("Achat refusé"); await load(); }
+    setBusyId(null);
+  };
+
 
   return (
     <div className="px-5 pt-6 pb-12">
