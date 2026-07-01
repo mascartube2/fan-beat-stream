@@ -18,18 +18,27 @@ function ArtistDashboardPage() {
   const navigate = useNavigate();
   const [active, setActive] = useState<ShortWithAuthor[]>([]);
   const [archived, setArchived] = useState<ShortWithAuthor[]>([]);
+  const [albums, setAlbums] = useState<AlbumRow[]>([]);
+  const [myTracks, setMyTracks] = useState<TrackWithArtist[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [tab, setTab] = useState<"active" | "archived">("active");
 
   const load = async (uid: string) => {
     setLoading(true);
-    const [feed, arch] = await Promise.all([
+    const [feed, arch, { data: albumRows }, allTracks] = await Promise.all([
       fetchShorts({ scope: "feed", userId: uid, limit: 200 }),
       fetchShorts({ scope: "archive", userId: uid, limit: 200 }),
+      supabase.from("albums").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
+      fetchTracksWithArtists(500),
     ]);
     setActive(feed);
     setArchived(arch);
+    setAlbums(((albumRows ?? []) as AlbumRow[]).map((a) => ({
+      ...a,
+      coverUrl: a.cover_path ? supabase.storage.from("track-covers").getPublicUrl(a.cover_path).data.publicUrl : null,
+    })));
+    setMyTracks(allTracks.filter((t) => t.user_id === uid));
     setLoading(false);
   };
 
