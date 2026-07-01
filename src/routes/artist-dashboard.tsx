@@ -5,6 +5,8 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchShorts, SHORTS_PUBLIC_DAYS, type ShortWithAuthor } from "@/lib/shorts";
 import { toast } from "sonner";
+import { AlbumManager, type AlbumRow } from "@/components/album/AlbumManager";
+import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
 
 export const Route = createFileRoute("/artist-dashboard")({
   component: ArtistDashboardPage,
