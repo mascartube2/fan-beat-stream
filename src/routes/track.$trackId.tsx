@@ -17,8 +17,9 @@ export const Route = createFileRoute("/track/$trackId")({
 function TrackPage() {
   const { trackId } = useParams({ from: "/track/$trackId" });
   const { playTrack } = usePlayer();
-  const [track, setTrack] = useState<TrackWithArtist | null>(null);
+  const [track, setTrack] = useState<(TrackWithArtist & { price_ar?: number; is_for_sale?: boolean }) | null>(null);
   const [loading, setLoading] = useState(true);
+  const [buyOpen, setBuyOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
