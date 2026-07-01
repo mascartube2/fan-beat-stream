@@ -18,6 +18,8 @@ function UploadPage() {
   const [genre, setGenre] = useState<string>("");
   const [audio, setAudio] = useState<File | null>(null);
   const [cover, setCover] = useState<File | null>(null);
+  const [forSale, setForSale] = useState(false);
+  const [priceAr, setPriceAr] = useState<number>(500);
   const [loading, setLoading] = useState(false);
 
   const [progress, setProgress] = useState<string | null>(null);
