@@ -37,6 +37,39 @@ type Request = {
 
 type ArtistOption = { user_id: string; display_name: string };
 
+type PurchaseAdmin = {
+  id: string;
+  buyer_id: string;
+  artist_id: string;
+  item_type: "track" | "album";
+  track_id: string | null;
+  album_id: string | null;
+  amount_ar: number;
+  artist_share_ar: number;
+  platform_share_ar: number;
+  payment_method: string;
+  payer_number: string;
+  payment_reference: string | null;
+  status: string;
+  created_at: string;
+  buyerName?: string;
+  artistName?: string;
+  itemTitle?: string;
+};
+
+type AlbumAdmin = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  cover_path: string | null;
+  price_ar: number;
+  is_published: boolean;
+  created_at: string;
+  artistName?: string;
+  coverUrl?: string | null;
+};
+
 function AdminPage() {
   const { isAdmin, loading: authLoading, user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
