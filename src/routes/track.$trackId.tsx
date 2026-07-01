@@ -74,7 +74,28 @@ function TrackPage() {
           />
           <OfflineTrackButton track={track} />
         </div>
+        {track.is_for_sale && (
+          <button
+            onClick={() => setBuyOpen(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-3 text-sm font-bold text-primary-glow transition hover:bg-primary/20"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Acheter · {(track.price_ar ?? 500).toLocaleString()} Ar
+          </button>
+        )}
+        <Link to="/pricing" className="mt-2 block text-center text-[11px] text-muted-foreground underline">
+          Voir la répartition 85 % artiste / 15 % plateforme
+        </Link>
       </div>
+      {buyOpen && (
+        <BuyDialog
+          itemType="track"
+          itemId={track.id}
+          priceAr={track.price_ar ?? 500}
+          title={track.title}
+          onClose={() => setBuyOpen(false)}
+        />
+      )}
     </div>
   );
 }
