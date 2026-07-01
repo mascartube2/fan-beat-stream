@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as ShortsRouteImport } from './routes/shorts'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as LibraryRouteImport } from './routes/library'
@@ -42,6 +43,11 @@ const ShortsRoute = ShortsRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/library': typeof LibraryRoute
   '/members': typeof MembersRoute
   '/notifications': typeof NotificationsRoute
+  '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRouteWithChildren
   '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/library': typeof LibraryRoute
   '/members': typeof MembersRoute
   '/notifications': typeof NotificationsRoute
+  '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRouteWithChildren
   '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/library': typeof LibraryRoute
   '/members': typeof MembersRoute
   '/notifications': typeof NotificationsRoute
+  '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRouteWithChildren
   '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/members'
     | '/notifications'
+    | '/pricing'
     | '/profile'
     | '/shorts'
     | '/upload'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/members'
     | '/notifications'
+    | '/pricing'
     | '/profile'
     | '/shorts'
     | '/upload'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/members'
     | '/notifications'
+    | '/pricing'
     | '/profile'
     | '/shorts'
     | '/upload'
@@ -267,6 +279,7 @@ export interface RootRouteChildren {
   LibraryRoute: typeof LibraryRoute
   MembersRoute: typeof MembersRoute
   NotificationsRoute: typeof NotificationsRoute
+  PricingRoute: typeof PricingRoute
   ProfileRoute: typeof ProfileRouteWithChildren
   ShortsRoute: typeof ShortsRoute
   UploadRoute: typeof UploadRoute
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -437,6 +457,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRoute,
   MembersRoute: MembersRoute,
   NotificationsRoute: NotificationsRoute,
+  PricingRoute: PricingRoute,
   ProfileRoute: ProfileRouteWithChildren,
   ShortsRoute: ShortsRoute,
   UploadRoute: UploadRoute,

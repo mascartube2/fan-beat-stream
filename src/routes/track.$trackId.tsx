@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, Play } from "lucide-react";
+import { ArrowLeft, Loader2, Play, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { publicUrl, type TrackWithArtist } from "@/lib/tracks";
@@ -7,6 +7,7 @@ import { toPlayable } from "@/lib/tracks";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { ShareMenu } from "@/components/share/ShareMenu";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
+import { BuyDialog } from "@/components/purchase/BuyDialog";
 
 export const Route = createFileRoute("/track/$trackId")({
   component: TrackPage,
@@ -16,8 +17,9 @@ export const Route = createFileRoute("/track/$trackId")({
 function TrackPage() {
   const { trackId } = useParams({ from: "/track/$trackId" });
   const { playTrack } = usePlayer();
-  const [track, setTrack] = useState<TrackWithArtist | null>(null);
+  const [track, setTrack] = useState<(TrackWithArtist & { price_ar?: number; is_for_sale?: boolean }) | null>(null);
   const [loading, setLoading] = useState(true);
+  const [buyOpen, setBuyOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -72,7 +74,28 @@ function TrackPage() {
           />
           <OfflineTrackButton track={track} />
         </div>
+        {track.is_for_sale && (
+          <button
+            onClick={() => setBuyOpen(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-3 text-sm font-bold text-primary-glow transition hover:bg-primary/20"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Acheter · {(track.price_ar ?? 500).toLocaleString()} Ar
+          </button>
+        )}
+        <Link to="/pricing" className="mt-2 block text-center text-[11px] text-muted-foreground underline">
+          Voir la répartition 85 % artiste / 15 % plateforme
+        </Link>
       </div>
+      {buyOpen && (
+        <BuyDialog
+          itemType="track"
+          itemId={track.id}
+          priceAr={track.price_ar ?? 500}
+          title={track.title}
+          onClose={() => setBuyOpen(false)}
+        />
+      )}
     </div>
   );
 }
