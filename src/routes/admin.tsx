@@ -95,13 +95,15 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: allProfs }] = await Promise.all([
+    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: allProfs }, { data: purchaseRows }, { data: albumRows }] = await Promise.all([
       supabase.from("artist_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id").eq("role", "artist"),
       fetchTracksWithArtists(200),
       supabase.from("stories").select("*").gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }),
       fetchShorts({ scope: "all", limit: 100 }),
       supabase.from("profiles").select("user_id, display_name, is_certified").order("display_name"),
+      supabase.from("purchases").select("*").order("created_at", { ascending: false }).limit(200),
+      supabase.from("albums").select("*").order("created_at", { ascending: false }),
     ]);
     const nameMap = new Map((allProfs ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
     setAllProfiles((allProfs ?? []) as ProfileRow[]);
@@ -114,6 +116,19 @@ function AdminPage() {
       mediaUrl: supabase.storage.from("stories").getPublicUrl(s.media_path).data.publicUrl,
     })));
     setShorts(shortRows);
+    const trackMap = new Map(allTracks.map((t) => [t.id, t.title]));
+    const albumTitleMap = new Map((albumRows ?? []).map((a) => [a.id, a.title]));
+    setPurchases(((purchaseRows ?? []) as PurchaseAdmin[]).map((p) => ({
+      ...p,
+      buyerName: nameMap.get(p.buyer_id) ?? "Utilisateur",
+      artistName: nameMap.get(p.artist_id) ?? "Artiste",
+      itemTitle: p.item_type === "track" ? (p.track_id ? trackMap.get(p.track_id) : "") : (p.album_id ? albumTitleMap.get(p.album_id) : ""),
+    })));
+    setAlbums(((albumRows ?? []) as AlbumAdmin[]).map((a) => ({
+      ...a,
+      artistName: nameMap.get(a.user_id) ?? "Artiste",
+      coverUrl: a.cover_path ? supabase.storage.from("track-covers").getPublicUrl(a.cover_path).data.publicUrl : null,
+    })));
     setLoading(false);
   };
 
