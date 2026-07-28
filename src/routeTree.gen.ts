@@ -15,6 +15,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MembersRouteImport } from './routes/members'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as DownloadsRouteImport } from './routes/downloads'
 import { Route as DiscoverRouteImport } from './routes/discover'
@@ -28,7 +29,10 @@ import { Route as UUserIdRouteImport } from './routes/u.$userId'
 import { Route as TrackTrackIdRouteImport } from './routes/track.$trackId'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ApiPublicAutoClipRouteImport } from './routes/api/public/auto-clip'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const UploadRoute = UploadRouteImport.update({
@@ -59,6 +63,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
 const MembersRoute = MembersRouteImport.update({
   id: '/members',
   path: '/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryRoute = LibraryRouteImport.update({
@@ -126,11 +135,29 @@ const PostPostIdRoute = PostPostIdRouteImport.update({
   path: '/post/$postId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAutoClipRoute = ApiPublicAutoClipRouteImport.update({
   id: '/api/public/auto-clip',
   path: '/api/public/auto-clip',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -147,17 +174,21 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
   '/library': typeof LibraryRoute
+  '/mcp': typeof McpRoute
   '/members': typeof MembersRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRouteWithChildren
   '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
   '/u/$userId': typeof UUserIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/auto-clip': typeof ApiPublicAutoClipRoute
 }
 export interface FileRoutesByTo {
@@ -170,17 +201,21 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
   '/library': typeof LibraryRoute
+  '/mcp': typeof McpRoute
   '/members': typeof MembersRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRouteWithChildren
   '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
   '/u/$userId': typeof UUserIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/auto-clip': typeof ApiPublicAutoClipRoute
 }
 export interface FileRoutesById {
@@ -194,17 +229,21 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
   '/library': typeof LibraryRoute
+  '/mcp': typeof McpRoute
   '/members': typeof MembersRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRouteWithChildren
   '/shorts': typeof ShortsRoute
   '/upload': typeof UploadRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
   '/u/$userId': typeof UUserIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/auto-clip': typeof ApiPublicAutoClipRoute
 }
 export interface FileRouteTypes {
@@ -219,17 +258,21 @@ export interface FileRouteTypes {
     | '/discover'
     | '/downloads'
     | '/library'
+    | '/mcp'
     | '/members'
     | '/notifications'
     | '/pricing'
     | '/profile'
     | '/shorts'
     | '/upload'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/post/$postId'
     | '/profile/edit'
     | '/track/$trackId'
     | '/u/$userId'
     | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/auto-clip'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -242,17 +285,21 @@ export interface FileRouteTypes {
     | '/discover'
     | '/downloads'
     | '/library'
+    | '/mcp'
     | '/members'
     | '/notifications'
     | '/pricing'
     | '/profile'
     | '/shorts'
     | '/upload'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/post/$postId'
     | '/profile/edit'
     | '/track/$trackId'
     | '/u/$userId'
     | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/auto-clip'
   id:
     | '__root__'
@@ -265,17 +312,21 @@ export interface FileRouteTypes {
     | '/discover'
     | '/downloads'
     | '/library'
+    | '/mcp'
     | '/members'
     | '/notifications'
     | '/pricing'
     | '/profile'
     | '/shorts'
     | '/upload'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/post/$postId'
     | '/profile/edit'
     | '/track/$trackId'
     | '/u/$userId'
     | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/auto-clip'
   fileRoutesById: FileRoutesById
 }
@@ -289,16 +340,20 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   DownloadsRoute: typeof DownloadsRoute
   LibraryRoute: typeof LibraryRoute
+  McpRoute: typeof McpRoute
   MembersRoute: typeof MembersRoute
   NotificationsRoute: typeof NotificationsRoute
   PricingRoute: typeof PricingRoute
   ProfileRoute: typeof ProfileRouteWithChildren
   ShortsRoute: typeof ShortsRoute
   UploadRoute: typeof UploadRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   PostPostIdRoute: typeof PostPostIdRoute
   TrackTrackIdRoute: typeof TrackTrackIdRoute
   UUserIdRoute: typeof UUserIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicAutoClipRoute: typeof ApiPublicAutoClipRoute
 }
 
@@ -344,6 +399,13 @@ declare module '@tanstack/react-router' {
       path: '/members'
       fullPath: '/members'
       preLoaderRoute: typeof MembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/library': {
@@ -437,11 +499,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostPostIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/auto-clip': {
       id: '/api/public/auto-clip'
       path: '/api/public/auto-clip'
       fullPath: '/api/public/auto-clip'
       preLoaderRoute: typeof ApiPublicAutoClipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.lovable/oauth/consent': {
@@ -475,16 +558,21 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   DownloadsRoute: DownloadsRoute,
   LibraryRoute: LibraryRoute,
+  McpRoute: McpRoute,
   MembersRoute: MembersRoute,
   NotificationsRoute: NotificationsRoute,
   PricingRoute: PricingRoute,
   ProfileRoute: ProfileRouteWithChildren,
   ShortsRoute: ShortsRoute,
   UploadRoute: UploadRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   PostPostIdRoute: PostPostIdRoute,
   TrackTrackIdRoute: TrackTrackIdRoute,
   UUserIdRoute: UUserIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicAutoClipRoute: ApiPublicAutoClipRoute,
 }
 export const routeTree = rootRouteImport
