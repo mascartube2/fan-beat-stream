@@ -29,6 +29,7 @@ import { Route as TrackTrackIdRouteImport } from './routes/track.$trackId'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as ApiPublicAutoClipRouteImport } from './routes/api/public/auto-clip'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
@@ -130,6 +131,11 @@ const ApiPublicAutoClipRoute = ApiPublicAutoClipRouteImport.update({
   path: '/api/public/auto-clip',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
   '/u/$userId': typeof UUserIdRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/auto-clip': typeof ApiPublicAutoClipRoute
 }
 export interface FileRoutesByTo {
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
   '/u/$userId': typeof UUserIdRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/auto-clip': typeof ApiPublicAutoClipRoute
 }
 export interface FileRoutesById {
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
   '/u/$userId': typeof UUserIdRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/auto-clip': typeof ApiPublicAutoClipRoute
 }
 export interface FileRouteTypes {
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
     | '/profile/edit'
     | '/track/$trackId'
     | '/u/$userId'
+    | '/.lovable/oauth/consent'
     | '/api/public/auto-clip'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -242,6 +252,7 @@ export interface FileRouteTypes {
     | '/profile/edit'
     | '/track/$trackId'
     | '/u/$userId'
+    | '/.lovable/oauth/consent'
     | '/api/public/auto-clip'
   id:
     | '__root__'
@@ -264,6 +275,7 @@ export interface FileRouteTypes {
     | '/profile/edit'
     | '/track/$trackId'
     | '/u/$userId'
+    | '/.lovable/oauth/consent'
     | '/api/public/auto-clip'
   fileRoutesById: FileRoutesById
 }
@@ -286,6 +298,7 @@ export interface RootRouteChildren {
   PostPostIdRoute: typeof PostPostIdRoute
   TrackTrackIdRoute: typeof TrackTrackIdRoute
   UUserIdRoute: typeof UUserIdRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicAutoClipRoute: typeof ApiPublicAutoClipRoute
 }
 
@@ -431,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAutoClipRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -464,6 +484,7 @@ const rootRouteChildren: RootRouteChildren = {
   PostPostIdRoute: PostPostIdRoute,
   TrackTrackIdRoute: TrackTrackIdRoute,
   UUserIdRoute: UUserIdRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicAutoClipRoute: ApiPublicAutoClipRoute,
 }
 export const routeTree = rootRouteImport
