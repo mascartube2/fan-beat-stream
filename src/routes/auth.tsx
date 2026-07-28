@@ -8,6 +8,11 @@ import { COUNTRIES } from "@/lib/countries";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//")
+      ? s.next
+      : undefined,
+  }),
   head: () => ({ meta: [{ title: "Sign in — Pulse" }] }),
 });
 
@@ -21,11 +26,18 @@ function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { session } = useAuth();
+  const { next } = Route.useSearch();
+
+  const goNext = () => {
+    if (next) window.location.href = next;
+    else navigate({ to: "/" });
+  };
 
   if (session) {
     // already signed in
-    setTimeout(() => navigate({ to: "/" }), 0);
+    setTimeout(goNext, 0);
   }
+
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -40,7 +52,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}${next ?? "/"}`,
             data: { display_name: displayName || email.split("@")[0], country },
           },
         });
@@ -54,7 +66,8 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      navigate({ to: "/" });
+      goNext();
+
     } catch (err: any) {
       setError(err.message ?? "Authentication failed");
     } finally {
