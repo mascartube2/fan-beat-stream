@@ -121,6 +121,43 @@ export function AlbumManager({
     setBusyId(null);
   };
 
+  const changePreview = async (a: AlbumRow, file: File) => {
+    setBusyId(a.id);
+    try {
+      const { path, duration } = await uploadPreview(file, a.user_id);
+      const { error } = await supabase
+        .from("albums")
+        .update({ preview_path: path, preview_duration_seconds: duration } as never)
+        .eq("id", a.id);
+      if (error) throw error;
+      if (a.preview_path) await supabase.storage.from(PREVIEW_BUCKET).remove([a.preview_path]);
+      toast.success(`Extrait ajouté (${formatSeconds(duration)})`);
+      await onChanged();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const removePreview = async (a: AlbumRow) => {
+    setBusyId(a.id);
+    try {
+      const { error } = await supabase
+        .from("albums")
+        .update({ preview_path: null, preview_duration_seconds: null } as never)
+        .eq("id", a.id);
+      if (error) throw error;
+      if (a.preview_path) await supabase.storage.from(PREVIEW_BUCKET).remove([a.preview_path]);
+      await onChanged();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+
   const relevantTracks = isAdmin
     ? tracks
     : tracks.filter((t) => t.user_id === currentUserId);
