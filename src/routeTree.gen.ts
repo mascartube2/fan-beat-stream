@@ -23,6 +23,7 @@ import { Route as ChatRouteImport } from './routes/chat'
 import { Route as BecomeArtistRouteImport } from './routes/become-artist'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ArtistDashboardRouteImport } from './routes/artist-dashboard'
+import { Route as AlbumsRouteImport } from './routes/albums'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUserIdRouteImport } from './routes/u.$userId'
@@ -105,6 +106,11 @@ const ArtistDashboardRoute = ArtistDashboardRouteImport.update({
   path: '/artist-dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlbumsRoute = AlbumsRouteImport.update({
+  id: '/albums',
+  path: '/albums',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -167,6 +173,7 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/albums': typeof AlbumsRoute
   '/artist-dashboard': typeof ArtistDashboardRoute
   '/auth': typeof AuthRoute
   '/become-artist': typeof BecomeArtistRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/albums': typeof AlbumsRoute
   '/artist-dashboard': typeof ArtistDashboardRoute
   '/auth': typeof AuthRoute
   '/become-artist': typeof BecomeArtistRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/albums': typeof AlbumsRoute
   '/artist-dashboard': typeof ArtistDashboardRoute
   '/auth': typeof AuthRoute
   '/become-artist': typeof BecomeArtistRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/albums'
     | '/artist-dashboard'
     | '/auth'
     | '/become-artist'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/albums'
     | '/artist-dashboard'
     | '/auth'
     | '/become-artist'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/albums'
     | '/artist-dashboard'
     | '/auth'
     | '/become-artist'
@@ -333,6 +345,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AlbumsRoute: typeof AlbumsRoute
   ArtistDashboardRoute: typeof ArtistDashboardRoute
   AuthRoute: typeof AuthRoute
   BecomeArtistRoute: typeof BecomeArtistRoute
@@ -457,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArtistDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/albums': {
+      id: '/albums'
+      path: '/albums'
+      fullPath: '/albums'
+      preLoaderRoute: typeof AlbumsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -551,6 +571,7 @@ const ProfileRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AlbumsRoute: AlbumsRoute,
   ArtistDashboardRoute: ArtistDashboardRoute,
   AuthRoute: AuthRoute,
   BecomeArtistRoute: BecomeArtistRoute,
