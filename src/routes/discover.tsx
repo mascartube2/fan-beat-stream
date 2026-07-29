@@ -81,7 +81,16 @@ function DiscoverPage() {
 
   return (
     <div className="px-4 pt-4 pb-24">
-      <h1 className="mb-4 text-2xl font-bold">Discover</h1>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold">Discover</h1>
+        <Link
+          to="/albums"
+          className="flex shrink-0 items-center gap-1 rounded-full bg-gradient-primary px-3 py-1.5 text-[11px] font-bold shadow-glow"
+        >
+          <Disc3 className="h-3.5 w-3.5" /> Albums en vente
+        </Link>
+      </div>
+
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
