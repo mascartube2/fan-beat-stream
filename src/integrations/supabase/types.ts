@@ -21,6 +21,8 @@ export type Database = {
           description: string | null
           id: string
           is_published: boolean
+          preview_duration_seconds: number | null
+          preview_path: string | null
           price_ar: number
           title: string
           updated_at: string
@@ -32,6 +34,8 @@ export type Database = {
           description?: string | null
           id?: string
           is_published?: boolean
+          preview_duration_seconds?: number | null
+          preview_path?: string | null
           price_ar?: number
           title: string
           updated_at?: string
@@ -43,6 +47,8 @@ export type Database = {
           description?: string | null
           id?: string
           is_published?: boolean
+          preview_duration_seconds?: number | null
+          preview_path?: string | null
           price_ar?: number
           title?: string
           updated_at?: string
@@ -788,6 +794,8 @@ export type Database = {
           id: string
           is_for_sale: boolean
           plays: number
+          preview_duration_seconds: number | null
+          preview_path: string | null
           price_ar: number
           title: string
           updated_at: string
@@ -803,6 +811,8 @@ export type Database = {
           id?: string
           is_for_sale?: boolean
           plays?: number
+          preview_duration_seconds?: number | null
+          preview_path?: string | null
           price_ar?: number
           title: string
           updated_at?: string
@@ -818,6 +828,8 @@ export type Database = {
           id?: string
           is_for_sale?: boolean
           plays?: number
+          preview_duration_seconds?: number | null
+          preview_path?: string | null
           price_ar?: number
           title?: string
           updated_at?: string
