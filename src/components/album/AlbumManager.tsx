@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff } from "lucide-react";
+import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff, Music4 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrackWithArtist } from "@/lib/tracks";
+import { uploadPreview, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
+import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 
 type ArtistOption = { user_id: string; display_name: string };
 
@@ -15,9 +17,12 @@ export type AlbumRow = {
   price_ar: number;
   is_published: boolean;
   created_at: string;
+  preview_path?: string | null;
+  preview_duration_seconds?: number | null;
   artistName?: string;
   coverUrl?: string | null;
 };
+
 
 export function AlbumManager({
   artists,
@@ -115,6 +120,43 @@ export function AlbumManager({
     else await onChanged();
     setBusyId(null);
   };
+
+  const changePreview = async (a: AlbumRow, file: File) => {
+    setBusyId(a.id);
+    try {
+      const { path, duration } = await uploadPreview(file, a.user_id);
+      const { error } = await supabase
+        .from("albums")
+        .update({ preview_path: path, preview_duration_seconds: duration } as never)
+        .eq("id", a.id);
+      if (error) throw error;
+      if (a.preview_path) await supabase.storage.from(PREVIEW_BUCKET).remove([a.preview_path]);
+      toast.success(`Extrait ajouté (${formatSeconds(duration)})`);
+      await onChanged();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const removePreview = async (a: AlbumRow) => {
+    setBusyId(a.id);
+    try {
+      const { error } = await supabase
+        .from("albums")
+        .update({ preview_path: null, preview_duration_seconds: null } as never)
+        .eq("id", a.id);
+      if (error) throw error;
+      if (a.preview_path) await supabase.storage.from(PREVIEW_BUCKET).remove([a.preview_path]);
+      await onChanged();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
 
   const relevantTracks = isAdmin
     ? tracks
@@ -233,6 +275,47 @@ export function AlbumManager({
                     {busyId === a.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                   </button>
                 </div>
+
+                <div className="mt-2 space-y-1.5">
+                  {a.preview_path ? (
+                    <PreviewPlayer
+                      url={supabase.storage.from(PREVIEW_BUCKET).getPublicUrl(a.preview_path).data.publicUrl}
+                      duration={a.preview_duration_seconds}
+                      label={`Extrait · ${formatSeconds(a.preview_duration_seconds ?? null)}`}
+                    />
+                  ) : (
+                    <p className="text-[10px] text-muted-foreground">Aucun extrait (max 1 min 20).</p>
+                  )}
+                  {isAdmin && (
+                    <div className="flex items-center gap-2">
+                      <label className="flex flex-1 cursor-pointer items-center gap-1.5 rounded-full border border-border/60 px-2.5 py-1 text-[10px] font-semibold text-muted-foreground hover:bg-white/5">
+                        <Music4 className="h-3 w-3" />
+                        {a.preview_path ? "Remplacer l'extrait" : "Uploader un extrait"}
+                        <input
+                          type="file"
+                          accept="audio/*"
+                          className="hidden"
+                          disabled={busyId === a.id}
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            e.target.value = "";
+                            if (f) void changePreview(a, f);
+                          }}
+                        />
+                      </label>
+                      {a.preview_path && (
+                        <button
+                          onClick={() => removePreview(a)}
+                          disabled={busyId === a.id}
+                          className="rounded-full px-2 py-1 text-[10px] font-semibold text-destructive hover:bg-destructive/10"
+                        >
+                          Retirer
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <details className="mt-2">
                   <summary className="cursor-pointer text-[11px] text-muted-foreground">Gérer les morceaux</summary>
                   <ul className="mt-1 space-y-1">

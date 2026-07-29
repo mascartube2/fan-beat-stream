@@ -27,6 +27,14 @@ function PricingPage() {
         </p>
       </header>
 
+      <Link
+        to="/albums"
+        className="mb-5 flex items-center justify-center gap-2 rounded-full bg-gradient-primary py-2.5 text-xs font-bold shadow-glow"
+      >
+        <Disc3 className="h-4 w-4" /> Voir les albums en vente (extraits gratuits)
+      </Link>
+
+
       <section className="mb-5 grid gap-3 sm:grid-cols-2">
         <PriceCard
           icon={<Music className="h-5 w-5" />}
