@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff } from "lucide-react";
+import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff, Music4 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrackWithArtist } from "@/lib/tracks";
+import { uploadPreview, PREVIEW_BUCKET, PREVIEW_MAX_SECONDS, formatSeconds } from "@/lib/albums";
+import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 
 type ArtistOption = { user_id: string; display_name: string };
 
@@ -15,9 +17,12 @@ export type AlbumRow = {
   price_ar: number;
   is_published: boolean;
   created_at: string;
+  preview_path?: string | null;
+  preview_duration_seconds?: number | null;
   artistName?: string;
   coverUrl?: string | null;
 };
+
 
 export function AlbumManager({
   artists,
