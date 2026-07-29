@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Search, TrendingUp, Play, Loader2, Music2 } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Search, TrendingUp, Play, Loader2, Music2, Disc3 } from "lucide-react";
+
 import { useEffect, useMemo, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
