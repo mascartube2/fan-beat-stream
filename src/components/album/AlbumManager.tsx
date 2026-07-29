@@ -3,7 +3,7 @@ import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff, Music4 } from "lucide-react"
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrackWithArtist } from "@/lib/tracks";
-import { uploadPreview, PREVIEW_BUCKET, PREVIEW_MAX_SECONDS, formatSeconds } from "@/lib/albums";
+import { uploadPreview, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 
 type ArtistOption = { user_id: string; display_name: string };
