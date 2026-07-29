@@ -135,17 +135,26 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
           <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
         </div>
         {(user?.id === post.user_id || isAdmin) && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {user?.id === post.user_id && !editing && (
-              <button onClick={() => setEditing(true)} className="rounded-full p-1.5 text-muted-foreground hover:bg-white/5" aria-label="Modifier">
-                <Pencil className="h-4 w-4" />
+              <button
+                onClick={() => setEditing(true)}
+                className="flex items-center gap-1 rounded-full border border-border/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition hover:bg-white/5"
+                aria-label="Modifier"
+              >
+                <Pencil className="h-3.5 w-3.5" /> Modifier
               </button>
             )}
-            <button onClick={remove} className="rounded-full p-1.5 text-muted-foreground hover:bg-white/5" aria-label="Supprimer">
-              <Trash2 className="h-4 w-4" />
+            <button
+              onClick={remove}
+              className="flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[11px] font-semibold text-destructive transition hover:bg-destructive/20"
+              aria-label="Supprimer"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Supprimer
             </button>
           </div>
         )}
+
       </header>
 
       {editing ? (
