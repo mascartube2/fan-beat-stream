@@ -253,34 +253,75 @@ export function AlbumManager({
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
           />
           <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
-            <label className="mb-1 block text-[11px] font-semibold">
-              Morceaux de l'album ({MIN_ALBUM_TRACKS} à {MAX_ALBUM_TRACKS} obligatoires)
-            </label>
-            <input
-              type="file"
-              accept="audio/*"
-              multiple
-              onChange={(e) => setAudioFiles(Array.from(e.target.files ?? []))}
-              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
-            />
-            {audioFiles.length > 0 && (
-              <>
-                <p
-                  className={`mt-1.5 text-[10px] font-semibold ${
-                    audioFiles.length < MIN_ALBUM_TRACKS || audioFiles.length > MAX_ALBUM_TRACKS
-                      ? "text-destructive"
-                      : "text-primary"
-                  }`}
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="text-[11px] font-semibold">
+                Morceaux ({MIN_ALBUM_TRACKS} à {MAX_ALBUM_TRACKS}) — 1 par 1
+              </label>
+              <span
+                className={`text-[10px] font-bold ${
+                  filledCount < MIN_ALBUM_TRACKS ? "text-destructive" : "text-primary"
+                }`}
+              >
+                {filledCount}/{MAX_ALBUM_TRACKS}
+              </span>
+            </div>
+            <div className="overflow-hidden rounded-lg border border-border">
+              {slots.map((slot, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 border-b border-border/60 bg-card/40 px-2 py-1.5 last:border-b-0"
                 >
-                  {audioFiles.length} / {MAX_ALBUM_TRACKS} morceaux sélectionnés
-                  {audioFiles.length < MIN_ALBUM_TRACKS && ` — minimum ${MIN_ALBUM_TRACKS}`}
-                </p>
-                <ul className="mt-1 space-y-0.5 text-[10px] text-muted-foreground">
-                  {audioFiles.map((f) => (
-                    <li key={f.name} className="truncate">🎵 {f.name}</li>
-                  ))}
-                </ul>
-              </>
+                  <span
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                      slot.file ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    {slot.file ? (
+                      <input
+                        value={slot.title}
+                        onChange={(e) => updateSlot(i, { title: e.target.value })}
+                        placeholder="Titre du morceau"
+                        className="w-full rounded border border-border bg-input px-2 py-1 text-[11px]"
+                      />
+                    ) : (
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0] ?? null;
+                          if (f) updateSlot(i, { file: f, title: f.name.replace(/\.[a-zA-Z0-9]+$/, "") });
+                        }}
+                        className="w-full text-[10px] file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[10px] file:font-bold file:text-primary-foreground"
+                      />
+                    )}
+                    {slot.file && (
+                      <p className="mt-0.5 truncate text-[9px] text-muted-foreground">
+                        🎵 {slot.file.name}
+                        {slotStatus[i] === "uploading" && " • envoi…"}
+                        {slotStatus[i] === "done" && " • ✅"}
+                      </p>
+                    )}
+                  </div>
+                  {slot.file && (
+                    <button
+                      type="button"
+                      onClick={() => updateSlot(i, { file: null, title: "" })}
+                      className="shrink-0 rounded p-1 text-muted-foreground hover:text-destructive"
+                      aria-label={`Retirer le morceau ${i + 1}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            {filledCount < MIN_ALBUM_TRACKS && (
+              <p className="mt-1 text-[10px] text-destructive">
+                Encore {MIN_ALBUM_TRACKS - filledCount} morceau(x) requis
+              </p>
             )}
           </div>
           <button
