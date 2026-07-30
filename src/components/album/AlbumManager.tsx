@@ -240,7 +240,9 @@ export function AlbumManager({
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
           />
           <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
-            <label className="mb-1 block text-[11px] font-semibold">Morceaux de l'album (obligatoire)</label>
+            <label className="mb-1 block text-[11px] font-semibold">
+              Morceaux de l'album ({MIN_ALBUM_TRACKS} à {MAX_ALBUM_TRACKS} obligatoires)
+            </label>
             <input
               type="file"
               accept="audio/*"
