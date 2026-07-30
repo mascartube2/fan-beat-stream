@@ -84,3 +84,63 @@ export function formatSeconds(s: number | null | undefined) {
   const sec = Math.round(s % 60);
   return `${m}:${sec.toString().padStart(2, "0")}`;
 }
+
+export type AlbumTrackFile = {
+  id: string;
+  title: string;
+  audio_path: string;
+  audioUrl: string;
+};
+
+/** Uploads audio files and creates the matching tracks attached to an album. */
+export async function uploadAlbumTracks(files: File[], ownerId: string, albumId: string) {
+  for (const file of files) {
+    const ext = file.name.split(".").pop() ?? "mp3";
+    const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("audio-tracks")
+      .upload(path, file, { contentType: file.type, upsert: true });
+    if (upErr) throw upErr;
+
+    let duration: number | null = null;
+    try {
+      duration = Math.round(await readAudioDuration(file));
+    } catch {
+      duration = null;
+    }
+
+    const { error } = await supabase.from("tracks").insert({
+      user_id: ownerId,
+      album_id: albumId,
+      title: file.name.replace(/\.[a-zA-Z0-9]+$/, ""),
+      audio_path: path,
+      duration_seconds: duration,
+    } as never);
+    if (error) throw error;
+  }
+}
+
+/** Album ids the signed-in user has purchased and that were validated by an admin. */
+export async function fetchPurchasedAlbumIds(userId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from("purchases")
+    .select("album_id")
+    .eq("buyer_id", userId)
+    .eq("item_type", "album")
+    .eq("status", "valide");
+  return [...new Set((data ?? []).map((p: any) => p.album_id).filter(Boolean))];
+}
+
+export async function fetchAlbumTracks(albumId: string): Promise<AlbumTrackFile[]> {
+  const { data } = await supabase
+    .from("tracks")
+    .select("id, title, audio_path")
+    .eq("album_id", albumId)
+    .order("created_at", { ascending: true });
+  return (data ?? []).map((t: any) => ({
+    id: t.id,
+    title: t.title,
+    audio_path: t.audio_path,
+    audioUrl: publicUrl("audio-tracks", t.audio_path),
+  }));
+}
