@@ -62,8 +62,11 @@ export function AlbumManager({
     const owner = isAdmin ? artistId : currentUserId;
     if (!owner) return toast.error("Choisis un artiste");
     if (!title.trim()) return toast.error("Titre requis");
-    if (audioFiles.length < MIN_ALBUM_TRACKS) return toast.error(`Un album doit contenir au moins ${MIN_ALBUM_TRACKS} morceaux`);
-    if (audioFiles.length > MAX_ALBUM_TRACKS) return toast.error(`Un album ne peut pas dépasser ${MAX_ALBUM_TRACKS} morceaux`);
+    const filled = slots
+      .map((s, i) => ({ ...s, i }))
+      .filter((s): s is { file: File; title: string; i: number } => s.file !== null);
+    if (filled.length < MIN_ALBUM_TRACKS) return toast.error(`Un album doit contenir au moins ${MIN_ALBUM_TRACKS} morceaux`);
+    if (filled.length > MAX_ALBUM_TRACKS) return toast.error(`Un album ne peut pas dépasser ${MAX_ALBUM_TRACKS} morceaux`);
     setBusy(true);
     try {
       let coverPath: string | null = null;
