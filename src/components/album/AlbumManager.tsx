@@ -90,14 +90,21 @@ export function AlbumManager({
         .single();
       if (error) throw error;
 
-      await uploadAlbumTracks(audioFiles, owner, created.id);
+      setSlotStatus({});
+      await uploadAlbumTracks(
+        filled.map((s) => ({ file: s.file, title: s.title })),
+        owner,
+        created.id,
+        (index, status) => setSlotStatus((prev) => ({ ...prev, [filled[index].i]: status })),
+      );
 
-      toast.success(`Album créé avec ${audioFiles.length} morceau(x)`);
+      toast.success(`Album créé avec ${filled.length} morceaux`);
       setTitle("");
       setDescription("");
       setPriceAr(5000);
       setCover(null);
-      setAudioFiles([]);
+      setSlots(Array.from({ length: MAX_ALBUM_TRACKS }, () => ({ file: null, title: "" })));
+      setSlotStatus({});
       setCreating(false);
       await onChanged();
     } catch (err) {
