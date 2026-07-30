@@ -47,7 +47,10 @@ export function AlbumManager({
   const [description, setDescription] = useState("");
   const [priceAr, setPriceAr] = useState<number>(5000);
   const [cover, setCover] = useState<File | null>(null);
-  const [audioFiles, setAudioFiles] = useState<File[]>([]);
+  const [slots, setSlots] = useState<{ file: File | null; title: string }[]>(
+    Array.from({ length: MAX_ALBUM_TRACKS }, () => ({ file: null, title: "" })),
+  );
+  const [slotStatus, setSlotStatus] = useState<Record<number, "uploading" | "done">>({});
   const [artistId, setArtistId] = useState<string>(currentUserId ?? "");
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
