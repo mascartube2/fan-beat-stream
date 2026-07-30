@@ -251,11 +251,23 @@ export function AlbumManager({
               className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
             />
             {audioFiles.length > 0 && (
-              <ul className="mt-1.5 space-y-0.5 text-[10px] text-muted-foreground">
-                {audioFiles.map((f) => (
-                  <li key={f.name} className="truncate">🎵 {f.name}</li>
-                ))}
-              </ul>
+              <>
+                <p
+                  className={`mt-1.5 text-[10px] font-semibold ${
+                    audioFiles.length < MIN_ALBUM_TRACKS || audioFiles.length > MAX_ALBUM_TRACKS
+                      ? "text-destructive"
+                      : "text-primary"
+                  }`}
+                >
+                  {audioFiles.length} / {MAX_ALBUM_TRACKS} morceaux sélectionnés
+                  {audioFiles.length < MIN_ALBUM_TRACKS && ` — minimum ${MIN_ALBUM_TRACKS}`}
+                </p>
+                <ul className="mt-1 space-y-0.5 text-[10px] text-muted-foreground">
+                  {audioFiles.map((f) => (
+                    <li key={f.name} className="truncate">🎵 {f.name}</li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
           <button
