@@ -95,12 +95,16 @@ function AlbumsPage() {
                 )}
               </div>
 
-              <button
-                onClick={() => setBuying(a)}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-2 text-xs font-bold shadow-glow"
-              >
-                <ShoppingBag className="h-4 w-4" /> Acheter · {a.price_ar.toLocaleString()} Ar
-              </button>
+              {ownedIds.includes(a.id) ? (
+                <AlbumDownloads albumId={a.id} title={a.title} />
+              ) : (
+                <button
+                  onClick={() => setBuying(a)}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-2 text-xs font-bold shadow-glow"
+                >
+                  <ShoppingBag className="h-4 w-4" /> Acheter · {a.price_ar.toLocaleString()} Ar
+                </button>
+              )}
             </li>
           ))}
         </ul>
