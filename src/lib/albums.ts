@@ -92,9 +92,20 @@ export type AlbumTrackFile = {
   audioUrl: string;
 };
 
-/** Uploads audio files and creates the matching tracks attached to an album. */
-export async function uploadAlbumTracks(files: File[], ownerId: string, albumId: string) {
-  for (const file of files) {
+export type AlbumTrackUpload = { file: File; title?: string };
+
+/** Uploads audio files one by one and creates the matching tracks attached to an album. */
+export async function uploadAlbumTracks(
+  items: (File | AlbumTrackUpload)[],
+  ownerId: string,
+  albumId: string,
+  onProgress?: (index: number, status: "uploading" | "done") => void,
+) {
+  const list: AlbumTrackUpload[] = items.map((it) => (it instanceof File ? { file: it } : it));
+
+  for (let i = 0; i < list.length; i++) {
+    const { file, title } = list[i];
+    onProgress?.(i, "uploading");
     const ext = file.name.split(".").pop() ?? "mp3";
     const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
     const { error: upErr } = await supabase.storage
@@ -112,11 +123,12 @@ export async function uploadAlbumTracks(files: File[], ownerId: string, albumId:
     const { error } = await supabase.from("tracks").insert({
       user_id: ownerId,
       album_id: albumId,
-      title: file.name.replace(/\.[a-zA-Z0-9]+$/, ""),
+      title: (title?.trim() || file.name.replace(/\.[a-zA-Z0-9]+$/, "")),
       audio_path: path,
       duration_seconds: duration,
     } as never);
     if (error) throw error;
+    onProgress?.(i, "done");
   }
 }
 
