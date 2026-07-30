@@ -235,6 +235,23 @@ export function AlbumManager({
             onChange={(e) => setCover(e.target.files?.[0] ?? null)}
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
           />
+          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
+            <label className="mb-1 block text-[11px] font-semibold">Morceaux de l'album (obligatoire)</label>
+            <input
+              type="file"
+              accept="audio/*"
+              multiple
+              onChange={(e) => setAudioFiles(Array.from(e.target.files ?? []))}
+              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
+            />
+            {audioFiles.length > 0 && (
+              <ul className="mt-1.5 space-y-0.5 text-[10px] text-muted-foreground">
+                {audioFiles.map((f) => (
+                  <li key={f.name} className="truncate">🎵 {f.name}</li>
+                ))}
+              </ul>
+            )}
+          </div>
           <button
             type="submit"
             disabled={busy}
