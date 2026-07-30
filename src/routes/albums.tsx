@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Disc3, Loader2, ShoppingBag, Music2 } from "lucide-react";
-import { fetchAlbumsForSale, type AlbumForSale } from "@/lib/albums";
+import { ArrowLeft, Disc3, Loader2, ShoppingBag, Music2, Download, CheckCircle2 } from "lucide-react";
+import { fetchAlbumsForSale, fetchPurchasedAlbumIds, fetchAlbumTracks, type AlbumForSale, type AlbumTrackFile } from "@/lib/albums";
+import { downloadTrack } from "@/lib/tracks";
+import { useAuth } from "@/components/auth/AuthContext";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 import { BuyDialog } from "@/components/purchase/BuyDialog";
 
