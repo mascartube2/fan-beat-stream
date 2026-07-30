@@ -6,6 +6,9 @@ import type { TrackWithArtist } from "@/lib/tracks";
 import { uploadPreview, uploadAlbumTracks, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 
+export const MIN_ALBUM_TRACKS = 7;
+export const MAX_ALBUM_TRACKS = 10;
+
 type ArtistOption = { user_id: string; display_name: string };
 
 export type AlbumRow = {
@@ -56,7 +59,8 @@ export function AlbumManager({
     const owner = isAdmin ? artistId : currentUserId;
     if (!owner) return toast.error("Choisis un artiste");
     if (!title.trim()) return toast.error("Titre requis");
-    if (audioFiles.length === 0) return toast.error("Ajoute au moins un morceau à l'album");
+    if (audioFiles.length < MIN_ALBUM_TRACKS) return toast.error(`Un album doit contenir au moins ${MIN_ALBUM_TRACKS} morceaux`);
+    if (audioFiles.length > MAX_ALBUM_TRACKS) return toast.error(`Un album ne peut pas dépasser ${MAX_ALBUM_TRACKS} morceaux`);
     setBusy(true);
     try {
       let coverPath: string | null = null;
@@ -236,7 +240,9 @@ export function AlbumManager({
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
           />
           <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
-            <label className="mb-1 block text-[11px] font-semibold">Morceaux de l'album (obligatoire)</label>
+            <label className="mb-1 block text-[11px] font-semibold">
+              Morceaux de l'album ({MIN_ALBUM_TRACKS} à {MAX_ALBUM_TRACKS} obligatoires)
+            </label>
             <input
               type="file"
               accept="audio/*"
@@ -245,11 +251,23 @@ export function AlbumManager({
               className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
             />
             {audioFiles.length > 0 && (
-              <ul className="mt-1.5 space-y-0.5 text-[10px] text-muted-foreground">
-                {audioFiles.map((f) => (
-                  <li key={f.name} className="truncate">🎵 {f.name}</li>
-                ))}
-              </ul>
+              <>
+                <p
+                  className={`mt-1.5 text-[10px] font-semibold ${
+                    audioFiles.length < MIN_ALBUM_TRACKS || audioFiles.length > MAX_ALBUM_TRACKS
+                      ? "text-destructive"
+                      : "text-primary"
+                  }`}
+                >
+                  {audioFiles.length} / {MAX_ALBUM_TRACKS} morceaux sélectionnés
+                  {audioFiles.length < MIN_ALBUM_TRACKS && ` — minimum ${MIN_ALBUM_TRACKS}`}
+                </p>
+                <ul className="mt-1 space-y-0.5 text-[10px] text-muted-foreground">
+                  {audioFiles.map((f) => (
+                    <li key={f.name} className="truncate">🎵 {f.name}</li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
           <button
