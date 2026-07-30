@@ -44,6 +44,7 @@ export function AlbumManager({
   const [description, setDescription] = useState("");
   const [priceAr, setPriceAr] = useState<number>(5000);
   const [cover, setCover] = useState<File | null>(null);
+  const [audioFiles, setAudioFiles] = useState<File[]>([]);
   const [artistId, setArtistId] = useState<string>(currentUserId ?? "");
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export function AlbumManager({
     const owner = isAdmin ? artistId : currentUserId;
     if (!owner) return toast.error("Choisis un artiste");
     if (!title.trim()) return toast.error("Titre requis");
+    if (audioFiles.length === 0) return toast.error("Ajoute au moins un morceau à l'album");
     setBusy(true);
     try {
       let coverPath: string | null = null;
@@ -64,20 +66,28 @@ export function AlbumManager({
         const { error } = await supabase.storage.from("track-covers").upload(coverPath, cover, { contentType: cover.type });
         if (error) throw error;
       }
-      const { error } = await supabase.from("albums").insert({
-        user_id: owner,
-        title: title.trim(),
-        description: description.trim() || null,
-        cover_path: coverPath,
-        price_ar: Math.max(500, Math.round(priceAr)),
-        is_published: true,
-      });
+      const { data: created, error } = await supabase
+        .from("albums")
+        .insert({
+          user_id: owner,
+          title: title.trim(),
+          description: description.trim() || null,
+          cover_path: coverPath,
+          price_ar: Math.max(500, Math.round(priceAr)),
+          is_published: true,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
-      toast.success("Album créé");
+
+      await uploadAlbumTracks(audioFiles, owner, created.id);
+
+      toast.success(`Album créé avec ${audioFiles.length} morceau(x)`);
       setTitle("");
       setDescription("");
       setPriceAr(5000);
       setCover(null);
+      setAudioFiles([]);
       setCreating(false);
       await onChanged();
     } catch (err) {
@@ -86,6 +96,7 @@ export function AlbumManager({
       setBusy(false);
     }
   };
+
 
   const togglePublish = async (a: AlbumRow) => {
     setBusyId(a.id);
