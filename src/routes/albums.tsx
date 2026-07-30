@@ -22,9 +22,11 @@ export const Route = createFileRoute("/albums")({
 });
 
 function AlbumsPage() {
+  const { user } = useAuth();
   const [albums, setAlbums] = useState<AlbumForSale[]>([]);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<AlbumForSale | null>(null);
+  const [ownedIds, setOwnedIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetchAlbumsForSale().then((a) => {
@@ -32,6 +34,13 @@ function AlbumsPage() {
       setLoading(false);
     });
   }, []);
+
+  const loadOwned = () => {
+    if (!user) return setOwnedIds([]);
+    fetchPurchasedAlbumIds(user.id).then(setOwnedIds);
+  };
+  useEffect(loadOwned, [user?.id]);
+
 
   const totalTracks = albums.reduce((s, a) => s + a.trackCount, 0);
 
