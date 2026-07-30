@@ -56,7 +56,8 @@ export function AlbumManager({
     const owner = isAdmin ? artistId : currentUserId;
     if (!owner) return toast.error("Choisis un artiste");
     if (!title.trim()) return toast.error("Titre requis");
-    if (audioFiles.length === 0) return toast.error("Ajoute au moins un morceau à l'album");
+    if (audioFiles.length < MIN_ALBUM_TRACKS) return toast.error(`Un album doit contenir au moins ${MIN_ALBUM_TRACKS} morceaux`);
+    if (audioFiles.length > MAX_ALBUM_TRACKS) return toast.error(`Un album ne peut pas dépasser ${MAX_ALBUM_TRACKS} morceaux`);
     setBusy(true);
     try {
       let coverPath: string | null = null;
