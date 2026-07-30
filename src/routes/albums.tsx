@@ -131,3 +131,61 @@ function Stat({ label, value, icon, accent }: { label: string; value: number; ic
     </div>
   );
 }
+
+function AlbumDownloads({ albumId, title }: { albumId: string; title: string }) {
+  const [tracks, setTracks] = useState<AlbumTrackFile[]>([]);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    fetchAlbumTracks(albumId).then(setTracks);
+  }, [albumId]);
+
+  const downloadAll = async () => {
+    setBusy(true);
+    for (const t of tracks) {
+      await downloadTrack({ title: t.title, audioUrl: t.audioUrl, audio_path: t.audio_path });
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div className="mt-2 rounded-xl border border-primary/40 bg-primary/5 p-2.5">
+      <p className="flex items-center gap-1.5 text-[11px] font-bold text-primary-glow">
+        <CheckCircle2 className="h-3.5 w-3.5" /> Achat validé — album débloqué
+      </p>
+      <div className="mt-2 flex gap-2">
+        <button
+          onClick={downloadAll}
+          disabled={busy || tracks.length === 0}
+          className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-primary py-2 text-xs font-bold shadow-glow disabled:opacity-60"
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          Télécharger l'album ({tracks.length})
+        </button>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="rounded-full border border-border/60 px-3 py-2 text-[11px] font-semibold text-muted-foreground"
+        >
+          {open ? "Masquer" : "Titres"}
+        </button>
+      </div>
+      {open && (
+        <ul className="mt-2 space-y-1">
+          {tracks.map((t) => (
+            <li key={t.id} className="flex items-center justify-between gap-2 text-[11px]">
+              <span className="truncate">{t.title}</span>
+              <button
+                onClick={() => downloadTrack({ title: t.title, audioUrl: t.audioUrl, audio_path: t.audio_path })}
+                className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold"
+                aria-label={`Télécharger ${t.title} de ${title}`}
+              >
+                <Download className="h-3 w-3" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
