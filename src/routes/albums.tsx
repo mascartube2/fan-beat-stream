@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Disc3, Loader2, ShoppingBag, Music2 } from "lucide-react";
-import { fetchAlbumsForSale, type AlbumForSale } from "@/lib/albums";
+import { ArrowLeft, Disc3, Loader2, ShoppingBag, Music2, Download, CheckCircle2 } from "lucide-react";
+import { fetchAlbumsForSale, fetchPurchasedAlbumIds, fetchAlbumTracks, type AlbumForSale, type AlbumTrackFile } from "@/lib/albums";
+import { downloadTrack } from "@/lib/tracks";
+import { useAuth } from "@/components/auth/AuthContext";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 import { BuyDialog } from "@/components/purchase/BuyDialog";
 
@@ -20,9 +22,11 @@ export const Route = createFileRoute("/albums")({
 });
 
 function AlbumsPage() {
+  const { user } = useAuth();
   const [albums, setAlbums] = useState<AlbumForSale[]>([]);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<AlbumForSale | null>(null);
+  const [ownedIds, setOwnedIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetchAlbumsForSale().then((a) => {
@@ -30,6 +34,13 @@ function AlbumsPage() {
       setLoading(false);
     });
   }, []);
+
+  const loadOwned = () => {
+    if (!user) return setOwnedIds([]);
+    fetchPurchasedAlbumIds(user.id).then(setOwnedIds);
+  };
+  useEffect(loadOwned, [user?.id]);
+
 
   const totalTracks = albums.reduce((s, a) => s + a.trackCount, 0);
 
@@ -84,12 +95,16 @@ function AlbumsPage() {
                 )}
               </div>
 
-              <button
-                onClick={() => setBuying(a)}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-2 text-xs font-bold shadow-glow"
-              >
-                <ShoppingBag className="h-4 w-4" /> Acheter · {a.price_ar.toLocaleString()} Ar
-              </button>
+              {ownedIds.includes(a.id) ? (
+                <AlbumDownloads albumId={a.id} title={a.title} />
+              ) : (
+                <button
+                  onClick={() => setBuying(a)}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-2 text-xs font-bold shadow-glow"
+                >
+                  <ShoppingBag className="h-4 w-4" /> Acheter · {a.price_ar.toLocaleString()} Ar
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -113,6 +128,64 @@ function Stat({ label, value, icon, accent }: { label: string; value: number; ic
     <div className={`rounded-xl border border-border/40 p-2.5 ${accent ? "bg-gradient-primary/10" : "bg-surface"}`}>
       <div className="mb-1 flex items-center gap-1 text-[10px] text-muted-foreground">{icon}<span>{label}</span></div>
       <p className="text-lg font-bold">{value}</p>
+    </div>
+  );
+}
+
+function AlbumDownloads({ albumId, title }: { albumId: string; title: string }) {
+  const [tracks, setTracks] = useState<AlbumTrackFile[]>([]);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    fetchAlbumTracks(albumId).then(setTracks);
+  }, [albumId]);
+
+  const downloadAll = async () => {
+    setBusy(true);
+    for (const t of tracks) {
+      await downloadTrack({ title: t.title, audioUrl: t.audioUrl, audio_path: t.audio_path });
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div className="mt-2 rounded-xl border border-primary/40 bg-primary/5 p-2.5">
+      <p className="flex items-center gap-1.5 text-[11px] font-bold text-primary-glow">
+        <CheckCircle2 className="h-3.5 w-3.5" /> Achat validé — album débloqué
+      </p>
+      <div className="mt-2 flex gap-2">
+        <button
+          onClick={downloadAll}
+          disabled={busy || tracks.length === 0}
+          className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-primary py-2 text-xs font-bold shadow-glow disabled:opacity-60"
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          Télécharger l'album ({tracks.length})
+        </button>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="rounded-full border border-border/60 px-3 py-2 text-[11px] font-semibold text-muted-foreground"
+        >
+          {open ? "Masquer" : "Titres"}
+        </button>
+      </div>
+      {open && (
+        <ul className="mt-2 space-y-1">
+          {tracks.map((t) => (
+            <li key={t.id} className="flex items-center justify-between gap-2 text-[11px]">
+              <span className="truncate">{t.title}</span>
+              <button
+                onClick={() => downloadTrack({ title: t.title, audioUrl: t.audioUrl, audio_path: t.audio_path })}
+                className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold"
+                aria-label={`Télécharger ${t.title} de ${title}`}
+              >
+                <Download className="h-3 w-3" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

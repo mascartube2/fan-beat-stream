@@ -3,7 +3,7 @@ import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff, Music4 } from "lucide-react"
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrackWithArtist } from "@/lib/tracks";
-import { uploadPreview, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
+import { uploadPreview, uploadAlbumTracks, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 
 type ArtistOption = { user_id: string; display_name: string };
@@ -44,6 +44,7 @@ export function AlbumManager({
   const [description, setDescription] = useState("");
   const [priceAr, setPriceAr] = useState<number>(5000);
   const [cover, setCover] = useState<File | null>(null);
+  const [audioFiles, setAudioFiles] = useState<File[]>([]);
   const [artistId, setArtistId] = useState<string>(currentUserId ?? "");
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export function AlbumManager({
     const owner = isAdmin ? artistId : currentUserId;
     if (!owner) return toast.error("Choisis un artiste");
     if (!title.trim()) return toast.error("Titre requis");
+    if (audioFiles.length === 0) return toast.error("Ajoute au moins un morceau à l'album");
     setBusy(true);
     try {
       let coverPath: string | null = null;
@@ -64,20 +66,28 @@ export function AlbumManager({
         const { error } = await supabase.storage.from("track-covers").upload(coverPath, cover, { contentType: cover.type });
         if (error) throw error;
       }
-      const { error } = await supabase.from("albums").insert({
-        user_id: owner,
-        title: title.trim(),
-        description: description.trim() || null,
-        cover_path: coverPath,
-        price_ar: Math.max(500, Math.round(priceAr)),
-        is_published: true,
-      });
+      const { data: created, error } = await supabase
+        .from("albums")
+        .insert({
+          user_id: owner,
+          title: title.trim(),
+          description: description.trim() || null,
+          cover_path: coverPath,
+          price_ar: Math.max(500, Math.round(priceAr)),
+          is_published: true,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
-      toast.success("Album créé");
+
+      await uploadAlbumTracks(audioFiles, owner, created.id);
+
+      toast.success(`Album créé avec ${audioFiles.length} morceau(x)`);
       setTitle("");
       setDescription("");
       setPriceAr(5000);
       setCover(null);
+      setAudioFiles([]);
       setCreating(false);
       await onChanged();
     } catch (err) {
@@ -86,6 +96,7 @@ export function AlbumManager({
       setBusy(false);
     }
   };
+
 
   const togglePublish = async (a: AlbumRow) => {
     setBusyId(a.id);
@@ -224,6 +235,23 @@ export function AlbumManager({
             onChange={(e) => setCover(e.target.files?.[0] ?? null)}
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
           />
+          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
+            <label className="mb-1 block text-[11px] font-semibold">Morceaux de l'album (obligatoire)</label>
+            <input
+              type="file"
+              accept="audio/*"
+              multiple
+              onChange={(e) => setAudioFiles(Array.from(e.target.files ?? []))}
+              className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
+            />
+            {audioFiles.length > 0 && (
+              <ul className="mt-1.5 space-y-0.5 text-[10px] text-muted-foreground">
+                {audioFiles.map((f) => (
+                  <li key={f.name} className="truncate">🎵 {f.name}</li>
+                ))}
+              </ul>
+            )}
+          </div>
           <button
             type="submit"
             disabled={busy}
