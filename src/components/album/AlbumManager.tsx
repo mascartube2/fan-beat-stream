@@ -56,6 +56,9 @@ export function AlbumManager({
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const visibleAlbums = isAdmin ? albums : albums.filter((a) => a.user_id === currentUserId);
+  const filledCount = slots.filter((s) => s.file).length;
+  const updateSlot = (index: number, patch: Partial<{ file: File | null; title: string }>) =>
+    setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
 
   const create = async (e: FormEvent) => {
     e.preventDefault();
