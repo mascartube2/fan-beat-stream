@@ -6,6 +6,9 @@ import type { TrackWithArtist } from "@/lib/tracks";
 import { uploadPreview, uploadAlbumTracks, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 
+export const MIN_ALBUM_TRACKS = 7;
+export const MAX_ALBUM_TRACKS = 10;
+
 type ArtistOption = { user_id: string; display_name: string };
 
 export type AlbumRow = {
