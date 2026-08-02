@@ -35,12 +35,13 @@ export function drawAlbumCover(
   title: string,
   artist?: string,
   size = 1000,
+  variant = 0,
 ): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   canvas.width = size;
   canvas.height = size;
-  const seed = hash(`${title}|${artist ?? ""}`);
+  const seed = hash(`${title}|${artist ?? ""}`) + variant * 7;
   const [c1, c2, c3] = PALETTES[seed % PALETTES.length];
 
   // Fond dégradé
@@ -117,9 +118,9 @@ export function drawAlbumCover(
   ctx.strokeRect(margin * 0.45, margin * 0.45, size - margin * 0.9, size - margin * 0.9);
 }
 
-export async function generateAlbumCoverFile(title: string, artist?: string): Promise<File> {
+export async function generateAlbumCoverFile(title: string, artist?: string, variant = 0): Promise<File> {
   const canvas = document.createElement("canvas");
-  drawAlbumCover(canvas, title || "Album", artist);
+  drawAlbumCover(canvas, title || "Album", artist, 1000, variant);
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
   if (!blob) throw new Error("Impossible de générer la couverture");
   const slug = (title || "album").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

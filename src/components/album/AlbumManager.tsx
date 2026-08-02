@@ -69,7 +69,7 @@ export function AlbumManager({
   // Aperçu de la couverture générée automatiquement (titre en vue)
   useEffect(() => {
     if (!creating || cover || !autoCanvasRef.current) return;
-    drawAlbumCover(autoCanvasRef.current, title.trim() || "Nouvel album", artistLabel, 600);
+    drawAlbumCover(autoCanvasRef.current, title.trim() || "Nouvel album", artistLabel, 600, autoSeed);
   }, [creating, cover, title, artistLabel, autoSeed]);
 
   const create = async (e: FormEvent) => {
@@ -85,7 +85,7 @@ export function AlbumManager({
     setBusy(true);
     try {
       let coverPath: string | null = null;
-      const coverFile = cover ?? (await generateAlbumCoverFile(title.trim(), artistLabel));
+      const coverFile = cover ?? (await generateAlbumCoverFile(title.trim(), artistLabel, autoSeed));
       if (coverFile) {
         const ext = coverFile.name.split(".").pop() ?? "jpg";
         coverPath = `${owner}/${crypto.randomUUID()}.${ext}`;
