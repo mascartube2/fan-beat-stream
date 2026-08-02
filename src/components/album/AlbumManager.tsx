@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrackWithArtist } from "@/lib/tracks";
 import { uploadPreview, uploadAlbumTracks, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
-import { drawAlbumCover, generateAlbumCoverFile } from "@/lib/album-cover";
+import { drawAlbumCover, generateAlbumCoverFile, COVER_STYLES, type CoverStyleId } from "@/lib/album-cover";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 
 
@@ -89,7 +89,7 @@ export function AlbumManager({
     setBusy(true);
     try {
       let coverPath: string | null = null;
-      const coverFile = cover ?? (await generateAlbumCoverFile(title.trim(), artistLabel, autoSeed));
+      const coverFile = cover ?? (await generateAlbumCoverFile(title.trim(), artistLabel, coverStyle));
       if (coverFile) {
         const ext = coverFile.name.split(".").pop() ?? "jpg";
         coverPath = `${owner}/${crypto.randomUUID()}.${ext}`;
