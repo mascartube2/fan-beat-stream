@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrackWithArtist } from "@/lib/tracks";
 import { uploadPreview, uploadAlbumTracks, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
-import { drawAlbumCover, generateAlbumCoverFile } from "@/lib/album-cover";
+import { drawAlbumCover, generateAlbumCoverFile, COVER_STYLES, type CoverStyleId } from "@/lib/album-cover";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 
 
@@ -56,8 +56,8 @@ export function AlbumManager({
   const [artistId, setArtistId] = useState<string>(currentUserId ?? "");
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [autoSeed, setAutoSeed] = useState(0);
-  const autoCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [coverStyle, setCoverStyle] = useState<CoverStyleId>("vinyl");
+  const styleCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 
   const visibleAlbums = isAdmin ? albums : albums.filter((a) => a.user_id === currentUserId);
   const filledCount = slots.filter((s) => s.file).length;
@@ -66,11 +66,15 @@ export function AlbumManager({
   const updateSlot = (index: number, patch: Partial<{ file: File | null; title: string }>) =>
     setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
 
-  // Aperçu de la couverture générée automatiquement (titre en vue)
+  // Aperçus des 6 styles de couverture générés automatiquement (titre en vue)
   useEffect(() => {
-    if (!creating || cover || !autoCanvasRef.current) return;
-    drawAlbumCover(autoCanvasRef.current, title.trim() || "Nouvel album", artistLabel, 600, autoSeed);
-  }, [creating, cover, title, artistLabel, autoSeed]);
+    if (!creating) return;
+    for (const s of COVER_STYLES) {
+      const c = styleCanvasRefs.current[s.id];
+      if (c) drawAlbumCover(c, title.trim() || "Nouvel album", artistLabel, 400, s.id);
+    }
+  }, [creating, cover, title, artistLabel]);
+
 
   const create = async (e: FormEvent) => {
     e.preventDefault();
@@ -85,7 +89,7 @@ export function AlbumManager({
     setBusy(true);
     try {
       let coverPath: string | null = null;
-      const coverFile = cover ?? (await generateAlbumCoverFile(title.trim(), artistLabel, autoSeed));
+      const coverFile = cover ?? (await generateAlbumCoverFile(title.trim(), artistLabel, coverStyle));
       if (coverFile) {
         const ext = coverFile.name.split(".").pop() ?? "jpg";
         coverPath = `${owner}/${crypto.randomUUID()}.${ext}`;
@@ -271,35 +275,47 @@ export function AlbumManager({
             onChange={(e) => setCover(e.target.files?.[0] ?? null)}
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
           />
-          <div className="flex items-center gap-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
-            {cover ? (
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded bg-black/40 text-[10px] text-muted-foreground">
-                Perso.
-              </div>
-            ) : (
-              <canvas ref={autoCanvasRef} className="h-20 w-20 shrink-0 rounded object-cover" />
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold">Couverture automatique</p>
-              <p className="text-[10px] text-muted-foreground">
-                {cover
-                  ? "Une image personnalisée est sélectionnée."
-                  : "Générée avec le titre en vue si aucune image n'est choisie."}
+          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
+            <div className="mb-1.5 flex items-center justify-between">
+              <p className="flex items-center gap-1 text-[11px] font-semibold">
+                <Wand2 className="h-3 w-3 text-primary-glow" /> Couverture automatique
               </p>
-              <div className="mt-1 flex gap-2">
+              <span className="text-[10px] text-muted-foreground">
+                {cover ? "Image perso. utilisée" : `Style : ${COVER_STYLES.find((s) => s.id === coverStyle)?.label}`}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {COVER_STYLES.map((s) => (
                 <button
+                  key={s.id}
                   type="button"
                   onClick={() => {
+                    setCoverStyle(s.id);
                     setCover(null);
-                    setAutoSeed((v) => v + 1);
                   }}
-                  className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-muted-foreground hover:bg-white/5"
+                  className={`overflow-hidden rounded-lg border text-left transition ${
+                    !cover && coverStyle === s.id
+                      ? "border-primary ring-2 ring-primary/50"
+                      : "border-border/60 opacity-80 hover:opacity-100"
+                  }`}
                 >
-                  <Wand2 className="h-3 w-3" /> {cover ? "Utiliser l'auto" : "Autre style"}
+                  <canvas
+                    ref={(el) => {
+                      styleCanvasRefs.current[s.id] = el;
+                    }}
+                    className="block aspect-square w-full"
+                  />
+                  <span className="block px-1 py-0.5 text-center text-[9px] font-semibold">{s.label}</span>
                 </button>
-              </div>
+              ))}
             </div>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              {cover
+                ? "Retire l'image personnalisée en choisissant un style ci-dessus."
+                : "Le titre de l'album est intégré à l'image."}
+            </p>
           </div>
+
 
           <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
             <div className="mb-1.5 flex items-center justify-between">
