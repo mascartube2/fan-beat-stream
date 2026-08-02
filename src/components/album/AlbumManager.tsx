@@ -56,11 +56,21 @@ export function AlbumManager({
   const [artistId, setArtistId] = useState<string>(currentUserId ?? "");
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [autoSeed, setAutoSeed] = useState(0);
+  const autoCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const visibleAlbums = isAdmin ? albums : albums.filter((a) => a.user_id === currentUserId);
   const filledCount = slots.filter((s) => s.file).length;
+  const artistLabel =
+    (isAdmin ? artists?.find((a) => a.user_id === artistId)?.display_name : undefined) ?? "MascarTube";
   const updateSlot = (index: number, patch: Partial<{ file: File | null; title: string }>) =>
     setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
+
+  // Aperçu de la couverture générée automatiquement (titre en vue)
+  useEffect(() => {
+    if (!creating || cover || !autoCanvasRef.current) return;
+    drawAlbumCover(autoCanvasRef.current, title.trim() || "Nouvel album", artistLabel, 600);
+  }, [creating, cover, title, artistLabel, autoSeed]);
 
   const create = async (e: FormEvent) => {
     e.preventDefault();
@@ -75,12 +85,16 @@ export function AlbumManager({
     setBusy(true);
     try {
       let coverPath: string | null = null;
-      if (cover) {
-        const ext = cover.name.split(".").pop() ?? "jpg";
+      const coverFile = cover ?? (await generateAlbumCoverFile(title.trim(), artistLabel));
+      if (coverFile) {
+        const ext = coverFile.name.split(".").pop() ?? "jpg";
         coverPath = `${owner}/${crypto.randomUUID()}.${ext}`;
-        const { error } = await supabase.storage.from("track-covers").upload(coverPath, cover, { contentType: cover.type });
+        const { error } = await supabase.storage
+          .from("track-covers")
+          .upload(coverPath, coverFile, { contentType: coverFile.type });
         if (error) throw error;
       }
+
       const { data: created, error } = await supabase
         .from("albums")
         .insert({
