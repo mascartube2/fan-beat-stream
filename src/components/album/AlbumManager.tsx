@@ -56,8 +56,8 @@ export function AlbumManager({
   const [artistId, setArtistId] = useState<string>(currentUserId ?? "");
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [autoSeed, setAutoSeed] = useState(0);
-  const autoCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [coverStyle, setCoverStyle] = useState<CoverStyleId>("vinyl");
+  const styleCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 
   const visibleAlbums = isAdmin ? albums : albums.filter((a) => a.user_id === currentUserId);
   const filledCount = slots.filter((s) => s.file).length;
@@ -66,11 +66,15 @@ export function AlbumManager({
   const updateSlot = (index: number, patch: Partial<{ file: File | null; title: string }>) =>
     setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
 
-  // Aperçu de la couverture générée automatiquement (titre en vue)
+  // Aperçus des 6 styles de couverture générés automatiquement (titre en vue)
   useEffect(() => {
-    if (!creating || cover || !autoCanvasRef.current) return;
-    drawAlbumCover(autoCanvasRef.current, title.trim() || "Nouvel album", artistLabel, 600, autoSeed);
-  }, [creating, cover, title, artistLabel, autoSeed]);
+    if (!creating) return;
+    for (const s of COVER_STYLES) {
+      const c = styleCanvasRefs.current[s.id];
+      if (c) drawAlbumCover(c, title.trim() || "Nouvel album", artistLabel, 400, s.id);
+    }
+  }, [creating, cover, title, artistLabel]);
+
 
   const create = async (e: FormEvent) => {
     e.preventDefault();
