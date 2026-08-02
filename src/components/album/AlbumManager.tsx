@@ -1,10 +1,12 @@
-import { useState, type FormEvent } from "react";
-import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff, Music4 } from "lucide-react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
+import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff, Music4, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrackWithArtist } from "@/lib/tracks";
 import { uploadPreview, uploadAlbumTracks, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
+import { drawAlbumCover, generateAlbumCoverFile } from "@/lib/album-cover";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
+
 
 export const MIN_ALBUM_TRACKS = 7;
 export const MAX_ALBUM_TRACKS = 10;
@@ -54,11 +56,21 @@ export function AlbumManager({
   const [artistId, setArtistId] = useState<string>(currentUserId ?? "");
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [autoSeed, setAutoSeed] = useState(0);
+  const autoCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const visibleAlbums = isAdmin ? albums : albums.filter((a) => a.user_id === currentUserId);
   const filledCount = slots.filter((s) => s.file).length;
+  const artistLabel =
+    (isAdmin ? artists?.find((a) => a.user_id === artistId)?.display_name : undefined) ?? "MascarTube";
   const updateSlot = (index: number, patch: Partial<{ file: File | null; title: string }>) =>
     setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
+
+  // Aperçu de la couverture générée automatiquement (titre en vue)
+  useEffect(() => {
+    if (!creating || cover || !autoCanvasRef.current) return;
+    drawAlbumCover(autoCanvasRef.current, title.trim() || "Nouvel album", artistLabel, 600, autoSeed);
+  }, [creating, cover, title, artistLabel, autoSeed]);
 
   const create = async (e: FormEvent) => {
     e.preventDefault();
@@ -73,12 +85,16 @@ export function AlbumManager({
     setBusy(true);
     try {
       let coverPath: string | null = null;
-      if (cover) {
-        const ext = cover.name.split(".").pop() ?? "jpg";
+      const coverFile = cover ?? (await generateAlbumCoverFile(title.trim(), artistLabel, autoSeed));
+      if (coverFile) {
+        const ext = coverFile.name.split(".").pop() ?? "jpg";
         coverPath = `${owner}/${crypto.randomUUID()}.${ext}`;
-        const { error } = await supabase.storage.from("track-covers").upload(coverPath, cover, { contentType: cover.type });
+        const { error } = await supabase.storage
+          .from("track-covers")
+          .upload(coverPath, coverFile, { contentType: coverFile.type });
         if (error) throw error;
       }
+
       const { data: created, error } = await supabase
         .from("albums")
         .insert({
@@ -255,6 +271,36 @@ export function AlbumManager({
             onChange={(e) => setCover(e.target.files?.[0] ?? null)}
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
           />
+          <div className="flex items-center gap-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
+            {cover ? (
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded bg-black/40 text-[10px] text-muted-foreground">
+                Perso.
+              </div>
+            ) : (
+              <canvas ref={autoCanvasRef} className="h-20 w-20 shrink-0 rounded object-cover" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold">Couverture automatique</p>
+              <p className="text-[10px] text-muted-foreground">
+                {cover
+                  ? "Une image personnalisée est sélectionnée."
+                  : "Générée avec le titre en vue si aucune image n'est choisie."}
+              </p>
+              <div className="mt-1 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCover(null);
+                    setAutoSeed((v) => v + 1);
+                  }}
+                  className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-muted-foreground hover:bg-white/5"
+                >
+                  <Wand2 className="h-3 w-3" /> {cover ? "Utiliser l'auto" : "Autre style"}
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
             <div className="mb-1.5 flex items-center justify-between">
               <label className="text-[11px] font-semibold">
