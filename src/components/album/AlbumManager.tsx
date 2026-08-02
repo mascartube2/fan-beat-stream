@@ -1,10 +1,12 @@
-import { useState, type FormEvent } from "react";
-import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff, Music4 } from "lucide-react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
+import { Loader2, Disc3, Trash2, Plus, Eye, EyeOff, Music4, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrackWithArtist } from "@/lib/tracks";
 import { uploadPreview, uploadAlbumTracks, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
+import { drawAlbumCover, generateAlbumCoverFile } from "@/lib/album-cover";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
+
 
 export const MIN_ALBUM_TRACKS = 7;
 export const MAX_ALBUM_TRACKS = 10;
