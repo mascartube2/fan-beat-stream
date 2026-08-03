@@ -118,6 +118,14 @@ export function AlbumManager({
         .single();
       if (error) throw error;
 
+      if (previewFile) {
+        const { path, duration } = await uploadPreview(previewFile, owner);
+        await supabase
+          .from("albums")
+          .update({ preview_path: path, preview_duration_seconds: duration } as never)
+          .eq("id", created.id);
+      }
+
       setSlotStatus({});
       await uploadAlbumTracks(
         filled.map((s) => ({ file: s.file, title: s.title })),
@@ -131,6 +139,8 @@ export function AlbumManager({
       setDescription("");
       setPriceAr(5000);
       setCover(null);
+      setPreviewFile(null);
+
       setSlots(Array.from({ length: MAX_ALBUM_TRACKS }, () => ({ file: null, title: "" })));
       setSlotStatus({});
       setCreating(false);
