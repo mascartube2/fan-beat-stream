@@ -129,6 +129,48 @@ function DiscoverPage() {
         </div>
       </div>
 
+      {freeAlbums.length > 0 && (
+        <section className="mb-6 rounded-2xl border border-primary/40 bg-primary/5 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-primary-glow">
+              <Gift className="h-4 w-4" /> Albums gratuits
+            </h2>
+            <Link to="/albums" className="shrink-0 text-[11px] font-semibold text-muted-foreground hover:underline">
+              Tout voir
+            </Link>
+          </div>
+          <div className="-mx-1 overflow-x-auto px-1">
+            <div className="flex gap-3">
+              {freeAlbums.map((a) => (
+                <Link
+                  key={a.id}
+                  to="/albums"
+                  className="w-32 shrink-0"
+                >
+                  <img
+                    src={a.coverUrl}
+                    alt={`Pochette de l'album gratuit ${a.title}`}
+                    width={128}
+                    height={128}
+                    loading="lazy"
+                    className="mb-1.5 aspect-square w-full rounded-xl object-cover"
+                  />
+                  <p className="truncate text-xs font-semibold">{a.title}</p>
+                  <p className="truncate text-[10px] text-muted-foreground">
+                    {a.artistName} · {a.trackCount} titres
+                  </p>
+                  <span className="mt-0.5 inline-block rounded-full bg-gradient-primary px-2 py-0.5 text-[9px] font-bold">
+                    Gratuit
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+
+
       {loading ? (
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       ) : tracks.length === 0 ? (
