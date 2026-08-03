@@ -486,7 +486,7 @@ export function AlbumManager({
                   ) : (
                     <p className="text-[10px] text-muted-foreground">Aucun extrait (max 1 min 20).</p>
                   )}
-                  {isAdmin && (
+                  {(isAdmin || a.user_id === currentUserId) && (
                     <div className="flex items-center gap-2">
                       <label className="flex flex-1 cursor-pointer items-center gap-1.5 rounded-full border border-border/60 px-2.5 py-1 text-[10px] font-semibold text-muted-foreground hover:bg-white/5">
                         <Music4 className="h-3 w-3" />
