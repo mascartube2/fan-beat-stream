@@ -53,12 +53,11 @@ export async function uploadPreview(file: File, ownerId: string): Promise<{ path
   return { path, duration: Math.round(duration) };
 }
 
-export async function fetchAlbumsForSale(): Promise<AlbumForSale[]> {
-  const { data: albums } = await supabase
-    .from("albums")
-    .select("*")
-    .eq("is_published", true)
-    .order("created_at", { ascending: false });
+export async function fetchAlbumsForSale(mode: "paid" | "free" | "all" = "paid"): Promise<AlbumForSale[]> {
+  let query = supabase.from("albums").select("*").eq("is_published", true);
+  if (mode === "paid") query = query.gt("price_ar", 0);
+  if (mode === "free") query = query.lte("price_ar", 0);
+  const { data: albums } = await query.order("created_at", { ascending: false });
   if (!albums?.length) return [];
 
   const ids = albums.map((a) => a.id);
@@ -77,6 +76,12 @@ export async function fetchAlbumsForSale(): Promise<AlbumForSale[]> {
     trackCount: (tracks ?? []).filter((t: any) => t.album_id === a.id).length,
   }));
 }
+
+/** Albums gratuits — visibles pour toujours (Discovery + section dédiée). */
+export function fetchFreeAlbums() {
+  return fetchAlbumsForSale("free");
+}
+
 
 export function formatSeconds(s: number | null | undefined) {
   if (!s && s !== 0) return "—";

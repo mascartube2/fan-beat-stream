@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, TrendingUp, Play, Loader2, Music2, Disc3 } from "lucide-react";
+import { Search, TrendingUp, Play, Loader2, Music2, Disc3, Gift } from "lucide-react";
 
 import { useEffect, useMemo, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchTracksWithArtists, toPlayable, TRACK_GENRES, type TrackWithArtist } from "@/lib/tracks";
+import { fetchFreeAlbums, type AlbumForSale } from "@/lib/albums";
+
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
@@ -17,6 +19,7 @@ const ALL = "Tous";
 function DiscoverPage() {
   const { playTrack } = usePlayer();
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
+  const [freeAlbums, setFreeAlbums] = useState<AlbumForSale[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState<string>(ALL);
@@ -26,6 +29,8 @@ function DiscoverPage() {
       setTracks(t);
       setLoading(false);
     });
+    fetchFreeAlbums().then(setFreeAlbums);
+
     const ch = supabase
       .channel("tracks-plays")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "tracks" }, (payload) => {

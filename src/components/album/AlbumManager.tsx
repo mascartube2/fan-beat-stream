@@ -58,26 +58,30 @@ export function AlbumManager({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [coverStyle, setCoverStyle] = useState<CoverStyleId>("vinyl");
   const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const [isFree, setIsFree] = useState(false);
   const styleCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
   const mainCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const visibleAlbums = isAdmin ? albums : albums.filter((a) => a.user_id === currentUserId);
   const filledCount = slots.filter((s) => s.file).length;
+  const trackTitles = slots.map((s) => s.title.trim()).filter(Boolean);
   const artistLabel =
     (isAdmin ? artists?.find((a) => a.user_id === artistId)?.display_name : undefined) ?? "MascarTube";
   const updateSlot = (index: number, patch: Partial<{ file: File | null; title: string }>) =>
     setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
 
-  // Aperçus des 6 styles + grand aperçu, redessinés en temps réel à chaque frappe du titre
+  // Aperçus des 6 styles + grand aperçu, redessinés en temps réel (titre + petits titres des morceaux)
   useEffect(() => {
     if (!creating) return;
     const label = title.trim() || "Nouvel album";
     for (const s of COVER_STYLES) {
       const c = styleCanvasRefs.current[s.id];
-      if (c) drawAlbumCover(c, label, artistLabel, 400, s.id);
+      if (c) drawAlbumCover(c, label, artistLabel, 400, s.id, trackTitles);
     }
-    if (mainCanvasRef.current) drawAlbumCover(mainCanvasRef.current, label, artistLabel, 700, coverStyle);
-  }, [creating, cover, title, artistLabel, coverStyle]);
+    if (mainCanvasRef.current)
+      drawAlbumCover(mainCanvasRef.current, label, artistLabel, 700, coverStyle, trackTitles);
+  }, [creating, cover, title, artistLabel, coverStyle, trackTitles.join("|")]);
+
 
 
 
@@ -94,7 +98,14 @@ export function AlbumManager({
     setBusy(true);
     try {
       let coverPath: string | null = null;
-      const coverFile = cover ?? (await generateAlbumCoverFile(title.trim(), artistLabel, coverStyle));
+      const coverFile =
+        cover ??
+        (await generateAlbumCoverFile(
+          title.trim(),
+          artistLabel,
+          coverStyle,
+          filled.map((s) => s.title.trim()).filter(Boolean),
+        ));
       if (coverFile) {
         const ext = coverFile.name.split(".").pop() ?? "jpg";
         coverPath = `${owner}/${crypto.randomUUID()}.${ext}`;
@@ -111,7 +122,7 @@ export function AlbumManager({
           title: title.trim(),
           description: description.trim() || null,
           cover_path: coverPath,
-          price_ar: Math.max(500, Math.round(priceAr)),
+          price_ar: isFree ? 0 : Math.max(500, Math.round(priceAr)),
           is_published: true,
         })
         .select("id")
@@ -134,12 +145,23 @@ export function AlbumManager({
         (index, status) => setSlotStatus((prev) => ({ ...prev, [filled[index].i]: status })),
       );
 
-      toast.success(`Album créé avec ${filled.length} morceaux`);
+      // Album gratuit → publication automatique sur le feed
+      if (isFree) {
+        const lines = filled.map((s, i) => `${i + 1}. ${s.title.trim() || `Morceau ${i + 1}`}`).join("\n");
+        await supabase.from("posts").insert({
+          user_id: owner,
+          content: `🎁 Nouvel album GRATUIT : « ${title.trim() }» — ${filled.length} morceaux à télécharger librement !\n\n${lines}\n\n👉 Disponible pour toujours dans Discover.`,
+        } as never);
+      }
+
+      toast.success(isFree ? `Album gratuit créé et publié sur le feed` : `Album créé avec ${filled.length} morceaux`);
       setTitle("");
       setDescription("");
       setPriceAr(5000);
+      setIsFree(false);
       setCover(null);
       setPreviewFile(null);
+
 
       setSlots(Array.from({ length: MAX_ALBUM_TRACKS }, () => ({ file: null, title: "" })));
       setSlotStatus({});
@@ -271,19 +293,26 @@ export function AlbumManager({
             rows={2}
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm"
           />
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={500}
-              step={500}
-              value={priceAr}
-              onChange={(e) => setPriceAr(Number(e.target.value) || 5000)}
-              className="w-32 rounded-lg border border-border bg-input px-3 py-2 text-sm"
-            />
-            <span className="self-center text-xs text-muted-foreground">
-              Ar · artiste : {Math.floor(priceAr * 0.85).toLocaleString()} Ar
-            </span>
-          </div>
+          <label className="flex items-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-[11px] font-semibold">
+            <input type="checkbox" checked={isFree} onChange={(e) => setIsFree(e.target.checked)} />
+            🎁 Album gratuit (publié sur le feed, visible pour toujours dans Discover)
+          </label>
+          {!isFree && (
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min={500}
+                step={500}
+                value={priceAr}
+                onChange={(e) => setPriceAr(Number(e.target.value) || 5000)}
+                className="w-32 rounded-lg border border-border bg-input px-3 py-2 text-sm"
+              />
+              <span className="self-center text-xs text-muted-foreground">
+                Ar · artiste : {Math.floor(priceAr * 0.85).toLocaleString()} Ar
+              </span>
+            </div>
+          )}
+
           <input
             type="file"
             accept="image/*"
