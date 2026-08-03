@@ -291,6 +291,26 @@ export function AlbumManager({
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
           />
           <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
+            <p className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold">
+              <Music4 className="h-3 w-3 text-primary-glow" /> Extrait d'écoute (max 1 min 20)
+            </p>
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={(e) => setPreviewFile(e.target.files?.[0] ?? null)}
+              className="w-full text-[10px] file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[10px] file:font-bold file:text-primary-foreground"
+            />
+            {previewFile && <p className="mt-1 truncate text-[10px] text-primary">🎧 {previewFile.name}</p>}
+          </div>
+
+          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
+            {!cover && (
+              <canvas
+                ref={mainCanvasRef}
+                className="mb-2 block aspect-square w-full rounded-lg border border-border/60"
+              />
+            )}
+
             <div className="mb-1.5 flex items-center justify-between">
               <p className="flex items-center gap-1 text-[11px] font-semibold">
                 <Wand2 className="h-3 w-3 text-primary-glow" /> Couverture automatique
