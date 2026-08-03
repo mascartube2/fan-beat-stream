@@ -87,12 +87,44 @@ function drawTitle(
   ctx.textAlign = "left";
 }
 
+/** Petits titres des extraits/morceaux, listés en haut de la pochette. */
+function drawTrackList(
+  ctx: CanvasRenderingContext2D,
+  size: number,
+  tracks: string[],
+  color: string,
+) {
+  const list = tracks.map((t) => t.trim()).filter(Boolean).slice(0, 10);
+  if (!list.length) return;
+  const margin = size * 0.08;
+  const fontSize = size * 0.028;
+  const lineHeight = fontSize * 1.55;
+  ctx.save();
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.font = `600 ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+  let y = margin + fontSize;
+  for (let i = 0; i < list.length; i++) {
+    const label = `${String(i + 1).padStart(2, "0")}  ${list[i].toUpperCase()}`;
+    let text = label;
+    const maxWidth = size - margin * 2;
+    while (ctx.measureText(text).width > maxWidth && text.length > 4) text = text.slice(0, -2);
+    if (text !== label) text = `${text}…`;
+    ctx.globalAlpha = 0.86;
+    ctx.fillStyle = color;
+    ctx.fillText(text, margin, y);
+    y += lineHeight;
+  }
+  ctx.restore();
+}
+
 export function drawAlbumCover(
   canvas: HTMLCanvasElement,
   title: string,
   artist?: string,
   size = 1000,
   style: CoverStyleId = "vinyl",
+  tracks: string[] = [],
 ): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
@@ -103,6 +135,7 @@ export function drawAlbumCover(
   const [c1, c2, c3] = PALETTES[style] ?? PALETTES.vinyl;
   const margin = size * 0.08;
 
+
   if (style === "minimal") {
     ctx.fillStyle = c3;
     ctx.fillRect(0, 0, size, size);
@@ -111,8 +144,10 @@ export function drawAlbumCover(
     ctx.strokeRect(margin * 0.6, margin * 0.6, size - margin * 1.2, size - margin * 1.2);
     ctx.fillStyle = c2;
     ctx.fillRect(margin, size * 0.32, size * 0.22, size * 0.012);
+    drawTrackList(ctx, size, tracks, "#0f172a");
     drawTitle(ctx, size, title, artist, { color: "#0f172a", align: "bottom", startSize: 0.12, shadow: false });
     return;
+
   }
 
   // Fond dégradé
@@ -186,10 +221,12 @@ export function drawAlbumCover(
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, size, size);
 
+  drawTrackList(ctx, size, tracks, "#ffffff");
+
   drawTitle(ctx, size, title, artist, {
     color: "#ffffff",
     align: style === "spotlight" ? "center" : "bottom",
-    startSize: 0.13,
+    startSize: tracks.filter(Boolean).length > 6 ? 0.11 : 0.13,
   });
 
   ctx.strokeStyle = "rgba(255,255,255,0.35)";
@@ -201,9 +238,11 @@ export async function generateAlbumCoverFile(
   title: string,
   artist?: string,
   style: CoverStyleId = "vinyl",
+  tracks: string[] = [],
 ): Promise<File> {
   const canvas = document.createElement("canvas");
-  drawAlbumCover(canvas, title || "Album", artist, 1000, style);
+  drawAlbumCover(canvas, title || "Album", artist, 1000, style, tracks);
+
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
   if (!blob) throw new Error("Impossible de générer la couverture");
   const slug = (title || "album").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

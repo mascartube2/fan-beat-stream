@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, TrendingUp, Play, Loader2, Music2, Disc3 } from "lucide-react";
+import { Search, TrendingUp, Play, Loader2, Music2, Disc3, Gift } from "lucide-react";
 
 import { useEffect, useMemo, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchTracksWithArtists, toPlayable, TRACK_GENRES, type TrackWithArtist } from "@/lib/tracks";
+import { fetchFreeAlbums, type AlbumForSale } from "@/lib/albums";
+
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
@@ -17,6 +19,7 @@ const ALL = "Tous";
 function DiscoverPage() {
   const { playTrack } = usePlayer();
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
+  const [freeAlbums, setFreeAlbums] = useState<AlbumForSale[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState<string>(ALL);
@@ -26,6 +29,8 @@ function DiscoverPage() {
       setTracks(t);
       setLoading(false);
     });
+    fetchFreeAlbums().then(setFreeAlbums);
+
     const ch = supabase
       .channel("tracks-plays")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "tracks" }, (payload) => {
@@ -123,6 +128,48 @@ function DiscoverPage() {
           })}
         </div>
       </div>
+
+      {freeAlbums.length > 0 && (
+        <section className="mb-6 rounded-2xl border border-primary/40 bg-primary/5 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-primary-glow">
+              <Gift className="h-4 w-4" /> Albums gratuits
+            </h2>
+            <Link to="/albums" className="shrink-0 text-[11px] font-semibold text-muted-foreground hover:underline">
+              Tout voir
+            </Link>
+          </div>
+          <div className="-mx-1 overflow-x-auto px-1">
+            <div className="flex gap-3">
+              {freeAlbums.map((a) => (
+                <Link
+                  key={a.id}
+                  to="/albums"
+                  className="w-32 shrink-0"
+                >
+                  <img
+                    src={a.coverUrl}
+                    alt={`Pochette de l'album gratuit ${a.title}`}
+                    width={128}
+                    height={128}
+                    loading="lazy"
+                    className="mb-1.5 aspect-square w-full rounded-xl object-cover"
+                  />
+                  <p className="truncate text-xs font-semibold">{a.title}</p>
+                  <p className="truncate text-[10px] text-muted-foreground">
+                    {a.artistName} · {a.trackCount} titres
+                  </p>
+                  <span className="mt-0.5 inline-block rounded-full bg-gradient-primary px-2 py-0.5 text-[9px] font-bold">
+                    Gratuit
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+
 
       {loading ? (
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
