@@ -57,7 +57,9 @@ export function AlbumManager({
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [coverStyle, setCoverStyle] = useState<CoverStyleId>("vinyl");
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
   const styleCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
+  const mainCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const visibleAlbums = isAdmin ? albums : albums.filter((a) => a.user_id === currentUserId);
   const filledCount = slots.filter((s) => s.file).length;
@@ -66,14 +68,17 @@ export function AlbumManager({
   const updateSlot = (index: number, patch: Partial<{ file: File | null; title: string }>) =>
     setSlots((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
 
-  // Aperçus des 6 styles de couverture générés automatiquement (titre en vue)
+  // Aperçus des 6 styles + grand aperçu, redessinés en temps réel à chaque frappe du titre
   useEffect(() => {
     if (!creating) return;
+    const label = title.trim() || "Nouvel album";
     for (const s of COVER_STYLES) {
       const c = styleCanvasRefs.current[s.id];
-      if (c) drawAlbumCover(c, title.trim() || "Nouvel album", artistLabel, 400, s.id);
+      if (c) drawAlbumCover(c, label, artistLabel, 400, s.id);
     }
-  }, [creating, cover, title, artistLabel]);
+    if (mainCanvasRef.current) drawAlbumCover(mainCanvasRef.current, label, artistLabel, 700, coverStyle);
+  }, [creating, cover, title, artistLabel, coverStyle]);
+
 
 
   const create = async (e: FormEvent) => {
@@ -113,6 +118,14 @@ export function AlbumManager({
         .single();
       if (error) throw error;
 
+      if (previewFile) {
+        const { path, duration } = await uploadPreview(previewFile, owner);
+        await supabase
+          .from("albums")
+          .update({ preview_path: path, preview_duration_seconds: duration } as never)
+          .eq("id", created.id);
+      }
+
       setSlotStatus({});
       await uploadAlbumTracks(
         filled.map((s) => ({ file: s.file, title: s.title })),
@@ -126,6 +139,8 @@ export function AlbumManager({
       setDescription("");
       setPriceAr(5000);
       setCover(null);
+      setPreviewFile(null);
+
       setSlots(Array.from({ length: MAX_ALBUM_TRACKS }, () => ({ file: null, title: "" })));
       setSlotStatus({});
       setCreating(false);
@@ -276,6 +291,26 @@ export function AlbumManager({
             className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
           />
           <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
+            <p className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold">
+              <Music4 className="h-3 w-3 text-primary-glow" /> Extrait d'écoute (max 1 min 20)
+            </p>
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={(e) => setPreviewFile(e.target.files?.[0] ?? null)}
+              className="w-full text-[10px] file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[10px] file:font-bold file:text-primary-foreground"
+            />
+            {previewFile && <p className="mt-1 truncate text-[10px] text-primary">🎧 {previewFile.name}</p>}
+          </div>
+
+          <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2">
+            {!cover && (
+              <canvas
+                ref={mainCanvasRef}
+                className="mb-2 block aspect-square w-full rounded-lg border border-border/60"
+              />
+            )}
+
             <div className="mb-1.5 flex items-center justify-between">
               <p className="flex items-center gap-1 text-[11px] font-semibold">
                 <Wand2 className="h-3 w-3 text-primary-glow" /> Couverture automatique
@@ -451,7 +486,7 @@ export function AlbumManager({
                   ) : (
                     <p className="text-[10px] text-muted-foreground">Aucun extrait (max 1 min 20).</p>
                   )}
-                  {isAdmin && (
+                  {(isAdmin || a.user_id === currentUserId) && (
                     <div className="flex items-center gap-2">
                       <label className="flex flex-1 cursor-pointer items-center gap-1.5 rounded-full border border-border/60 px-2.5 py-1 text-[10px] font-semibold text-muted-foreground hover:bg-white/5">
                         <Music4 className="h-3 w-3" />
