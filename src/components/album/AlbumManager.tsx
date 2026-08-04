@@ -118,6 +118,7 @@ export function AlbumManager({
           artistLabel,
           coverStyle,
           filled.map((s) => s.title.trim()).filter(Boolean),
+          { font: coverFont, palette: coverPalette },
         ));
       if (coverFile) {
         const ext = coverFile.name.split(".").pop() ?? "jpg";
