@@ -1,5 +1,5 @@
 // Génération automatique d'images de couverture d'album (canvas) avec le titre en vue.
-// 6 styles sélectionnables.
+// 6 styles + choix de police et de dégradé de couleurs.
 
 export type CoverStyleId = "vinyl" | "stripes" | "blocks" | "minimal" | "halftone" | "spotlight";
 
@@ -12,6 +12,40 @@ export const COVER_STYLES: { id: CoverStyleId; label: string }[] = [
   { id: "spotlight", label: "Spot" },
 ];
 
+/* ---------- Polices ---------- */
+export type CoverFontId = "sans" | "condensed" | "serif" | "mono" | "rounded";
+
+export const COVER_FONTS: { id: CoverFontId; label: string; stack: string }[] = [
+  { id: "sans", label: "Sans", stack: 'system-ui, -apple-system, "Segoe UI", sans-serif' },
+  { id: "condensed", label: "Condensé", stack: '"Arial Narrow", "Haettenschweiler", Impact, sans-serif' },
+  { id: "serif", label: "Serif", stack: 'Georgia, "Times New Roman", serif' },
+  { id: "mono", label: "Mono", stack: '"SF Mono", "Courier New", ui-monospace, monospace' },
+  { id: "rounded", label: "Arrondi", stack: '"Trebuchet MS", Verdana, "Segoe UI", sans-serif' },
+];
+
+let FONT_STACK = COVER_FONTS[0].stack;
+const font = (weight: number, px: number) => `${weight} ${px}px ${FONT_STACK}`;
+
+/* ---------- Dégradés ---------- */
+export type CoverPaletteId =
+  | "auto"
+  | "violet"
+  | "ocean"
+  | "sunset"
+  | "forest"
+  | "night"
+  | "cream";
+
+export const COVER_PALETTES: { id: CoverPaletteId; label: string; colors: [string, string, string]; light?: boolean }[] = [
+  { id: "auto", label: "Auto", colors: ["#7c3aed", "#db2777", "#fbbf24"] },
+  { id: "violet", label: "Violet", colors: ["#7c3aed", "#2563eb", "#f0abfc"] },
+  { id: "ocean", label: "Océan", colors: ["#0ea5e9", "#0f766e", "#22d3ee"] },
+  { id: "sunset", label: "Coucher", colors: ["#f97316", "#be123c", "#fde68a"] },
+  { id: "forest", label: "Forêt", colors: ["#166534", "#065f46", "#a3e635"] },
+  { id: "night", label: "Nuit", colors: ["#0b1020", "#1f2937", "#f59e0b"] },
+  { id: "cream", label: "Crème", colors: ["#f8fafc", "#e2e8f0", "#0f172a"], light: true },
+];
+
 const PALETTES: Record<CoverStyleId, [string, string, string]> = {
   vinyl: ["#7c3aed", "#db2777", "#fbbf24"],
   stripes: ["#0ea5e9", "#4f46e5", "#22d3ee"],
@@ -20,6 +54,7 @@ const PALETTES: Record<CoverStyleId, [string, string, string]> = {
   halftone: ["#10b981", "#0f766e", "#a3e635"],
   spotlight: ["#111827", "#4c1d95", "#f59e0b"],
 };
+
 
 function hash(str: string) {
   let h = 0;
@@ -75,11 +110,11 @@ function drawTrackPanel(
   ctx.textBaseline = "middle";
   ctx.fillStyle = color;
   ctx.globalAlpha = dark ? 0.55 : 0.7;
-  ctx.font = `700 ${headSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+  ctx.font = font(700, headSize);
   ctx.fillText(`TITRES · ${list.length}`, margin, top + headSize * 1.3);
 
   const colWidth = (size - margin * 2 - (cols === 2 ? size * 0.04 : 0)) / cols;
-  ctx.font = `600 ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+  ctx.font = font(600, fontSize);
   for (let i = 0; i < list.length; i++) {
     const col = Math.floor(i / rows);
     const row = i % rows;
@@ -118,7 +153,7 @@ function drawBigTitle(
 
   if (artist) {
     ctx.save();
-    ctx.font = `700 ${size * 0.026}px system-ui, -apple-system, sans-serif`;
+    ctx.font = font(700, size * 0.026);
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillStyle = color;
@@ -132,7 +167,7 @@ function drawBigTitle(
   let fontSize = size * 0.155;
   let lines: string[] = [];
   for (;;) {
-    ctx.font = `800 ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+    ctx.font = font(800, fontSize);
     lines = wrap(ctx, title.toUpperCase(), maxWidth, 3);
     const tooWide = lines.some((l) => ctx.measureText(l).width > maxWidth);
     const tooTall = lines.length * fontSize * 1.05 > available;
@@ -165,6 +200,8 @@ function drawBigTitle(
   ctx.restore();
 }
 
+export type CoverOptions = { font?: CoverFontId; palette?: CoverPaletteId };
+
 export function drawAlbumCover(
   canvas: HTMLCanvasElement,
   title: string,
@@ -172,26 +209,35 @@ export function drawAlbumCover(
   size = 1000,
   style: CoverStyleId = "vinyl",
   tracks: string[] = [],
+  opts: CoverOptions = {},
 ): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   canvas.width = size;
   canvas.height = size;
   ctx.clearRect(0, 0, size, size);
+  FONT_STACK = (COVER_FONTS.find((f) => f.id === opts.font) ?? COVER_FONTS[0]).stack;
   const seed = hash(`${title}|${artist ?? ""}`);
-  const [c1, c2, c3] = PALETTES[style] ?? PALETTES.vinyl;
+  const paletteDef = opts.palette && opts.palette !== "auto"
+    ? COVER_PALETTES.find((p) => p.id === opts.palette)
+    : undefined;
+  const [c1, c2, c3] = paletteDef?.colors ?? PALETTES[style] ?? PALETTES.vinyl;
+  const light = !!paletteDef?.light;
+  const textColor = light ? "#0f172a" : "#ffffff";
   const margin = size * 0.08;
 
   if (style === "minimal") {
-    ctx.fillStyle = c3;
+    ctx.fillStyle = paletteDef ? (light ? c1 : c3) : c3;
     ctx.fillRect(0, 0, size, size);
-    ctx.strokeStyle = c1;
+    ctx.strokeStyle = paletteDef ? (light ? c3 : c1) : c1;
     ctx.lineWidth = size * 0.006;
     ctx.strokeRect(margin * 0.6, margin * 0.6, size - margin * 1.2, size - margin * 1.2);
-    const limit = drawTrackPanel(ctx, size, tracks, "#0f172a", true);
-    drawBigTitle(ctx, size, title || "Album", artist, "#0f172a", limit, false);
+    const inkColor = paletteDef && !light ? "#f8fafc" : "#0f172a";
+    const limit = drawTrackPanel(ctx, size, tracks, inkColor, inkColor === "#0f172a");
+    drawBigTitle(ctx, size, title || "Album", artist, inkColor, limit, false);
     return;
   }
+
 
   // Fond dégradé
   const g = ctx.createLinearGradient(0, 0, size, size);
@@ -257,38 +303,40 @@ export function drawAlbumCover(
     ctx.globalAlpha = 1;
   }
 
-  // Voile pour la lisibilité (haut + bas)
+  // Voile pour la lisibilité (haut + bas) — clair ou sombre selon le dégradé
+  const veil = light ? "255,255,255" : "0,0,0";
   const shadeTop = ctx.createLinearGradient(0, 0, 0, size * 0.55);
-  shadeTop.addColorStop(0, "rgba(0,0,0,0.55)");
-  shadeTop.addColorStop(1, "rgba(0,0,0,0)");
+  shadeTop.addColorStop(0, `rgba(${veil},0.55)`);
+  shadeTop.addColorStop(1, `rgba(${veil},0)`);
   ctx.fillStyle = shadeTop;
   ctx.fillRect(0, 0, size, size * 0.55);
   const shade = ctx.createLinearGradient(0, size * 0.45, 0, size);
-  shade.addColorStop(0, "rgba(0,0,0,0)");
-  shade.addColorStop(1, "rgba(0,0,0,0.82)");
+  shade.addColorStop(0, `rgba(${veil},0)`);
+  shade.addColorStop(1, `rgba(${veil},0.82)`);
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, size, size);
 
-  const limit = drawTrackPanel(ctx, size, tracks, "#ffffff", false);
-  drawBigTitle(ctx, size, title || "Album", artist, "#ffffff", limit, true);
+  const limit = drawTrackPanel(ctx, size, tracks, textColor, light);
+  drawBigTitle(ctx, size, title || "Album", artist, textColor, limit, !light);
 
-  ctx.strokeStyle = "rgba(255,255,255,0.3)";
+  ctx.strokeStyle = light ? "rgba(15,23,42,0.25)" : "rgba(255,255,255,0.3)";
   ctx.lineWidth = size * 0.004;
   ctx.strokeRect(margin * 0.42, margin * 0.42, size - margin * 0.84, size - margin * 0.84);
 }
-
 
 export async function generateAlbumCoverFile(
   title: string,
   artist?: string,
   style: CoverStyleId = "vinyl",
   tracks: string[] = [],
+  opts: CoverOptions = {},
 ): Promise<File> {
   const canvas = document.createElement("canvas");
-  drawAlbumCover(canvas, title || "Album", artist, 1000, style, tracks);
+  drawAlbumCover(canvas, title || "Album", artist, 1000, style, tracks, opts);
 
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
   if (!blob) throw new Error("Impossible de générer la couverture");
   const slug = (title || "album").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return new File([blob], `${slug || "album"}-${style}.jpg`, { type: "image/jpeg" });
 }
+

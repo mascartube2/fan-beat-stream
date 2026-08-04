@@ -4,7 +4,16 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TrackWithArtist } from "@/lib/tracks";
 import { uploadPreview, uploadAlbumTracks, PREVIEW_BUCKET, formatSeconds } from "@/lib/albums";
-import { drawAlbumCover, generateAlbumCoverFile, COVER_STYLES, type CoverStyleId } from "@/lib/album-cover";
+import {
+  drawAlbumCover,
+  generateAlbumCoverFile,
+  COVER_STYLES,
+  COVER_FONTS,
+  COVER_PALETTES,
+  type CoverStyleId,
+  type CoverFontId,
+  type CoverPaletteId,
+} from "@/lib/album-cover";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 
 
@@ -57,6 +66,8 @@ export function AlbumManager({
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [coverStyle, setCoverStyle] = useState<CoverStyleId>("vinyl");
+  const [coverFont, setCoverFont] = useState<CoverFontId>("sans");
+  const [coverPalette, setCoverPalette] = useState<CoverPaletteId>("auto");
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [isFree, setIsFree] = useState(false);
   const styleCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
@@ -74,13 +85,15 @@ export function AlbumManager({
   useEffect(() => {
     if (!creating) return;
     const label = title.trim() || "Nouvel album";
+    const opts = { font: coverFont, palette: coverPalette };
     for (const s of COVER_STYLES) {
       const c = styleCanvasRefs.current[s.id];
-      if (c) drawAlbumCover(c, label, artistLabel, 400, s.id, trackTitles);
+      if (c) drawAlbumCover(c, label, artistLabel, 400, s.id, trackTitles, opts);
     }
     if (mainCanvasRef.current)
-      drawAlbumCover(mainCanvasRef.current, label, artistLabel, 700, coverStyle, trackTitles);
-  }, [creating, cover, title, artistLabel, coverStyle, trackTitles.join("|")]);
+      drawAlbumCover(mainCanvasRef.current, label, artistLabel, 700, coverStyle, trackTitles, opts);
+  }, [creating, cover, title, artistLabel, coverStyle, coverFont, coverPalette, trackTitles.join("|")]);
+
 
 
 
@@ -105,6 +118,7 @@ export function AlbumManager({
           artistLabel,
           coverStyle,
           filled.map((s) => s.title.trim()).filter(Boolean),
+          { font: coverFont, palette: coverPalette },
         ));
       if (coverFile) {
         const ext = coverFile.name.split(".").pop() ?? "jpg";
@@ -373,11 +387,57 @@ export function AlbumManager({
                 </button>
               ))}
             </div>
-            <p className="mt-1 text-[10px] text-muted-foreground">
+
+            {/* Police */}
+            <p className="mt-2 mb-1 text-[10px] font-semibold text-muted-foreground">Police du titre</p>
+            <div className="flex flex-wrap gap-1.5">
+              {COVER_FONTS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setCoverFont(f.id)}
+                  style={{ fontFamily: f.stack }}
+                  className={`rounded-full border px-2.5 py-1 text-[10px] font-bold transition ${
+                    coverFont === f.id
+                      ? "border-primary bg-primary/20 text-foreground"
+                      : "border-border/60 text-muted-foreground hover:bg-white/5"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Dégradé */}
+            <p className="mt-2 mb-1 text-[10px] font-semibold text-muted-foreground">Couleurs du dégradé</p>
+            <div className="flex flex-wrap gap-1.5">
+              {COVER_PALETTES.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setCoverPalette(p.id)}
+                  title={p.label}
+                  className={`flex items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-[10px] font-bold transition ${
+                    coverPalette === p.id
+                      ? "border-primary bg-primary/20 text-foreground"
+                      : "border-border/60 text-muted-foreground hover:bg-white/5"
+                  }`}
+                >
+                  <span
+                    className="h-4 w-4 rounded-full border border-border/60"
+                    style={{ background: `linear-gradient(135deg, ${p.colors[0]}, ${p.colors[1]} 60%, ${p.colors[2]})` }}
+                  />
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            <p className="mt-2 text-[10px] text-muted-foreground">
               {cover
                 ? "Retire l'image personnalisée en choisissant un style ci-dessus."
-                : "Le titre de l'album est intégré à l'image."}
+                : "Titre et morceaux sont intégrés à l'image — ajuste police et couleurs pour la lisibilité."}
             </p>
+
           </div>
 
 
