@@ -1,5 +1,5 @@
 // Génération automatique d'images de couverture d'album (canvas) avec le titre en vue.
-// 6 styles sélectionnables.
+// 6 styles + choix de police et de dégradé de couleurs.
 
 export type CoverStyleId = "vinyl" | "stripes" | "blocks" | "minimal" | "halftone" | "spotlight";
 
@@ -12,6 +12,40 @@ export const COVER_STYLES: { id: CoverStyleId; label: string }[] = [
   { id: "spotlight", label: "Spot" },
 ];
 
+/* ---------- Polices ---------- */
+export type CoverFontId = "sans" | "condensed" | "serif" | "mono" | "rounded";
+
+export const COVER_FONTS: { id: CoverFontId; label: string; stack: string }[] = [
+  { id: "sans", label: "Sans", stack: 'system-ui, -apple-system, "Segoe UI", sans-serif' },
+  { id: "condensed", label: "Condensé", stack: '"Arial Narrow", "Haettenschweiler", Impact, sans-serif' },
+  { id: "serif", label: "Serif", stack: 'Georgia, "Times New Roman", serif' },
+  { id: "mono", label: "Mono", stack: '"SF Mono", "Courier New", ui-monospace, monospace' },
+  { id: "rounded", label: "Arrondi", stack: '"Trebuchet MS", Verdana, "Segoe UI", sans-serif' },
+];
+
+let FONT_STACK = COVER_FONTS[0].stack;
+const font = (weight: number, px: number) => `${weight} ${px}px ${FONT_STACK}`;
+
+/* ---------- Dégradés ---------- */
+export type CoverPaletteId =
+  | "auto"
+  | "violet"
+  | "ocean"
+  | "sunset"
+  | "forest"
+  | "night"
+  | "cream";
+
+export const COVER_PALETTES: { id: CoverPaletteId; label: string; colors: [string, string, string]; light?: boolean }[] = [
+  { id: "auto", label: "Auto", colors: ["#7c3aed", "#db2777", "#fbbf24"] },
+  { id: "violet", label: "Violet", colors: ["#7c3aed", "#2563eb", "#f0abfc"] },
+  { id: "ocean", label: "Océan", colors: ["#0ea5e9", "#0f766e", "#22d3ee"] },
+  { id: "sunset", label: "Coucher", colors: ["#f97316", "#be123c", "#fde68a"] },
+  { id: "forest", label: "Forêt", colors: ["#166534", "#065f46", "#a3e635"] },
+  { id: "night", label: "Nuit", colors: ["#0b1020", "#1f2937", "#f59e0b"] },
+  { id: "cream", label: "Crème", colors: ["#f8fafc", "#e2e8f0", "#0f172a"], light: true },
+];
+
 const PALETTES: Record<CoverStyleId, [string, string, string]> = {
   vinyl: ["#7c3aed", "#db2777", "#fbbf24"],
   stripes: ["#0ea5e9", "#4f46e5", "#22d3ee"],
@@ -20,6 +54,7 @@ const PALETTES: Record<CoverStyleId, [string, string, string]> = {
   halftone: ["#10b981", "#0f766e", "#a3e635"],
   spotlight: ["#111827", "#4c1d95", "#f59e0b"],
 };
+
 
 function hash(str: string) {
   let h = 0;
