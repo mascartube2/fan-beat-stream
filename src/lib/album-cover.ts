@@ -42,79 +42,126 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, max
   return lines.slice(0, maxLines);
 }
 
-function drawTitle(
-  ctx: CanvasRenderingContext2D,
-  size: number,
-  title: string,
-  artist: string | undefined,
-  opts: { color: string; align: "bottom" | "center"; startSize: number; shadow?: boolean },
-) {
-  const margin = size * 0.08;
-  const maxWidth = size - margin * 2;
-  let fontSize = size * opts.startSize;
-  let lines: string[] = [];
-  for (;;) {
-    ctx.font = `800 ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
-    lines = wrap(ctx, title.toUpperCase(), maxWidth);
-    const tooWide = lines.some((l) => ctx.measureText(l).width > maxWidth);
-    if ((!tooWide && lines.length <= 3) || fontSize <= size * 0.05) break;
-    fontSize *= 0.9;
-  }
-  ctx.fillStyle = opts.color;
-  ctx.textAlign = opts.align === "center" ? "center" : "left";
-  ctx.textBaseline = "alphabetic";
-  if (opts.shadow !== false) {
-    ctx.shadowColor = "rgba(0,0,0,0.55)";
-    ctx.shadowBlur = size * 0.03;
-  }
-  const lineHeight = fontSize * 1.1;
-  const x = opts.align === "center" ? size / 2 : margin;
-  let y =
-    opts.align === "center"
-      ? size / 2 + (lines.length - 1) * lineHeight * 0.5
-      : size - margin - (artist ? fontSize * 0.95 : 0);
-  for (let i = lines.length - 1; i >= 0; i--) {
-    ctx.fillText(lines[i], x, y);
-    y -= lineHeight;
-  }
-  ctx.shadowBlur = 0;
-  if (artist) {
-    ctx.font = `600 ${size * 0.042}px system-ui, -apple-system, sans-serif`;
-    ctx.fillStyle = opts.color === "#0f172a" ? "rgba(15,23,42,0.7)" : "rgba(255,255,255,0.82)";
-    const ay = opts.align === "center" ? size / 2 + lineHeight * 1.3 : size - margin;
-    ctx.fillText(artist.toUpperCase(), x, ay);
-  }
-  ctx.textAlign = "left";
-}
-
-/** Petits titres des extraits/morceaux, listés en haut de la pochette. */
-function drawTrackList(
+/** Panneau des morceaux en bas de la pochette (1 ou 2 colonnes). Retourne le Y du haut du panneau. */
+function drawTrackPanel(
   ctx: CanvasRenderingContext2D,
   size: number,
   tracks: string[],
   color: string,
-) {
+  dark: boolean,
+): number {
+  const margin = size * 0.075;
   const list = tracks.map((t) => t.trim()).filter(Boolean).slice(0, 10);
-  if (!list.length) return;
-  const margin = size * 0.08;
-  const fontSize = size * 0.028;
-  const lineHeight = fontSize * 1.55;
+  if (!list.length) return size - margin;
+
+  const cols = list.length > 5 ? 2 : 1;
+  const rows = Math.ceil(list.length / cols);
+  const fontSize = size * (cols === 2 ? 0.026 : 0.03);
+  const lineHeight = fontSize * 1.75;
+  const headSize = size * 0.022;
+  const panelH = headSize * 2.4 + rows * lineHeight;
+  const top = size - margin - panelH;
+
   ctx.save();
+  // Séparateur
+  ctx.strokeStyle = dark ? "rgba(15,23,42,0.25)" : "rgba(255,255,255,0.35)";
+  ctx.lineWidth = Math.max(1, size * 0.0015);
+  ctx.beginPath();
+  ctx.moveTo(margin, top);
+  ctx.lineTo(size - margin, top);
+  ctx.stroke();
+
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
+  ctx.fillStyle = color;
+  ctx.globalAlpha = dark ? 0.55 : 0.7;
+  ctx.font = `700 ${headSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+  ctx.fillText(`TITRES · ${list.length}`, margin, top + headSize * 1.3);
+
+  const colWidth = (size - margin * 2 - (cols === 2 ? size * 0.04 : 0)) / cols;
   ctx.font = `600 ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
-  let y = margin + fontSize;
   for (let i = 0; i < list.length; i++) {
-    const label = `${String(i + 1).padStart(2, "0")}  ${list[i].toUpperCase()}`;
-    let text = label;
-    const maxWidth = size - margin * 2;
-    while (ctx.measureText(text).width > maxWidth && text.length > 4) text = text.slice(0, -2);
-    if (text !== label) text = `${text}…`;
-    ctx.globalAlpha = 0.86;
-    ctx.fillStyle = color;
-    ctx.fillText(text, margin, y);
-    y += lineHeight;
+    const col = Math.floor(i / rows);
+    const row = i % rows;
+    const x = margin + col * (colWidth + size * 0.04);
+    const y = top + headSize * 2.4 + row * lineHeight + lineHeight / 2;
+    const num = String(i + 1).padStart(2, "0");
+    ctx.globalAlpha = dark ? 0.45 : 0.6;
+    ctx.fillText(num, x, y);
+    const numW = ctx.measureText("00").width + size * 0.014;
+    ctx.globalAlpha = dark ? 0.92 : 0.95;
+    let text = list[i].toUpperCase();
+    const maxW = colWidth - numW;
+    if (ctx.measureText(text).width > maxW) {
+      while (text.length > 3 && ctx.measureText(`${text}…`).width > maxW) text = text.slice(0, -1);
+      text = `${text}…`;
+    }
+    ctx.fillText(text, x + numW, y);
   }
+  ctx.restore();
+  return top;
+}
+
+/** Grand titre affiché en haut, avec le nom de l'artiste au-dessus. */
+function drawBigTitle(
+  ctx: CanvasRenderingContext2D,
+  size: number,
+  title: string,
+  artist: string | undefined,
+  color: string,
+  bottomLimit: number,
+  shadow: boolean,
+) {
+  const margin = size * 0.075;
+  const maxWidth = size - margin * 2;
+  let top = margin;
+
+  if (artist) {
+    ctx.save();
+    ctx.font = `700 ${size * 0.026}px system-ui, -apple-system, sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.75;
+    ctx.fillText(artist.toUpperCase(), margin, top);
+    ctx.restore();
+    top += size * 0.05;
+  }
+
+  const available = bottomLimit - size * 0.05 - top;
+  let fontSize = size * 0.155;
+  let lines: string[] = [];
+  for (;;) {
+    ctx.font = `800 ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+    lines = wrap(ctx, title.toUpperCase(), maxWidth, 3);
+    const tooWide = lines.some((l) => ctx.measureText(l).width > maxWidth);
+    const tooTall = lines.length * fontSize * 1.05 > available;
+    if ((!tooWide && !tooTall) || fontSize <= size * 0.05) break;
+    fontSize *= 0.92;
+  }
+
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  if (shadow) {
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = size * 0.025;
+  }
+  const lineHeight = fontSize * 1.05;
+  lines.forEach((l, i) => ctx.fillText(l, margin, top + i * lineHeight));
+  ctx.restore();
+
+  // Filet sous le titre
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = 0.5;
+  ctx.lineWidth = Math.max(2, size * 0.005);
+  const uy = top + lines.length * lineHeight + size * 0.018;
+  ctx.beginPath();
+  ctx.moveTo(margin, uy);
+  ctx.lineTo(margin + size * 0.16, uy);
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -135,19 +182,15 @@ export function drawAlbumCover(
   const [c1, c2, c3] = PALETTES[style] ?? PALETTES.vinyl;
   const margin = size * 0.08;
 
-
   if (style === "minimal") {
     ctx.fillStyle = c3;
     ctx.fillRect(0, 0, size, size);
     ctx.strokeStyle = c1;
     ctx.lineWidth = size * 0.006;
     ctx.strokeRect(margin * 0.6, margin * 0.6, size - margin * 1.2, size - margin * 1.2);
-    ctx.fillStyle = c2;
-    ctx.fillRect(margin, size * 0.32, size * 0.22, size * 0.012);
-    drawTrackList(ctx, size, tracks, "#0f172a");
-    drawTitle(ctx, size, title, artist, { color: "#0f172a", align: "bottom", startSize: 0.12, shadow: false });
+    const limit = drawTrackPanel(ctx, size, tracks, "#0f172a", true);
+    drawBigTitle(ctx, size, title || "Album", artist, "#0f172a", limit, false);
     return;
-
   }
 
   // Fond dégradé
@@ -161,8 +204,8 @@ export function drawAlbumCover(
     ctx.save();
     ctx.globalAlpha = 0.2;
     ctx.strokeStyle = c3;
-    const cx = size * (0.3 + ((seed % 40) / 100));
-    const cy = size * (0.28 + ((seed % 27) / 100));
+    const cx = size * (0.62 + ((seed % 20) / 100));
+    const cy = size * (0.3 + ((seed % 15) / 100));
     for (let r = size * 0.08; r < size * 0.95; r += size * 0.055) {
       ctx.lineWidth = size * 0.008;
       ctx.beginPath();
@@ -214,25 +257,26 @@ export function drawAlbumCover(
     ctx.globalAlpha = 1;
   }
 
-  // Voile sombre en bas pour la lisibilité du texte
-  const shade = ctx.createLinearGradient(0, size * 0.35, 0, size);
+  // Voile pour la lisibilité (haut + bas)
+  const shadeTop = ctx.createLinearGradient(0, 0, 0, size * 0.55);
+  shadeTop.addColorStop(0, "rgba(0,0,0,0.55)");
+  shadeTop.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = shadeTop;
+  ctx.fillRect(0, 0, size, size * 0.55);
+  const shade = ctx.createLinearGradient(0, size * 0.45, 0, size);
   shade.addColorStop(0, "rgba(0,0,0,0)");
-  shade.addColorStop(1, "rgba(0,0,0,0.78)");
+  shade.addColorStop(1, "rgba(0,0,0,0.82)");
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, size, size);
 
-  drawTrackList(ctx, size, tracks, "#ffffff");
+  const limit = drawTrackPanel(ctx, size, tracks, "#ffffff", false);
+  drawBigTitle(ctx, size, title || "Album", artist, "#ffffff", limit, true);
 
-  drawTitle(ctx, size, title, artist, {
-    color: "#ffffff",
-    align: style === "spotlight" ? "center" : "bottom",
-    startSize: tracks.filter(Boolean).length > 6 ? 0.11 : 0.13,
-  });
-
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.strokeStyle = "rgba(255,255,255,0.3)";
   ctx.lineWidth = size * 0.004;
-  ctx.strokeRect(margin * 0.45, margin * 0.45, size - margin * 0.9, size - margin * 0.9);
+  ctx.strokeRect(margin * 0.42, margin * 0.42, size - margin * 0.84, size - margin * 0.84);
 }
+
 
 export async function generateAlbumCoverFile(
   title: string,
