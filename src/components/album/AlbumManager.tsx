@@ -387,11 +387,57 @@ export function AlbumManager({
                 </button>
               ))}
             </div>
-            <p className="mt-1 text-[10px] text-muted-foreground">
+
+            {/* Police */}
+            <p className="mt-2 mb-1 text-[10px] font-semibold text-muted-foreground">Police du titre</p>
+            <div className="flex flex-wrap gap-1.5">
+              {COVER_FONTS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setCoverFont(f.id)}
+                  style={{ fontFamily: f.stack }}
+                  className={`rounded-full border px-2.5 py-1 text-[10px] font-bold transition ${
+                    coverFont === f.id
+                      ? "border-primary bg-primary/20 text-foreground"
+                      : "border-border/60 text-muted-foreground hover:bg-white/5"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Dégradé */}
+            <p className="mt-2 mb-1 text-[10px] font-semibold text-muted-foreground">Couleurs du dégradé</p>
+            <div className="flex flex-wrap gap-1.5">
+              {COVER_PALETTES.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setCoverPalette(p.id)}
+                  title={p.label}
+                  className={`flex items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-[10px] font-bold transition ${
+                    coverPalette === p.id
+                      ? "border-primary bg-primary/20 text-foreground"
+                      : "border-border/60 text-muted-foreground hover:bg-white/5"
+                  }`}
+                >
+                  <span
+                    className="h-4 w-4 rounded-full border border-border/60"
+                    style={{ background: `linear-gradient(135deg, ${p.colors[0]}, ${p.colors[1]} 60%, ${p.colors[2]})` }}
+                  />
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            <p className="mt-2 text-[10px] text-muted-foreground">
               {cover
                 ? "Retire l'image personnalisée en choisissant un style ci-dessus."
-                : "Le titre de l'album est intégré à l'image."}
+                : "Titre et morceaux sont intégrés à l'image — ajuste police et couleurs pour la lisibilité."}
             </p>
+
           </div>
 
 
