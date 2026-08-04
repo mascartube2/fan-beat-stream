@@ -153,7 +153,7 @@ function drawBigTitle(
 
   if (artist) {
     ctx.save();
-    ctx.font = `700 ${size * 0.026}px system-ui, -apple-system, sans-serif`;
+    ctx.font = font(700, size * 0.026);
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillStyle = color;
