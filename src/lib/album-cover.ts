@@ -303,38 +303,40 @@ export function drawAlbumCover(
     ctx.globalAlpha = 1;
   }
 
-  // Voile pour la lisibilité (haut + bas)
+  // Voile pour la lisibilité (haut + bas) — clair ou sombre selon le dégradé
+  const veil = light ? "255,255,255" : "0,0,0";
   const shadeTop = ctx.createLinearGradient(0, 0, 0, size * 0.55);
-  shadeTop.addColorStop(0, "rgba(0,0,0,0.55)");
-  shadeTop.addColorStop(1, "rgba(0,0,0,0)");
+  shadeTop.addColorStop(0, `rgba(${veil},0.55)`);
+  shadeTop.addColorStop(1, `rgba(${veil},0)`);
   ctx.fillStyle = shadeTop;
   ctx.fillRect(0, 0, size, size * 0.55);
   const shade = ctx.createLinearGradient(0, size * 0.45, 0, size);
-  shade.addColorStop(0, "rgba(0,0,0,0)");
-  shade.addColorStop(1, "rgba(0,0,0,0.82)");
+  shade.addColorStop(0, `rgba(${veil},0)`);
+  shade.addColorStop(1, `rgba(${veil},0.82)`);
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, size, size);
 
-  const limit = drawTrackPanel(ctx, size, tracks, "#ffffff", false);
-  drawBigTitle(ctx, size, title || "Album", artist, "#ffffff", limit, true);
+  const limit = drawTrackPanel(ctx, size, tracks, textColor, light);
+  drawBigTitle(ctx, size, title || "Album", artist, textColor, limit, !light);
 
-  ctx.strokeStyle = "rgba(255,255,255,0.3)";
+  ctx.strokeStyle = light ? "rgba(15,23,42,0.25)" : "rgba(255,255,255,0.3)";
   ctx.lineWidth = size * 0.004;
   ctx.strokeRect(margin * 0.42, margin * 0.42, size - margin * 0.84, size - margin * 0.84);
 }
-
 
 export async function generateAlbumCoverFile(
   title: string,
   artist?: string,
   style: CoverStyleId = "vinyl",
   tracks: string[] = [],
+  opts: CoverOptions = {},
 ): Promise<File> {
   const canvas = document.createElement("canvas");
-  drawAlbumCover(canvas, title || "Album", artist, 1000, style, tracks);
+  drawAlbumCover(canvas, title || "Album", artist, 1000, style, tracks, opts);
 
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
   if (!blob) throw new Error("Impossible de générer la couverture");
   const slug = (title || "album").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return new File([blob], `${slug || "album"}-${style}.jpg`, { type: "image/jpeg" });
 }
+
