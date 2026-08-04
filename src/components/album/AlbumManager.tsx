@@ -66,6 +66,8 @@ export function AlbumManager({
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [coverStyle, setCoverStyle] = useState<CoverStyleId>("vinyl");
+  const [coverFont, setCoverFont] = useState<CoverFontId>("sans");
+  const [coverPalette, setCoverPalette] = useState<CoverPaletteId>("auto");
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [isFree, setIsFree] = useState(false);
   const styleCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
@@ -83,13 +85,15 @@ export function AlbumManager({
   useEffect(() => {
     if (!creating) return;
     const label = title.trim() || "Nouvel album";
+    const opts = { font: coverFont, palette: coverPalette };
     for (const s of COVER_STYLES) {
       const c = styleCanvasRefs.current[s.id];
-      if (c) drawAlbumCover(c, label, artistLabel, 400, s.id, trackTitles);
+      if (c) drawAlbumCover(c, label, artistLabel, 400, s.id, trackTitles, opts);
     }
     if (mainCanvasRef.current)
-      drawAlbumCover(mainCanvasRef.current, label, artistLabel, 700, coverStyle, trackTitles);
-  }, [creating, cover, title, artistLabel, coverStyle, trackTitles.join("|")]);
+      drawAlbumCover(mainCanvasRef.current, label, artistLabel, 700, coverStyle, trackTitles, opts);
+  }, [creating, cover, title, artistLabel, coverStyle, coverFont, coverPalette, trackTitles.join("|")]);
+
 
 
 
