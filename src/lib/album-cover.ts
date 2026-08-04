@@ -167,7 +167,7 @@ function drawBigTitle(
   let fontSize = size * 0.155;
   let lines: string[] = [];
   for (;;) {
-    ctx.font = `800 ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+    ctx.font = font(800, fontSize);
     lines = wrap(ctx, title.toUpperCase(), maxWidth, 3);
     const tooWide = lines.some((l) => ctx.measureText(l).width > maxWidth);
     const tooTall = lines.length * fontSize * 1.05 > available;
