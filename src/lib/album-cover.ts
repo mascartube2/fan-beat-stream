@@ -200,6 +200,8 @@ function drawBigTitle(
   ctx.restore();
 }
 
+export type CoverOptions = { font?: CoverFontId; palette?: CoverPaletteId };
+
 export function drawAlbumCover(
   canvas: HTMLCanvasElement,
   title: string,
@@ -207,26 +209,35 @@ export function drawAlbumCover(
   size = 1000,
   style: CoverStyleId = "vinyl",
   tracks: string[] = [],
+  opts: CoverOptions = {},
 ): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   canvas.width = size;
   canvas.height = size;
   ctx.clearRect(0, 0, size, size);
+  FONT_STACK = (COVER_FONTS.find((f) => f.id === opts.font) ?? COVER_FONTS[0]).stack;
   const seed = hash(`${title}|${artist ?? ""}`);
-  const [c1, c2, c3] = PALETTES[style] ?? PALETTES.vinyl;
+  const paletteDef = opts.palette && opts.palette !== "auto"
+    ? COVER_PALETTES.find((p) => p.id === opts.palette)
+    : undefined;
+  const [c1, c2, c3] = paletteDef?.colors ?? PALETTES[style] ?? PALETTES.vinyl;
+  const light = !!paletteDef?.light;
+  const textColor = light ? "#0f172a" : "#ffffff";
   const margin = size * 0.08;
 
   if (style === "minimal") {
-    ctx.fillStyle = c3;
+    ctx.fillStyle = paletteDef ? (light ? c1 : c3) : c3;
     ctx.fillRect(0, 0, size, size);
-    ctx.strokeStyle = c1;
+    ctx.strokeStyle = paletteDef ? (light ? c3 : c1) : c1;
     ctx.lineWidth = size * 0.006;
     ctx.strokeRect(margin * 0.6, margin * 0.6, size - margin * 1.2, size - margin * 1.2);
-    const limit = drawTrackPanel(ctx, size, tracks, "#0f172a", true);
-    drawBigTitle(ctx, size, title || "Album", artist, "#0f172a", limit, false);
+    const inkColor = paletteDef && !light ? "#f8fafc" : "#0f172a";
+    const limit = drawTrackPanel(ctx, size, tracks, inkColor, inkColor === "#0f172a");
+    drawBigTitle(ctx, size, title || "Album", artist, inkColor, limit, false);
     return;
   }
+
 
   // Fond dégradé
   const g = ctx.createLinearGradient(0, 0, size, size);
