@@ -110,11 +110,11 @@ function drawTrackPanel(
   ctx.textBaseline = "middle";
   ctx.fillStyle = color;
   ctx.globalAlpha = dark ? 0.55 : 0.7;
-  ctx.font = `700 ${headSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+  ctx.font = font(700, headSize);
   ctx.fillText(`TITRES · ${list.length}`, margin, top + headSize * 1.3);
 
   const colWidth = (size - margin * 2 - (cols === 2 ? size * 0.04 : 0)) / cols;
-  ctx.font = `600 ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+  ctx.font = font(600, fontSize);
   for (let i = 0; i < list.length; i++) {
     const col = Math.floor(i / rows);
     const row = i % rows;
