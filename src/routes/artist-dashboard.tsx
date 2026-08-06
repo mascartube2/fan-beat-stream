@@ -61,7 +61,7 @@ function ArtistDashboardPage() {
     return (
       <div className="px-4 pt-10 text-center">
         <p className="mb-3 text-sm text-muted-foreground">Connecte-toi pour accéder au tableau de bord artiste.</p>
-        <Link to="/auth" className="inline-block rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold">Se connecter</Link>
+        <Link to="/auth" search={{ next: undefined }} className="inline-block rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold">Se connecter</Link>
       </div>
     );
   }

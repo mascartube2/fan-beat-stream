@@ -67,7 +67,7 @@ function EditProfilePage() {
     return (
       <div className="px-5 pt-12 text-center">
         <p className="mb-4 text-sm text-muted-foreground">Sign in to edit your profile.</p>
-        <Link to="/auth" className="rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-bold shadow-glow">
+        <Link to="/auth" search={{ next: undefined }} className="rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-bold shadow-glow">
           Sign in
         </Link>
       </div>

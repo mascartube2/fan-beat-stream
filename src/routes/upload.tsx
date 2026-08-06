@@ -37,7 +37,7 @@ function UploadPage() {
     return (
       <div className="px-5 pt-12 text-center">
         <p className="text-sm text-muted-foreground">You need an account to upload.</p>
-        <Link to="/auth" className="mt-4 inline-block rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-bold">
+        <Link to="/auth" search={{ next: undefined }} className="mt-4 inline-block rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-bold">
           Sign in
         </Link>
       </div>

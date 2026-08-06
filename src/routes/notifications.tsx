@@ -35,7 +35,7 @@ function NotificationsPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      navigate({ to: "/auth" });
+      navigate({ to: "/auth", search: { next: undefined } });
       return;
     }
     let cancelled = false;

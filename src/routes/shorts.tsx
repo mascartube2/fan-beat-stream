@@ -98,7 +98,7 @@ function ShortsPage() {
           <p className="text-sm text-muted-foreground">Aucun réel pour le moment.</p>
           {user && <p className="mt-1 text-xs text-muted-foreground">Sois le premier à publier !</p>}
           {!user && (
-            <Link to="/auth" className="mt-3 inline-block rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold">Se connecter</Link>
+            <Link to="/auth" search={{ next: undefined }} className="mt-3 inline-block rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold">Se connecter</Link>
           )}
         </div>
       ) : (
