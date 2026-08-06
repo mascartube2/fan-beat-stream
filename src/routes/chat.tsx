@@ -271,7 +271,7 @@ function ChatPage() {
       <div className="px-4 pt-10 text-center">
         <h1 className="mb-2 text-xl font-bold">Messages</h1>
         <p className="mb-4 text-sm text-muted-foreground">Connecte-toi pour discuter avec les artistes et tes fans.</p>
-        <Link to="/auth" className="inline-block rounded-full bg-gradient-primary px-5 py-2 text-sm font-bold shadow-glow">
+        <Link to="/auth" search={{ next: undefined }} className="inline-block rounded-full bg-gradient-primary px-5 py-2 text-sm font-bold shadow-glow">
           Se connecter
         </Link>
       </div>

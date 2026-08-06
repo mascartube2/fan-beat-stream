@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, TrendingUp, Play, Loader2, Music2, Disc3, Gift } from "lucide-react";
+import { Search, TrendingUp, Play, Loader2, Music2, Disc3, Gift, Trophy } from "lucide-react";
+import { ChallengeCard } from "@/components/challenges/ChallengeCard";
+import { fetchActiveChallenges, type Challenge } from "@/lib/challenges";
 
 import { useEffect, useMemo, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
@@ -20,6 +22,8 @@ function DiscoverPage() {
   const { playTrack } = usePlayer();
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
   const [freeAlbums, setFreeAlbums] = useState<AlbumForSale[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [challengeCounts, setChallengeCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState<string>(ALL);
@@ -30,6 +34,23 @@ function DiscoverPage() {
       setLoading(false);
     });
     fetchFreeAlbums().then(setFreeAlbums);
+    fetchActiveChallenges().then(async (rows) => {
+      setChallenges(rows);
+      if (rows.length) {
+        const { data } = await supabase
+          .from("challenge_entries")
+          .select("challenge_id")
+          .in(
+            "challenge_id",
+            rows.map((r) => r.id),
+          );
+        const counts: Record<string, number> = {};
+        for (const e of data ?? []) {
+          counts[e.challenge_id] = (counts[e.challenge_id] ?? 0) + 1;
+        }
+        setChallengeCounts(counts);
+      }
+    });
 
     const ch = supabase
       .channel("tracks-plays")
@@ -97,6 +118,25 @@ function DiscoverPage() {
         </Link>
       </div>
 
+      {challenges.length > 0 && (
+        <section className="mb-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
+              <Trophy className="h-4 w-4 text-primary-glow" /> Défis en cours
+            </h2>
+            <Link to="/challenges" className="text-xs font-semibold text-primary-glow">
+              Voir tout
+            </Link>
+          </div>
+          <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 scrollbar-hide">
+            {challenges.map((c) => (
+              <div key={c.id} className="w-64 shrink-0 snap-start">
+                <ChallengeCard challenge={c} entryCount={challengeCounts[c.id] ?? 0} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

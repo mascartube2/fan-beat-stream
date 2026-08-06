@@ -20,6 +20,7 @@ import { Route as LibraryRouteImport } from './routes/library'
 import { Route as DownloadsRouteImport } from './routes/downloads'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as ChallengesRouteImport } from './routes/challenges'
 import { Route as BecomeArtistRouteImport } from './routes/become-artist'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ArtistDashboardRouteImport } from './routes/artist-dashboard'
@@ -30,6 +31,7 @@ import { Route as UUserIdRouteImport } from './routes/u.$userId'
 import { Route as TrackTrackIdRouteImport } from './routes/track.$trackId'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
+import { Route as ChallengeChallengeIdRouteImport } from './routes/challenge.$challengeId'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ApiPublicAutoClipRouteImport } from './routes/api/public/auto-clip'
@@ -91,6 +93,11 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChallengesRoute = ChallengesRouteImport.update({
+  id: '/challenges',
+  path: '/challenges',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BecomeArtistRoute = BecomeArtistRouteImport.update({
   id: '/become-artist',
   path: '/become-artist',
@@ -141,6 +148,11 @@ const PostPostIdRoute = PostPostIdRouteImport.update({
   path: '/post/$postId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChallengeChallengeIdRoute = ChallengeChallengeIdRouteImport.update({
+  id: '/challenge/$challengeId',
+  path: '/challenge/$challengeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
@@ -177,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/artist-dashboard': typeof ArtistDashboardRoute
   '/auth': typeof AuthRoute
   '/become-artist': typeof BecomeArtistRoute
+  '/challenges': typeof ChallengesRoute
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
@@ -190,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/upload': typeof UploadRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/challenge/$challengeId': typeof ChallengeChallengeIdRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
@@ -205,6 +219,7 @@ export interface FileRoutesByTo {
   '/artist-dashboard': typeof ArtistDashboardRoute
   '/auth': typeof AuthRoute
   '/become-artist': typeof BecomeArtistRoute
+  '/challenges': typeof ChallengesRoute
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
@@ -218,6 +233,7 @@ export interface FileRoutesByTo {
   '/upload': typeof UploadRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/challenge/$challengeId': typeof ChallengeChallengeIdRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
@@ -234,6 +250,7 @@ export interface FileRoutesById {
   '/artist-dashboard': typeof ArtistDashboardRoute
   '/auth': typeof AuthRoute
   '/become-artist': typeof BecomeArtistRoute
+  '/challenges': typeof ChallengesRoute
   '/chat': typeof ChatRoute
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
@@ -247,6 +264,7 @@ export interface FileRoutesById {
   '/upload': typeof UploadRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/challenge/$challengeId': typeof ChallengeChallengeIdRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
   '/track/$trackId': typeof TrackTrackIdRoute
@@ -264,6 +282,7 @@ export interface FileRouteTypes {
     | '/artist-dashboard'
     | '/auth'
     | '/become-artist'
+    | '/challenges'
     | '/chat'
     | '/discover'
     | '/downloads'
@@ -277,6 +296,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/challenge/$challengeId'
     | '/post/$postId'
     | '/profile/edit'
     | '/track/$trackId'
@@ -292,6 +312,7 @@ export interface FileRouteTypes {
     | '/artist-dashboard'
     | '/auth'
     | '/become-artist'
+    | '/challenges'
     | '/chat'
     | '/discover'
     | '/downloads'
@@ -305,6 +326,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/challenge/$challengeId'
     | '/post/$postId'
     | '/profile/edit'
     | '/track/$trackId'
@@ -320,6 +342,7 @@ export interface FileRouteTypes {
     | '/artist-dashboard'
     | '/auth'
     | '/become-artist'
+    | '/challenges'
     | '/chat'
     | '/discover'
     | '/downloads'
@@ -333,6 +356,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/challenge/$challengeId'
     | '/post/$postId'
     | '/profile/edit'
     | '/track/$trackId'
@@ -349,6 +373,7 @@ export interface RootRouteChildren {
   ArtistDashboardRoute: typeof ArtistDashboardRoute
   AuthRoute: typeof AuthRoute
   BecomeArtistRoute: typeof BecomeArtistRoute
+  ChallengesRoute: typeof ChallengesRoute
   ChatRoute: typeof ChatRoute
   DiscoverRoute: typeof DiscoverRoute
   DownloadsRoute: typeof DownloadsRoute
@@ -362,6 +387,7 @@ export interface RootRouteChildren {
   UploadRoute: typeof UploadRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ChallengeChallengeIdRoute: typeof ChallengeChallengeIdRoute
   PostPostIdRoute: typeof PostPostIdRoute
   TrackTrackIdRoute: typeof TrackTrackIdRoute
   UUserIdRoute: typeof UUserIdRoute
@@ -449,6 +475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/challenges': {
+      id: '/challenges'
+      path: '/challenges'
+      fullPath: '/challenges'
+      preLoaderRoute: typeof ChallengesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/become-artist': {
       id: '/become-artist'
       path: '/become-artist'
@@ -519,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostPostIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/challenge/$challengeId': {
+      id: '/challenge/$challengeId'
+      path: '/challenge/$challengeId'
+      fullPath: '/challenge/$challengeId'
+      preLoaderRoute: typeof ChallengeChallengeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.well-known/oauth-protected-resource': {
       id: '/.well-known/oauth-protected-resource'
       path: '/.well-known/oauth-protected-resource'
@@ -575,6 +615,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArtistDashboardRoute: ArtistDashboardRoute,
   AuthRoute: AuthRoute,
   BecomeArtistRoute: BecomeArtistRoute,
+  ChallengesRoute: ChallengesRoute,
   ChatRoute: ChatRoute,
   DiscoverRoute: DiscoverRoute,
   DownloadsRoute: DownloadsRoute,
@@ -589,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ChallengeChallengeIdRoute: ChallengeChallengeIdRoute,
   PostPostIdRoute: PostPostIdRoute,
   TrackTrackIdRoute: TrackTrackIdRoute,
   UUserIdRoute: UUserIdRoute,

@@ -86,7 +86,7 @@ export function BuyDialog({
         {!user ? (
           <div className="rounded-xl border border-border/40 p-4 text-center text-xs">
             <p className="mb-2 text-muted-foreground">Connecte-toi pour acheter.</p>
-            <Link to="/auth" className="inline-block rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold">
+            <Link to="/auth" search={{ next: undefined }} className="inline-block rounded-full bg-gradient-primary px-4 py-2 text-xs font-bold">
               Se connecter
             </Link>
           </div>

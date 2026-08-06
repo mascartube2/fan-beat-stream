@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck } from "lucide-react";
+import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ChallengeCard } from "@/components/challenges/ChallengeCard";
+import { fetchActiveChallenges, type Challenge } from "@/lib/challenges";
 import { StoriesRow } from "@/components/feed/StoriesRow";
 import { UsersPanel } from "@/components/feed/UsersPanel";
 import { VisitorCounter } from "@/components/feed/VisitorCounter";
@@ -24,6 +26,8 @@ function HomePage() {
   const { user, isArtist, isAdmin } = useAuth();
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [challengeCounts, setChallengeCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   const reloadPosts = () => fetchFeedPosts(50).then(setPosts);
@@ -33,6 +37,23 @@ function HomePage() {
       setTracks(t);
       setPosts(p);
       setLoading(false);
+    });
+    fetchActiveChallenges().then(async (rows) => {
+      setChallenges(rows);
+      if (rows.length) {
+        const { data } = await supabase
+          .from("challenge_entries")
+          .select("challenge_id")
+          .in(
+            "challenge_id",
+            rows.map((r) => r.id),
+          );
+        const counts: Record<string, number> = {};
+        for (const e of data ?? []) {
+          counts[e.challenge_id] = (counts[e.challenge_id] ?? 0) + 1;
+        }
+        setChallengeCounts(counts);
+      }
     });
     const ch = supabase
       .channel("home-posts-rt")
@@ -84,7 +105,7 @@ function HomePage() {
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary-glow" />
             </Link>
           ) : (
-            <Link to="/auth" className="rounded-full bg-gradient-primary px-3 py-1.5 text-xs font-bold shadow-glow">
+            <Link to="/auth" search={{ next: undefined }} className="rounded-full bg-gradient-primary px-3 py-1.5 text-xs font-bold shadow-glow">
               Sign in
             </Link>
           )}
@@ -110,6 +131,7 @@ function HomePage() {
         ) : (
           <Link
             to="/auth"
+            search={{ next: undefined }}
             className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-primary px-4 py-3 text-sm font-bold shadow-glow"
           >
             <Music className="h-4 w-4" /> Rejoindre Pulse
@@ -124,6 +146,26 @@ function HomePage() {
           </Link>
         )}
       </div>
+
+      {challenges.length > 0 && (
+        <section className="mb-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
+              <Trophy className="h-4 w-4 text-primary-glow" /> Défis en cours
+            </h2>
+            <Link to="/challenges" className="text-xs font-semibold text-primary-glow">
+              Voir tout
+            </Link>
+          </div>
+          <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 scrollbar-hide">
+            {challenges.map((c) => (
+              <div key={c.id} className="w-64 shrink-0 snap-start">
+                <ChallengeCard challenge={c} entryCount={challengeCounts[c.id] ?? 0} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <VisitorCounter />
 

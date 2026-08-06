@@ -2,12 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
-import { Loader2, Check, X, ShieldCheck, Upload as UploadIcon, Trash2, Film } from "lucide-react";
+import { Loader2, Check, X, ShieldCheck, Upload as UploadIcon, Trash2, Film, Trophy, Calendar, Hash } from "lucide-react";
 import { fetchTracksWithArtists, type TrackWithArtist } from "@/lib/tracks";
 import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
 import { BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
 import { AlbumManager } from "@/components/album/AlbumManager";
+import { generateAlbumCoverFile, type CoverStyleId } from "@/lib/album-cover";
 
 type ProfileRow = { user_id: string; display_name: string | null; is_certified: boolean };
 
@@ -71,6 +72,20 @@ type AlbumAdmin = {
   coverUrl?: string | null;
 };
 
+type ChallengeAdmin = {
+  id: string;
+  title: string;
+  description: string | null;
+  hashtag: string | null;
+  cover_path: string | null;
+  starts_at: string;
+  ends_at: string;
+  prize_description: string | null;
+  created_at: string;
+  entryCount?: number;
+  coverUrl?: string | null;
+};
+
 function AdminPage() {
   const { isAdmin, loading: authLoading, user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
@@ -82,6 +97,7 @@ function AdminPage() {
   const [profileSearch, setProfileSearch] = useState("");
   const [purchases, setPurchases] = useState<PurchaseAdmin[]>([]);
   const [albums, setAlbums] = useState<AlbumAdmin[]>([]);
+  const [challenges, setChallenges] = useState<ChallengeAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -94,9 +110,18 @@ function AdminPage() {
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
 
+  // Challenge form state
+  const [challengeTitle, setChallengeTitle] = useState("");
+  const [challengeDesc, setChallengeDesc] = useState("");
+  const [challengeHashtag, setChallengeHashtag] = useState("");
+  const [challengePrize, setChallengePrize] = useState("");
+  const [challengeEnds, setChallengeEnds] = useState("");
+  const [challengeCoverFile, setChallengeCoverFile] = useState<File | null>(null);
+  const [challengeCreating, setChallengeCreating] = useState(false);
+
   const load = async () => {
     setLoading(true);
-    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: allProfs }, { data: purchaseRows }, { data: albumRows }] = await Promise.all([
+    const [{ data: reqs }, { data: artistRoles }, allTracks, { data: storyRows }, shortRows, { data: allProfs }, { data: purchaseRows }, { data: albumRows }, { data: challengeRows }] = await Promise.all([
       supabase.from("artist_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id").eq("role", "artist"),
       fetchTracksWithArtists(200),
@@ -105,6 +130,7 @@ function AdminPage() {
       supabase.from("profiles").select("user_id, display_name, is_certified").order("display_name"),
       supabase.from("purchases").select("*").order("created_at", { ascending: false }).limit(200),
       supabase.from("albums").select("*").order("created_at", { ascending: false }),
+      supabase.from("challenges").select("*").order("created_at", { ascending: false }),
     ]);
     const nameMap = new Map((allProfs ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
     setAllProfiles((allProfs ?? []) as ProfileRow[]);
@@ -130,6 +156,19 @@ function AdminPage() {
       artistName: nameMap.get(a.user_id) ?? "Artiste",
       coverUrl: a.cover_path ? supabase.storage.from("track-covers").getPublicUrl(a.cover_path).data.publicUrl : null,
     })));
+    const challengeIds = (challengeRows ?? []).map((c) => c.id);
+    const { data: entryCountsRows } = challengeIds.length
+      ? await supabase.from("challenge_entries").select("challenge_id").in("challenge_id", challengeIds)
+      : { data: [] as { challenge_id: string }[] };
+    const entryMap = new Map<string, number>();
+    for (const e of entryCountsRows ?? []) {
+      entryMap.set(e.challenge_id, (entryMap.get(e.challenge_id) ?? 0) + 1);
+    }
+    setChallenges(((challengeRows ?? []) as ChallengeAdmin[]).map((c) => ({
+      ...c,
+      entryCount: entryMap.get(c.id) ?? 0,
+      coverUrl: c.cover_path ? supabase.storage.from("track-covers").getPublicUrl(c.cover_path).data.publicUrl : null,
+    })));
     setLoading(false);
   };
 
@@ -148,7 +187,7 @@ function AdminPage() {
   if (!user) {
     return (
       <div className="px-5 pt-12 text-center">
-        <Link to="/auth" className="rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-bold">
+        <Link to="/auth" search={{ next: undefined }} className="rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-bold">
           Sign in
         </Link>
       </div>
@@ -305,6 +344,65 @@ function AdminPage() {
     setBusyId(null);
   };
 
+  const createChallenge = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!challengeTitle.trim() || !challengeEnds) return toast.error("Titre et date de fin requis");
+    setChallengeCreating(true);
+    try {
+      let coverPath: string | null = null;
+      if (challengeCoverFile) {
+        const ext = challengeCoverFile.name.split(".").pop() ?? "jpg";
+        const path = `challenges/${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("track-covers").upload(path, challengeCoverFile, { upsert: false });
+        if (upErr) throw upErr;
+        coverPath = path;
+      } else {
+        const file = await generateAlbumCoverFile(challengeTitle, "Mascartube", "spotlight", [], { palette: "sunset" });
+        const path = `challenges/${crypto.randomUUID()}.jpg`;
+        const { error: upErr } = await supabase.storage.from("track-covers").upload(path, file, { upsert: false });
+        if (upErr) throw upErr;
+        coverPath = path;
+      }
+      const hashtag = challengeHashtag.trim().startsWith("#")
+        ? challengeHashtag.trim()
+        : challengeHashtag.trim()
+          ? `#${challengeHashtag.trim()}`
+          : null;
+      const { error } = await supabase.from("challenges").insert({
+        created_by: user.id,
+        title: challengeTitle.trim(),
+        description: challengeDesc.trim() || null,
+        hashtag,
+        cover_path: coverPath,
+        starts_at: new Date().toISOString(),
+        ends_at: new Date(challengeEnds).toISOString(),
+        prize_description: challengePrize.trim() || null,
+      });
+      if (error) throw error;
+      toast.success("Défi créé");
+      setChallengeTitle("");
+      setChallengeDesc("");
+      setChallengeHashtag("");
+      setChallengePrize("");
+      setChallengeEnds("");
+      setChallengeCoverFile(null);
+      await load();
+    } catch (err: any) {
+      toast.error(err.message ?? "Erreur");
+    } finally {
+      setChallengeCreating(false);
+    }
+  };
+
+  const deleteChallenge = async (id: string) => {
+    if (!confirm("Supprimer ce défi ? Les participations associées seront aussi supprimées.")) return;
+    setBusyId(id);
+    await supabase.from("challenges").delete().eq("id", id);
+    toast.success("Défi supprimé");
+    await load();
+    setBusyId(null);
+  };
+
 
   return (
     <div className="px-5 pt-6 pb-12">
@@ -376,6 +474,109 @@ function AdminPage() {
               ))}
             </ul>
           </details>
+        )}
+      </section>
+
+      {/* Challenges management */}
+      <section className="mb-6 rounded-xl border border-border/50 bg-gradient-card p-4">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
+          <Trophy className="h-4 w-4 text-primary-glow" /> Défis ({challenges.length})
+        </h2>
+        <form onSubmit={createChallenge} className="mb-4 space-y-3 rounded-lg border border-border/40 bg-surface/30 p-3">
+          <input
+            type="text"
+            value={challengeTitle}
+            onChange={(e) => setChallengeTitle(e.target.value)}
+            placeholder="Titre du défi"
+            maxLength={120}
+            className="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm"
+            required
+          />
+          <textarea
+            value={challengeDesc}
+            onChange={(e) => setChallengeDesc(e.target.value)}
+            placeholder="Description"
+            rows={2}
+            maxLength={500}
+            className="w-full resize-none rounded-lg border border-border bg-input px-3 py-2 text-sm"
+          />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Hash className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={challengeHashtag}
+                onChange={(e) => setChallengeHashtag(e.target.value)}
+                placeholder="Hashtag"
+                maxLength={60}
+                className="w-full rounded-lg border border-border bg-input py-2 pl-9 pr-3 text-sm"
+              />
+            </div>
+            <div className="relative flex-1">
+              <Calendar className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="datetime-local"
+                value={challengeEnds}
+                onChange={(e) => setChallengeEnds(e.target.value)}
+                required
+                className="w-full rounded-lg border border-border bg-input py-2 pl-9 pr-3 text-sm"
+              />
+            </div>
+          </div>
+          <input
+            type="text"
+            value={challengePrize}
+            onChange={(e) => setChallengePrize(e.target.value)}
+            placeholder="Récompense (optionnel)"
+            maxLength={200}
+            className="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setChallengeCoverFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-[11px] file:font-bold file:text-primary-foreground"
+          />
+          <button
+            type="submit"
+            disabled={challengeCreating}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-2.5 text-xs font-bold shadow-glow disabled:opacity-60"
+          >
+            {challengeCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trophy className="h-4 w-4" />}
+            {challengeCreating ? "Création…" : "Créer le défi"}
+          </button>
+        </form>
+
+        {challenges.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Aucun défi.</p>
+        ) : (
+          <div className="space-y-2">
+            {challenges.map((c) => (
+              <div key={c.id} className="flex items-center gap-3 rounded-lg border border-border/40 bg-surface/30 p-2">
+                {c.coverUrl ? (
+                  <img src={c.coverUrl} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-hero">
+                    <Trophy className="h-5 w-5 text-primary-glow/60" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-semibold">{c.title}</p>
+                  <p className="truncate text-[10px] text-muted-foreground">
+                    {c.entryCount ?? 0} participation{(c.entryCount ?? 0) === 1 ? "" : "s"} · fin {new Date(c.ends_at).toLocaleString("fr-FR")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => deleteChallenge(c.id)}
+                  disabled={busyId === c.id}
+                  className="rounded-full p-1.5 text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                  aria-label="Supprimer"
+                >
+                  {busyId === c.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </section>
 

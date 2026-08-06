@@ -172,6 +172,135 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_entries: {
+        Row: {
+          caption: string | null
+          challenge_id: string
+          created_at: string
+          id: string
+          post_id: string | null
+          track_id: string | null
+          user_id: string
+          votes_count: number
+        }
+        Insert: {
+          caption?: string | null
+          challenge_id: string
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          track_id?: string | null
+          user_id: string
+          votes_count?: number
+        }
+        Update: {
+          caption?: string | null
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          track_id?: string | null
+          user_id?: string
+          votes_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_entries_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_entries_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_entries_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_votes: {
+        Row: {
+          created_at: string
+          entry_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_votes_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenges: {
+        Row: {
+          cover_path: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          ends_at: string
+          hashtag: string | null
+          id: string
+          is_active: boolean
+          prize_description: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_path?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          ends_at: string
+          hashtag?: string | null
+          id?: string
+          is_active?: boolean
+          prize_description?: string | null
+          starts_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_path?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          ends_at?: string
+          hashtag?: string | null
+          id?: string
+          is_active?: boolean
+          prize_description?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_visits: {
         Row: {
           count: number
@@ -943,6 +1072,10 @@ export type Database = {
         | { Args: { _reason?: string; _track_id: string }; Returns: Json }
       log_media_view: {
         Args: { _media_id: string; _media_type: string }
+        Returns: undefined
+      }
+      publish_challenge_post: {
+        Args: { _challenge_id: string }
         Returns: undefined
       }
       publish_daily_visits_recap: { Args: never; Returns: undefined }
