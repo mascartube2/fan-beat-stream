@@ -223,10 +223,41 @@ function ChallengeDetailPage() {
             </Link>
           )}
 
+          {userEntry && (
+            <div className="mb-5 flex items-center gap-3 rounded-2xl border border-primary/40 bg-gradient-card p-3">
+              {userEntry.track?.coverUrl ? (
+                <img
+                  src={userEntry.track.coverUrl}
+                  alt={`Cover de ${userEntry.track.title}`}
+                  className="h-16 w-16 rounded-xl object-cover shadow-glow"
+                />
+              ) : (
+                <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-surface text-lg">♪</span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-primary-glow">Ta participation</p>
+                <p className="truncate text-sm font-bold">{userEntry.track?.title ?? challenge.title}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Partage le lien direct vers ta participation avec l’aperçu de ta cover.
+                </p>
+              </div>
+              <ShareMenu
+                url={`/challenge/${challenge.id}?entry=${userEntry.id}`}
+                title={`Ma participation au défi ${challenge.title}`}
+                text={`Vote pour ma participation au défi ${challenge.title} sur Mascartube !`}
+                authorUrl={`/u/${userEntry.userId}`}
+                authorName={userEntry.authorName}
+                label="Partager"
+                className="flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-2 text-xs font-bold shadow-glow"
+              />
+            </div>
+          )}
+
           <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Classement</h2>
           {entries.length === 0 ? (
             <p className="text-sm text-muted-foreground">Aucune participation pour l’instant — sois le premier !</p>
           ) : (
+
             <div className="space-y-3">
               {entries.map((entry, index) => (
                 <ChallengeEntryCard
