@@ -100,7 +100,12 @@ export function ShareMenu({
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setCard(true)}>
+          <ImageDown className="mr-2 h-4 w-4" /> Créer une carte de partage
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setQr({ url: fullUrl, title: title ?? "Publication" })}>
+
           <QrCode className="mr-2 h-4 w-4" /> QR code de la publication
         </DropdownMenuItem>
         {fullAuthorUrl && (
