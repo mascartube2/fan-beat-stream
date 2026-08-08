@@ -19,19 +19,60 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/challenge/$challengeId")({
   component: ChallengeDetailPage,
-  head: ({ params }) => ({
-    meta: [
-      { title: "Défi — Mascartube" },
-      { name: "description", content: "Participe à ce défi musical sur Mascartube." },
-      { property: "og:title", content: "Défi Mascartube" },
-      { property: "og:description", content: "Participe à ce défi musical sur Mascartube." },
-    ],
+  validateSearch: (search: Record<string, unknown>) => ({
+    entry: typeof search.entry === "string" ? search.entry : undefined,
   }),
+  loaderDeps: ({ search }) => ({ entry: search.entry }),
+  loader: async ({ params, deps }) => {
+    const challenge = await fetchChallengeById(params.challengeId);
+    let entryCover: string | null = null;
+    let entryTitle: string | null = null;
+    if (deps.entry) {
+      const entries = await fetchChallengeEntries(params.challengeId);
+      const found = entries.find((e) => e.id === deps.entry);
+      entryCover = found?.track?.coverUrl ?? null;
+      entryTitle = found ? `${found.authorName}${found.track ? ` — ${found.track.title}` : ""}` : null;
+    }
+    return {
+      title: challenge?.title ?? null,
+      description: challenge?.description ?? null,
+      coverUrl: challenge?.coverUrl ?? null,
+      entryCover,
+      entryTitle,
+    };
+  },
+  head: ({ loaderData }) => {
+    const base = loaderData?.title ? `${loaderData.title} — Défi Mascartube` : "Défi — Mascartube";
+    const title = loaderData?.entryTitle ? `${loaderData.entryTitle} · ${base}` : base;
+    const description =
+      loaderData?.entryTitle
+        ? `Écoute et vote pour la participation de ${loaderData.entryTitle} au défi Mascartube.`
+        : (loaderData?.description ?? "Participe à ce défi musical sur Mascartube.");
+    const image = loaderData?.entryCover ?? loaderData?.coverUrl ?? null;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "article" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(image?.startsWith("https://")
+          ? [
+              { property: "og:image", content: image },
+              { name: "twitter:image", content: image },
+            ]
+          : []),
+      ],
+    };
+  },
 });
 
 function ChallengeDetailPage() {
   const { challengeId } = Route.useParams();
+  const { entry: highlightedEntryId } = Route.useSearch();
   const { user } = useAuth();
+
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [entries, setEntries] = useState<ChallengeEntry[]>([]);
   const [loading, setLoading] = useState(true);
