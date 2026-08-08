@@ -6,6 +6,7 @@ export function ChallengeCard({ challenge, entryCount }: { challenge: Challenge;
   return (
     <Link
       to="/challenge/$challengeId"
+      search={{ entry: undefined }}
       params={{ challengeId: challenge.id }}
       className="group block overflow-hidden rounded-2xl border border-border/50 bg-gradient-card shadow-soft transition hover:border-primary/40"
     >

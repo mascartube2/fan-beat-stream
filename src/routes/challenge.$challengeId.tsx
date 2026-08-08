@@ -19,19 +19,60 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/challenge/$challengeId")({
   component: ChallengeDetailPage,
-  head: ({ params }) => ({
-    meta: [
-      { title: "Défi — Mascartube" },
-      { name: "description", content: "Participe à ce défi musical sur Mascartube." },
-      { property: "og:title", content: "Défi Mascartube" },
-      { property: "og:description", content: "Participe à ce défi musical sur Mascartube." },
-    ],
+  validateSearch: (search: Record<string, unknown>) => ({
+    entry: typeof search.entry === "string" ? search.entry : undefined,
   }),
+  loaderDeps: ({ search }) => ({ entry: search.entry }),
+  loader: async ({ params, deps }) => {
+    const challenge = await fetchChallengeById(params.challengeId);
+    let entryCover: string | null = null;
+    let entryTitle: string | null = null;
+    if (deps.entry) {
+      const entries = await fetchChallengeEntries(params.challengeId);
+      const found = entries.find((e) => e.id === deps.entry);
+      entryCover = found?.track?.coverUrl ?? null;
+      entryTitle = found ? `${found.authorName}${found.track ? ` — ${found.track.title}` : ""}` : null;
+    }
+    return {
+      title: challenge?.title ?? null,
+      description: challenge?.description ?? null,
+      coverUrl: challenge?.coverUrl ?? null,
+      entryCover,
+      entryTitle,
+    };
+  },
+  head: ({ loaderData }) => {
+    const base = loaderData?.title ? `${loaderData.title} — Défi Mascartube` : "Défi — Mascartube";
+    const title = loaderData?.entryTitle ? `${loaderData.entryTitle} · ${base}` : base;
+    const description =
+      loaderData?.entryTitle
+        ? `Écoute et vote pour la participation de ${loaderData.entryTitle} au défi Mascartube.`
+        : (loaderData?.description ?? "Participe à ce défi musical sur Mascartube.");
+    const image = loaderData?.entryCover ?? loaderData?.coverUrl ?? null;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "article" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(image?.startsWith("https://")
+          ? [
+              { property: "og:image", content: image },
+              { name: "twitter:image", content: image },
+            ]
+          : []),
+      ],
+    };
+  },
 });
 
 function ChallengeDetailPage() {
   const { challengeId } = Route.useParams();
+  const { entry: highlightedEntryId } = Route.useSearch();
   const { user } = useAuth();
+
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [entries, setEntries] = useState<ChallengeEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +98,13 @@ function ChallengeDetailPage() {
   useEffect(() => {
     load();
   }, [challengeId, user?.id]);
+
+  useEffect(() => {
+    if (!highlightedEntryId || loading) return;
+    const el = document.getElementById(`entry-${highlightedEntryId}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [highlightedEntryId, loading, entries.length]);
+
 
   useEffect(() => {
     const ch = supabase
@@ -175,10 +223,41 @@ function ChallengeDetailPage() {
             </Link>
           )}
 
+          {userEntry && (
+            <div className="mb-5 flex items-center gap-3 rounded-2xl border border-primary/40 bg-gradient-card p-3">
+              {userEntry.track?.coverUrl ? (
+                <img
+                  src={userEntry.track.coverUrl}
+                  alt={`Cover de ${userEntry.track.title}`}
+                  className="h-16 w-16 rounded-xl object-cover shadow-glow"
+                />
+              ) : (
+                <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-surface text-lg">♪</span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-primary-glow">Ta participation</p>
+                <p className="truncate text-sm font-bold">{userEntry.track?.title ?? challenge.title}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Partage le lien direct vers ta participation avec l’aperçu de ta cover.
+                </p>
+              </div>
+              <ShareMenu
+                url={`/challenge/${challenge.id}?entry=${userEntry.id}`}
+                title={`Ma participation au défi ${challenge.title}`}
+                text={`Vote pour ma participation au défi ${challenge.title} sur Mascartube !`}
+                authorUrl={`/u/${userEntry.userId}`}
+                authorName={userEntry.authorName}
+                label="Partager"
+                className="flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-2 text-xs font-bold shadow-glow"
+              />
+            </div>
+          )}
+
           <h2 className="mb-3 text-sm font-semibold text-muted-foreground">Classement</h2>
           {entries.length === 0 ? (
             <p className="text-sm text-muted-foreground">Aucune participation pour l’instant — sois le premier !</p>
           ) : (
+
             <div className="space-y-3">
               {entries.map((entry, index) => (
                 <ChallengeEntryCard
@@ -186,8 +265,11 @@ function ChallengeDetailPage() {
                   entry={entry}
                   rank={index + 1}
                   voted={userVotes.has(entry.id)}
+                  challengeTitle={challenge.title}
+                  highlighted={entry.id === highlightedEntryId}
                   onVote={() => handleVote(entry.id)}
                   onDelete={entry.userId === user?.id ? () => handleDelete(entry.id) : undefined}
+
                 />
               ))}
             </div>
