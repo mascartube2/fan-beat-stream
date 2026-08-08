@@ -2,6 +2,7 @@ import { Heart, Trash2, Play, Medal } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
+import { ShareMenu } from "@/components/share/ShareMenu";
 import { formatCount, type ChallengeEntry } from "@/lib/challenges";
 
 export function ChallengeEntryCard({
@@ -10,24 +11,36 @@ export function ChallengeEntryCard({
   voted,
   onVote,
   onDelete,
+  challengeTitle,
+  highlighted,
 }: {
   entry: ChallengeEntry;
   rank: number;
   voted: boolean;
   onVote: () => void;
   onDelete?: () => void;
+  challengeTitle?: string;
+  highlighted?: boolean;
 }) {
   const { playTrack } = usePlayer();
 
   const medal = rank <= 3;
   const rankColor = rank === 1 ? "text-yellow-400" : rank === 2 ? "text-gray-300" : rank === 3 ? "text-amber-600" : "text-muted-foreground";
+  const shareUrl = `/challenge/${entry.challengeId}?entry=${entry.id}`;
+  const shareText = `${entry.authorName} participe${challengeTitle ? ` au défi ${challengeTitle}` : " au défi"}${entry.track ? ` avec « ${entry.track.title} »` : ""} — #${rank} au classement`;
 
   return (
-    <article className="rounded-2xl border border-border/50 bg-gradient-card p-3 shadow-soft">
+    <article
+      id={`entry-${entry.id}`}
+      className={`scroll-mt-24 rounded-2xl border bg-gradient-card p-3 shadow-soft transition ${
+        highlighted ? "border-primary ring-2 ring-primary/40" : "border-border/50"
+      }`}
+    >
       <div className="mb-2 flex items-center gap-3">
         <div className={`flex h-8 w-8 items-center justify-center rounded-full bg-surface text-sm font-bold ${rankColor}`}>
           {medal ? <Medal className="h-4 w-4" /> : rank}
         </div>
+
         <Link to="/u/$userId" params={{ userId: entry.userId }} className="flex min-w-0 flex-1 items-center gap-2">
           {entry.authorAvatar ? (
             <img src={entry.authorAvatar} alt={entry.authorName} className="h-8 w-8 rounded-full object-cover" />
