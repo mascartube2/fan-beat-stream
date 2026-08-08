@@ -144,6 +144,20 @@ export function ShareMenu({
         title={qr.title}
       />
     )}
+    {card && (
+      <ShareCardDialog
+        open={card}
+        onOpenChange={setCard}
+        card={{
+          title: title ?? "Mascartube",
+          subtitle: text && text !== title ? text : (authorName ?? null),
+          coverUrl: coverUrl ?? null,
+          url: fullUrl,
+          badge: cardBadge ?? null,
+        }}
+      />
+    )}
+
     </>
   );
 }
