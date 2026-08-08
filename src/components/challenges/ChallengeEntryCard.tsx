@@ -57,6 +57,14 @@ export function ChallengeEntryCard({
             <p className="truncate text-[10px] text-muted-foreground">#{rank} au classement</p>
           </div>
         </Link>
+        <ShareMenu
+          url={shareUrl}
+          title={shareText}
+          text={shareText}
+          authorUrl={`/u/${entry.userId}`}
+          authorName={entry.authorName}
+          className="rounded-full p-1.5 text-muted-foreground hover:bg-white/5"
+        />
         {onDelete && (
           <button
             onClick={onDelete}
@@ -67,6 +75,7 @@ export function ChallengeEntryCard({
           </button>
         )}
       </div>
+
 
       {entry.caption && <p className="mb-2 text-sm leading-relaxed text-foreground/90">{entry.caption}</p>}
 
