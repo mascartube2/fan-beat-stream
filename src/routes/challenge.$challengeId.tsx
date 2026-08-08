@@ -100,6 +100,13 @@ function ChallengeDetailPage() {
   }, [challengeId, user?.id]);
 
   useEffect(() => {
+    if (!highlightedEntryId || loading) return;
+    const el = document.getElementById(`entry-${highlightedEntryId}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [highlightedEntryId, loading, entries.length]);
+
+
+  useEffect(() => {
     const ch = supabase
       .channel(`challenge-${challengeId}`)
       .on(
