@@ -17,9 +17,31 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import logoSquare from "@/assets/logo-square.png";
 
+const SITE = "https://fan-beat-stream.lovable.app";
+
 export const Route = createFileRoute("/")({
   component: HomePage,
+  head: () => ({
+    meta: [
+      { title: "Mascartube — Musique malgache, réels et communauté" },
+      {
+        name: "description",
+        content:
+          "Écoute la musique malgache en streaming gratuit, découvre les réels des artistes, participe aux défis et échange avec la communauté Mascartube.",
+      },
+      { property: "og:title", content: "Mascartube — Musique malgache, réels et communauté" },
+      {
+        property: "og:description",
+        content: "Streaming gratuit, réels, défis musicaux et messagerie : toute la scène malgache sur Mascartube.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: SITE }],
+  }),
 });
+
 
 function HomePage() {
   const { playTrack } = usePlayer();
