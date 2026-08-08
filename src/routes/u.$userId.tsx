@@ -7,9 +7,60 @@ import { SocialPostCard, type FeedPost } from "@/components/posts/SocialPostCard
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { publicUrl } from "@/lib/tracks";
 
+const SITE = "https://fan-beat-stream.lovable.app";
+
 export const Route = createFileRoute("/u/$userId")({
   component: UserWallPage,
-  head: () => ({ meta: [{ title: "Mur d'artiste — Mascartube" }] }),
+  loader: async ({ params }) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("display_name, bio, avatar_url")
+      .eq("user_id", params.userId)
+      .maybeSingle();
+    const avatar = data?.avatar_url ?? null;
+    return {
+      name: data?.display_name ?? null,
+      bio: data?.bio ?? null,
+      avatarUrl: avatar ? (avatar.startsWith("http") ? avatar : publicUrl("avatars", avatar)) : null,
+    };
+  },
+  head: ({ params, loaderData }) => {
+    const name = loaderData?.name ?? "Artiste";
+    const pageTitle = `${name} — Mascartube`;
+    const description = (
+      loaderData?.bio ?? `Découvre la musique, les réels et les publications de ${name} sur Mascartube.`
+    ).slice(0, 160);
+    const url = `${SITE}/u/${params.userId}`;
+    const avatar = loaderData?.avatarUrl ?? null;
+    return {
+      meta: [
+        { title: pageTitle.slice(0, 60) },
+        { name: "description", content: description },
+        { property: "og:title", content: pageTitle },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "profile" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(avatar
+          ? [
+              { property: "og:image", content: avatar },
+              { name: "twitter:image", content: avatar },
+            ]
+          : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ProfilePage",
+            mainEntity: { "@type": "MusicGroup", name, image: avatar ?? undefined, url },
+          }),
+        },
+      ],
+    };
+  },
   errorComponent: ({ error }) => (
     <div className="p-6 text-center text-sm text-muted-foreground">{error.message}</div>
   ),
@@ -17,6 +68,7 @@ export const Route = createFileRoute("/u/$userId")({
     <div className="p-6 text-center text-sm text-muted-foreground">Profil introuvable.</div>
   ),
 });
+
 
 function UserWallPage() {
   const { userId } = Route.useParams();

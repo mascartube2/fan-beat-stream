@@ -9,10 +9,76 @@ import { ShareMenu } from "@/components/share/ShareMenu";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { BuyDialog } from "@/components/purchase/BuyDialog";
 
+const SITE = "https://fan-beat-stream.lovable.app";
+
 export const Route = createFileRoute("/track/$trackId")({
   component: TrackPage,
-  head: () => ({ meta: [{ title: "Morceau — Mascartube" }] }),
+  loader: async ({ params }) => {
+    const { data: t } = await supabase
+      .from("tracks")
+      .select("title, user_id, cover_path, genre, plays")
+      .eq("id", params.trackId)
+      .maybeSingle();
+    if (!t) return { title: null, artistName: null, coverUrl: null, genre: null, plays: 0 };
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", t.user_id)
+      .maybeSingle();
+    return {
+      title: t.title,
+      artistName: prof?.display_name ?? null,
+      coverUrl: t.cover_path ? publicUrl("track-covers", t.cover_path) : null,
+      genre: t.genre,
+      plays: t.plays ?? 0,
+    };
+  },
+  head: ({ params, loaderData }) => {
+    const name = loaderData?.title ?? "Morceau";
+    const artist = loaderData?.artistName ?? "artiste malgache";
+    const pageTitle = `${name} — ${artist} | Mascartube`;
+    const description = `Écoute « ${name} » de ${artist} en streaming gratuit sur Mascartube${
+      loaderData?.genre ? ` · ${loaderData.genre}` : ""
+    }. ${loaderData?.plays ?? 0} écoutes.`;
+    const url = `${SITE}/track/${params.trackId}`;
+    const cover = loaderData?.coverUrl ?? null;
+    return {
+      meta: [
+        { title: pageTitle.slice(0, 60) },
+        { name: "description", content: description.slice(0, 160) },
+        { property: "og:title", content: pageTitle },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "music.song" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(cover
+          ? [
+              { property: "og:image", content: cover },
+              { name: "twitter:image", content: cover },
+            ]
+          : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: loaderData?.title
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "MusicRecording",
+                name: loaderData.title,
+                byArtist: { "@type": "MusicGroup", name: artist },
+                genre: loaderData.genre ?? undefined,
+                image: cover ?? undefined,
+                url,
+              }),
+            },
+          ]
+        : [],
+    };
+  },
 });
+
 
 function TrackPage() {
   const { trackId } = useParams({ from: "/track/$trackId" });
@@ -70,8 +136,11 @@ function TrackPage() {
             url={`/track/${track.id}`}
             title={track.title}
             text={`${track.title} — ${track.artistName}`}
+            coverUrl={track.coverUrl}
+            cardBadge={track.genre ?? "Mascartube"}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-border"
           />
+
           <OfflineTrackButton track={track} />
         </div>
         {track.is_for_sale && (

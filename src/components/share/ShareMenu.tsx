@@ -1,4 +1,4 @@
-import { Share2, Link2, Send, User, QrCode } from "lucide-react";
+import { Share2, Link2, Send, User, QrCode, ImageDown } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { QrDialog } from "@/components/share/QrDialog";
+import { ShareCardDialog } from "@/components/share/ShareCardDialog";
 
 type Props = {
   url: string;
@@ -18,10 +19,23 @@ type Props = {
   authorName?: string;
   className?: string;
   label?: string;
+  coverUrl?: string | null;
+  cardBadge?: string | null;
 };
 
-export function ShareMenu({ url, title, text, authorUrl, authorName, className, label }: Props) {
+export function ShareMenu({
+  url,
+  title,
+  text,
+  authorUrl,
+  authorName,
+  className,
+  label,
+  coverUrl,
+  cardBadge,
+}: Props) {
   const [qr, setQr] = useState<{ url: string; title: string } | null>(null);
+  const [card, setCard] = useState(false);
   const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
   const fullAuthorUrl = authorUrl
     ? authorUrl.startsWith("http")
@@ -30,6 +44,7 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
     : null;
   const enc = encodeURIComponent;
   const msg = text ? `${text} — ${fullUrl}` : fullUrl;
+
 
   const nativeShare = async () => {
     try {
@@ -85,7 +100,12 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setCard(true)}>
+          <ImageDown className="mr-2 h-4 w-4" /> Créer une carte de partage
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setQr({ url: fullUrl, title: title ?? "Publication" })}>
+
           <QrCode className="mr-2 h-4 w-4" /> QR code de la publication
         </DropdownMenuItem>
         {fullAuthorUrl && (
@@ -124,6 +144,20 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
         title={qr.title}
       />
     )}
+    {card && (
+      <ShareCardDialog
+        open={card}
+        onOpenChange={setCard}
+        card={{
+          title: title ?? "Mascartube",
+          subtitle: text && text !== title ? text : (authorName ?? null),
+          coverUrl: coverUrl ?? null,
+          url: fullUrl,
+          badge: cardBadge ?? null,
+        }}
+      />
+    )}
+
     </>
   );
 }
