@@ -1,4 +1,4 @@
-import { Share2, Link2, Send, User, QrCode } from "lucide-react";
+import { Share2, Link2, Send, User, QrCode, ImageDown } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { QrDialog } from "@/components/share/QrDialog";
+import { ShareCardDialog } from "@/components/share/ShareCardDialog";
 
 type Props = {
   url: string;
@@ -18,10 +19,23 @@ type Props = {
   authorName?: string;
   className?: string;
   label?: string;
+  coverUrl?: string | null;
+  cardBadge?: string | null;
 };
 
-export function ShareMenu({ url, title, text, authorUrl, authorName, className, label }: Props) {
+export function ShareMenu({
+  url,
+  title,
+  text,
+  authorUrl,
+  authorName,
+  className,
+  label,
+  coverUrl,
+  cardBadge,
+}: Props) {
   const [qr, setQr] = useState<{ url: string; title: string } | null>(null);
+  const [card, setCard] = useState(false);
   const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
   const fullAuthorUrl = authorUrl
     ? authorUrl.startsWith("http")
@@ -30,6 +44,7 @@ export function ShareMenu({ url, title, text, authorUrl, authorName, className, 
     : null;
   const enc = encodeURIComponent;
   const msg = text ? `${text} — ${fullUrl}` : fullUrl;
+
 
   const nativeShare = async () => {
     try {
