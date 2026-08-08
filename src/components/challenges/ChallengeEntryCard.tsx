@@ -63,8 +63,11 @@ export function ChallengeEntryCard({
           text={shareText}
           authorUrl={`/u/${entry.userId}`}
           authorName={entry.authorName}
+          coverUrl={entry.track?.coverUrl ?? null}
+          cardBadge={challengeTitle ? `Défi ${challengeTitle}` : "Défi Mascartube"}
           className="rounded-full p-1.5 text-muted-foreground hover:bg-white/5"
         />
+
         {onDelete && (
           <button
             onClick={onDelete}
