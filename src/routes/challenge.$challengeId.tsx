@@ -265,8 +265,11 @@ function ChallengeDetailPage() {
                   entry={entry}
                   rank={index + 1}
                   voted={userVotes.has(entry.id)}
+                  challengeTitle={challenge.title}
+                  highlighted={entry.id === highlightedEntryId}
                   onVote={() => handleVote(entry.id)}
                   onDelete={entry.userId === user?.id ? () => handleDelete(entry.id) : undefined}
+
                 />
               ))}
             </div>
