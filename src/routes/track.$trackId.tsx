@@ -136,8 +136,11 @@ function TrackPage() {
             url={`/track/${track.id}`}
             title={track.title}
             text={`${track.title} — ${track.artistName}`}
+            coverUrl={track.coverUrl}
+            cardBadge={track.genre ?? "Mascartube"}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-border"
           />
+
           <OfflineTrackButton track={track} />
         </div>
         {track.is_for_sale && (
