@@ -37,6 +37,7 @@ export function ShareMenu({
 }: Props) {
   const [qr, setQr] = useState<{ url: string; title: string } | null>(null);
   const [card, setCard] = useState(false);
+  const [shareText, setShareText] = useState(false);
   const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
   const fullAuthorUrl = authorUrl
     ? authorUrl.startsWith("http")
