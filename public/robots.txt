@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /chat
+Disallow: /upload
+Disallow: /profile
+Disallow: /notifications
+Disallow: /downloads
+Disallow: /artist-dashboard
+Disallow: /auth
+Disallow: /api/
+Disallow: /.mcp/
+Disallow: /.lovable/
+
+Sitemap: https://fan-beat-stream.lovable.app/sitemap.xml
