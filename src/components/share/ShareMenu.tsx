@@ -1,4 +1,4 @@
-import { Share2, Link2, Send, User, QrCode, ImageDown } from "lucide-react";
+import { Share2, Link2, Send, User, QrCode, ImageDown, ClipboardType } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { QrDialog } from "@/components/share/QrDialog";
 import { ShareCardDialog } from "@/components/share/ShareCardDialog";
+import { ShareTextDialog } from "@/components/share/ShareTextDialog";
 
 type Props = {
   url: string;
