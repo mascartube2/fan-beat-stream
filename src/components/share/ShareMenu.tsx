@@ -1,4 +1,4 @@
-import { Share2, Link2, Send, User, QrCode, ImageDown } from "lucide-react";
+import { Share2, Link2, Send, User, QrCode, ImageDown, ClipboardType } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { QrDialog } from "@/components/share/QrDialog";
 import { ShareCardDialog } from "@/components/share/ShareCardDialog";
+import { ShareTextDialog } from "@/components/share/ShareTextDialog";
 
 type Props = {
   url: string;
@@ -36,6 +37,7 @@ export function ShareMenu({
 }: Props) {
   const [qr, setQr] = useState<{ url: string; title: string } | null>(null);
   const [card, setCard] = useState(false);
+  const [shareText, setShareText] = useState(false);
   const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
   const fullAuthorUrl = authorUrl
     ? authorUrl.startsWith("http")
@@ -100,6 +102,9 @@ export function ShareMenu({
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setShareText(true)}>
+          <ClipboardType className="mr-2 h-4 w-4" /> Texte de partage prêt à copier
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setCard(true)}>
           <ImageDown className="mr-2 h-4 w-4" /> Créer une carte de partage
         </DropdownMenuItem>
@@ -142,6 +147,19 @@ export function ShareMenu({
         onOpenChange={(o) => !o && setQr(null)}
         url={qr.url}
         title={qr.title}
+      />
+    )}
+    {shareText && (
+      <ShareTextDialog
+        open={shareText}
+        onOpenChange={setShareText}
+        input={{
+          url: fullUrl,
+          title: title ?? null,
+          subtitle: text && text !== title ? text : null,
+          authorName: authorName ?? null,
+          badge: cardBadge ?? null,
+        }}
       />
     )}
     {card && (
