@@ -149,6 +149,19 @@ export function ShareMenu({
         title={qr.title}
       />
     )}
+    {shareText && (
+      <ShareTextDialog
+        open={shareText}
+        onOpenChange={setShareText}
+        input={{
+          url: fullUrl,
+          title: title ?? null,
+          subtitle: text && text !== title ? text : null,
+          authorName: authorName ?? null,
+          badge: cardBadge ?? null,
+        }}
+      />
+    )}
     {card && (
       <ShareCardDialog
         open={card}
