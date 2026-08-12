@@ -102,6 +102,9 @@ export function ShareMenu({
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setShareText(true)}>
+          <ClipboardType className="mr-2 h-4 w-4" /> Texte de partage prêt à copier
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setCard(true)}>
           <ImageDown className="mr-2 h-4 w-4" /> Créer une carte de partage
         </DropdownMenuItem>
