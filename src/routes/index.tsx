@@ -245,7 +245,7 @@ function HomePage() {
                 </button>
                 <div className="mt-1 flex items-center justify-end gap-1">
                   <ShareMenu
-                    url={`/track/${t.id}`}
+                    url={t.slug ? `/titre/${t.slug}` : `/track/${t.id}`}
                     title={t.title}
                     text={`${t.title} — ${t.artistName}`}
                     coverUrl={t.coverUrl}
