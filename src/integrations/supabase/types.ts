@@ -608,6 +608,7 @@ export type Database = {
           id: string
           is_certified: boolean
           mascar_coins: number
+          slug: string | null
           updated_at: string
           user_id: string
         }
@@ -620,6 +621,7 @@ export type Database = {
           id?: string
           is_certified?: boolean
           mascar_coins?: number
+          slug?: string | null
           updated_at?: string
           user_id: string
         }
@@ -632,6 +634,7 @@ export type Database = {
           id?: string
           is_certified?: boolean
           mascar_coins?: number
+          slug?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -926,6 +929,7 @@ export type Database = {
           preview_duration_seconds: number | null
           preview_path: string | null
           price_ar: number
+          slug: string | null
           title: string
           updated_at: string
           user_id: string
@@ -943,6 +947,7 @@ export type Database = {
           preview_duration_seconds?: number | null
           preview_path?: string | null
           price_ar?: number
+          slug?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -960,6 +965,7 @@ export type Database = {
           preview_duration_seconds?: number | null
           preview_path?: string | null
           price_ar?: number
+          slug?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -1101,10 +1107,12 @@ export type Database = {
         Args: { _user_id: string; _value: boolean }
         Returns: Json
       }
+      slugify: { Args: { v: string }; Returns: string }
       transfer_maca: {
         Args: { _amount: number; _short_id?: string; _to_user: string }
         Returns: Json
       }
+      unaccent_fallback: { Args: { v: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "artist" | "user"
