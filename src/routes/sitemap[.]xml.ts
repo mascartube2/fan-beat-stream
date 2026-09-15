@@ -27,14 +27,14 @@ export const Route = createFileRoute("/sitemap.xml")({
         ];
 
         const [tracks, profiles, challenges] = await Promise.all([
-          supabase.from("tracks").select("id, created_at").order("created_at", { ascending: false }).limit(5000),
-          supabase.from("profiles").select("user_id, updated_at").limit(5000),
+          supabase.from("tracks").select("id, slug, created_at").order("created_at", { ascending: false }).limit(5000),
+          supabase.from("profiles").select("user_id, slug, updated_at").limit(5000),
           supabase.from("challenges").select("id, created_at").limit(1000),
         ]);
 
         for (const t of tracks.data ?? []) {
           entries.push({
-            path: `/track/${t.id}`,
+            path: t.slug ? `/titre/${t.slug}` : `/track/${t.id}`,
             lastmod: t.created_at ? new Date(t.created_at).toISOString().slice(0, 10) : undefined,
             changefreq: "weekly",
             priority: "0.7",
@@ -43,12 +43,13 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         for (const p of profiles.data ?? []) {
           entries.push({
-            path: `/u/${p.user_id}`,
+            path: p.slug ? `/artiste/${p.slug}` : `/u/${p.user_id}`,
             lastmod: p.updated_at ? new Date(p.updated_at).toISOString().slice(0, 10) : undefined,
             changefreq: "weekly",
             priority: "0.6",
           });
         }
+
 
         for (const c of challenges.data ?? []) {
           entries.push({

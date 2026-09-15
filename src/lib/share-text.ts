@@ -3,10 +3,10 @@ export type ShareKind = "track" | "challenge" | "post" | "profile" | "album" | "
 /** Devine le type de contenu à partir du lien profond. */
 export function detectShareKind(url: string): ShareKind {
   const path = url.replace(/^https?:\/\/[^/]+/, "");
-  if (path.startsWith("/track/")) return "track";
+  if (path.startsWith("/track/") || path.startsWith("/titre/")) return "track";
   if (path.startsWith("/challenge")) return "challenge";
   if (path.startsWith("/post/")) return "post";
-  if (path.startsWith("/u/")) return "profile";
+  if (path.startsWith("/u/") || path.startsWith("/artiste/")) return "profile";
   if (path.startsWith("/albums")) return "album";
   if (path.startsWith("/shorts")) return "short";
   return "generic";
