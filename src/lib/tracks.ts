@@ -27,6 +27,7 @@ export type DbTrack = {
   plays: number;
   created_at: string;
   genre: string | null;
+  slug?: string | null;
 };
 
 
