@@ -30,9 +30,11 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUserIdRouteImport } from './routes/u.$userId'
 import { Route as TrackTrackIdRouteImport } from './routes/track.$trackId'
+import { Route as TitreSlugRouteImport } from './routes/titre.$slug'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as ChallengeChallengeIdRouteImport } from './routes/challenge.$challengeId'
+import { Route as ArtisteSlugRouteImport } from './routes/artiste.$slug'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ApiPublicAutoClipRouteImport } from './routes/api/public/auto-clip'
@@ -144,6 +146,11 @@ const TrackTrackIdRoute = TrackTrackIdRouteImport.update({
   path: '/track/$trackId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TitreSlugRoute = TitreSlugRouteImport.update({
+  id: '/titre/$slug',
+  path: '/titre/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileEditRoute = ProfileEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -157,6 +164,11 @@ const PostPostIdRoute = PostPostIdRouteImport.update({
 const ChallengeChallengeIdRoute = ChallengeChallengeIdRouteImport.update({
   id: '/challenge/$challengeId',
   path: '/challenge/$challengeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArtisteSlugRoute = ArtisteSlugRouteImport.update({
+  id: '/artiste/$slug',
+  path: '/artiste/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
@@ -210,9 +222,11 @@ export interface FileRoutesByFullPath {
   '/upload': typeof UploadRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/artiste/$slug': typeof ArtisteSlugRoute
   '/challenge/$challengeId': typeof ChallengeChallengeIdRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
+  '/titre/$slug': typeof TitreSlugRoute
   '/track/$trackId': typeof TrackTrackIdRoute
   '/u/$userId': typeof UUserIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -241,9 +255,11 @@ export interface FileRoutesByTo {
   '/upload': typeof UploadRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/artiste/$slug': typeof ArtisteSlugRoute
   '/challenge/$challengeId': typeof ChallengeChallengeIdRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
+  '/titre/$slug': typeof TitreSlugRoute
   '/track/$trackId': typeof TrackTrackIdRoute
   '/u/$userId': typeof UUserIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -273,9 +289,11 @@ export interface FileRoutesById {
   '/upload': typeof UploadRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/artiste/$slug': typeof ArtisteSlugRoute
   '/challenge/$challengeId': typeof ChallengeChallengeIdRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profile/edit': typeof ProfileEditRoute
+  '/titre/$slug': typeof TitreSlugRoute
   '/track/$trackId': typeof TrackTrackIdRoute
   '/u/$userId': typeof UUserIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -306,9 +324,11 @@ export interface FileRouteTypes {
     | '/upload'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/artiste/$slug'
     | '/challenge/$challengeId'
     | '/post/$postId'
     | '/profile/edit'
+    | '/titre/$slug'
     | '/track/$trackId'
     | '/u/$userId'
     | '/.lovable/oauth/consent'
@@ -337,9 +357,11 @@ export interface FileRouteTypes {
     | '/upload'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/artiste/$slug'
     | '/challenge/$challengeId'
     | '/post/$postId'
     | '/profile/edit'
+    | '/titre/$slug'
     | '/track/$trackId'
     | '/u/$userId'
     | '/.lovable/oauth/consent'
@@ -368,9 +390,11 @@ export interface FileRouteTypes {
     | '/upload'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/artiste/$slug'
     | '/challenge/$challengeId'
     | '/post/$postId'
     | '/profile/edit'
+    | '/titre/$slug'
     | '/track/$trackId'
     | '/u/$userId'
     | '/.lovable/oauth/consent'
@@ -400,8 +424,10 @@ export interface RootRouteChildren {
   UploadRoute: typeof UploadRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ArtisteSlugRoute: typeof ArtisteSlugRoute
   ChallengeChallengeIdRoute: typeof ChallengeChallengeIdRoute
   PostPostIdRoute: typeof PostPostIdRoute
+  TitreSlugRoute: typeof TitreSlugRoute
   TrackTrackIdRoute: typeof TrackTrackIdRoute
   UUserIdRoute: typeof UUserIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -558,6 +584,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackTrackIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/titre/$slug': {
+      id: '/titre/$slug'
+      path: '/titre/$slug'
+      fullPath: '/titre/$slug'
+      preLoaderRoute: typeof TitreSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/edit': {
       id: '/profile/edit'
       path: '/edit'
@@ -577,6 +610,13 @@ declare module '@tanstack/react-router' {
       path: '/challenge/$challengeId'
       fullPath: '/challenge/$challengeId'
       preLoaderRoute: typeof ChallengeChallengeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/artiste/$slug': {
+      id: '/artiste/$slug'
+      path: '/artiste/$slug'
+      fullPath: '/artiste/$slug'
+      preLoaderRoute: typeof ArtisteSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.well-known/oauth-protected-resource': {
@@ -651,8 +691,10 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ArtisteSlugRoute: ArtisteSlugRoute,
   ChallengeChallengeIdRoute: ChallengeChallengeIdRoute,
   PostPostIdRoute: PostPostIdRoute,
+  TitreSlugRoute: TitreSlugRoute,
   TrackTrackIdRoute: TrackTrackIdRoute,
   UUserIdRoute: UUserIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
