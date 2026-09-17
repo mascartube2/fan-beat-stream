@@ -27,7 +27,8 @@ export type ChallengeEntry = {
   authorName: string;
   authorAvatar: string | null;
   authorIsArtist?: boolean;
-  track?: { id: string; title: string; coverUrl: string; artistName: string; audioUrl: string } | null;
+  authorSlug?: string | null;
+  track?: { id: string; title: string; slug?: string | null; coverUrl: string; artistName: string; audioUrl: string } | null;
 };
 
 function toChallenge(row: any): Challenge {
@@ -89,9 +90,9 @@ export async function fetchChallengeEntries(challengeId: string): Promise<Challe
   const trackIds = Array.from(new Set(data.map((e) => e.track_id).filter((id): id is string => !!id)));
 
   const [{ data: profiles }, { data: tracks }] = await Promise.all([
-    supabase.from("profiles").select("user_id, display_name, avatar_url, is_certified").in("user_id", userIds),
+    supabase.from("profiles").select("user_id, display_name, avatar_url, is_certified, slug").in("user_id", userIds),
     trackIds.length
-      ? supabase.from("tracks").select("id, title, audio_path, cover_path, user_id").in("id", trackIds)
+      ? supabase.from("tracks").select("id, title, slug, audio_path, cover_path, user_id").in("id", trackIds)
       : { data: [] },
   ]);
 
@@ -118,10 +119,12 @@ export async function fetchChallengeEntries(challengeId: string): Promise<Challe
       authorName: profile?.display_name ?? "Utilisateur",
       authorAvatar: profile?.avatar_url ?? null,
       authorIsArtist: !!profile?.is_certified,
+      authorSlug: profile?.slug ?? null,
       track: track
         ? {
             id: track.id,
             title: track.title,
+            slug: track.slug,
             coverUrl: publicUrl("track-covers", track.cover_path),
             artistName: trackArtistMap.get(track.user_id) ?? "Unknown",
             audioUrl: publicUrl("audio-tracks", track.audio_path),

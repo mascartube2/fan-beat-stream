@@ -10,7 +10,7 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
   if (!rows?.length) return [];
 
   // Les publications texte (sans média) disparaissent du feed après 20 jours,
-  // mais restent visibles sur le mur de leur auteur (route /u/$userId).
+  // mais restent visibles sur le mur de leur auteur (route /artiste/:slug).
   const cutoff = Date.now() - 20 * 24 * 60 * 60 * 1000;
   const filteredRows = rows.filter((r) => {
     const isTextOnly = !r.media_path;
@@ -22,7 +22,7 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
   const userIds = Array.from(new Set(filteredRows.map((r) => r.user_id)));
   const { data: profs } = await supabase
     .from("profiles")
-    .select("user_id,display_name,avatar_url,is_certified")
+    .select("user_id,display_name,avatar_url,is_certified,slug")
     .in("user_id", userIds);
   const profMap = new Map((profs ?? []).map((p) => [p.user_id, p]));
 
@@ -46,6 +46,7 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
     })(),
     mediaUrl: r.media_path ? supabase.storage.from("posts").getPublicUrl(r.media_path).data.publicUrl : null,
     authorIsArtist: !!profMap.get(r.user_id)?.is_certified,
+    authorSlug: profMap.get(r.user_id)?.slug ?? null,
   }));
 }
 
@@ -60,7 +61,7 @@ export async function fetchUserPosts(userId: string, limit = 100): Promise<FeedP
 
   const { data: prof } = await supabase
     .from("profiles")
-    .select("user_id,display_name,avatar_url,is_certified")
+    .select("user_id,display_name,avatar_url,is_certified,slug")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -84,5 +85,6 @@ export async function fetchUserPosts(userId: string, limit = 100): Promise<FeedP
     })(),
     mediaUrl: r.media_path ? supabase.storage.from("posts").getPublicUrl(r.media_path).data.publicUrl : null,
     authorIsArtist: !!prof?.is_certified,
+    authorSlug: prof?.slug ?? null,
   }));
 }

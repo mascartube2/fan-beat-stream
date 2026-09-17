@@ -6,6 +6,7 @@ import { downloadTrack } from "@/lib/tracks";
 import { useAuth } from "@/components/auth/AuthContext";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
 import { BuyDialog } from "@/components/purchase/BuyDialog";
+import { ProfileLink } from "@/components/profile/ProfileLink";
 
 
 export const Route = createFileRoute("/albums")({
@@ -82,9 +83,9 @@ function AlbumsPage() {
                   <img src={a.coverUrl} alt={`Pochette de ${a.title}`} className="h-20 w-20 shrink-0 rounded-xl object-cover" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold">{a.title}</p>
-                    <Link to="/u/$userId" params={{ userId: a.user_id }} className="text-xs text-muted-foreground hover:underline">
+                    <ProfileLink userId={a.user_id} slug={a.artistSlug} className="text-xs text-muted-foreground hover:underline">
                       {a.artistName}
-                    </Link>
+                    </ProfileLink>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
                       {a.trackCount} morceaux · <span className="font-bold text-primary-glow">Gratuit</span>
                     </p>
@@ -117,9 +118,9 @@ function AlbumsPage() {
                 <img src={a.coverUrl} alt={`Pochette de ${a.title}`} className="h-20 w-20 shrink-0 rounded-xl object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{a.title}</p>
-                  <Link to="/u/$userId" params={{ userId: a.user_id }} className="text-xs text-muted-foreground hover:underline">
+                  <ProfileLink userId={a.user_id} slug={a.artistSlug} className="text-xs text-muted-foreground hover:underline">
                     {a.artistName}
-                  </Link>
+                  </ProfileLink>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">
                     {a.trackCount} morceaux · <span className="font-bold text-primary-glow">{a.price_ar.toLocaleString()} Ar</span>
                   </p>

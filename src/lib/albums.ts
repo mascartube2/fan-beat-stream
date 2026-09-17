@@ -16,6 +16,7 @@ export type AlbumForSale = {
   preview_path: string | null;
   preview_duration_seconds: number | null;
   artistName: string;
+  artistSlug: string | null;
   coverUrl: string;
   previewUrl: string | null;
   trackCount: number;
@@ -63,14 +64,16 @@ export async function fetchAlbumsForSale(mode: "paid" | "free" | "all" = "paid")
   const ids = albums.map((a) => a.id);
   const userIds = [...new Set(albums.map((a) => a.user_id))];
   const [{ data: profiles }, { data: tracks }] = await Promise.all([
-    supabase.from("profiles").select("user_id, display_name").in("user_id", userIds),
+    supabase.from("profiles").select("user_id, display_name, slug").in("user_id", userIds),
     supabase.from("tracks").select("id, album_id").in("album_id", ids),
   ]);
   const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name ?? "Artiste"]));
+  const slugMap = new Map((profiles ?? []).map((p) => [p.user_id, p.slug ?? null]));
 
   return albums.map((a: any) => ({
     ...a,
     artistName: nameMap.get(a.user_id) ?? "Artiste",
+    artistSlug: slugMap.get(a.user_id) ?? null,
     coverUrl: publicUrl("track-covers", a.cover_path),
     previewUrl: a.preview_path ? publicUrl(PREVIEW_BUCKET, a.preview_path) : null,
     trackCount: (tracks ?? []).filter((t: any) => t.album_id === a.id).length,

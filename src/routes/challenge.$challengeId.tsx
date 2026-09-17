@@ -13,6 +13,7 @@ import {
 } from "@/lib/challenges";
 import { ChallengeEntryCard } from "@/components/challenges/ChallengeEntryCard";
 import { ChallengeSubmissionDialog } from "@/components/challenges/ChallengeSubmissionDialog";
+import { profilePath } from "@/lib/links";
 import { ShareMenu } from "@/components/share/ShareMenu";
 import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -245,7 +246,7 @@ function ChallengeDetailPage() {
                 url={`/challenge/${challenge.id}?entry=${userEntry.id}`}
                 title={`Ma participation au défi ${challenge.title}`}
                 text={`Vote pour ma participation au défi ${challenge.title} sur Mascartube !`}
-                authorUrl={`/u/${userEntry.userId}`}
+                authorUrl={profilePath(userEntry.authorSlug, userEntry.userId)}
                 authorName={userEntry.authorName}
                 label="Partager"
                 className="flex items-center gap-1.5 rounded-full bg-gradient-primary px-3 py-2 text-xs font-bold shadow-glow"
