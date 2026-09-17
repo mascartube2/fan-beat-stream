@@ -9,6 +9,7 @@ import { uploadProfileAvatar } from "@/lib/avatar";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist, publicUrl } from "@/lib/tracks";
 import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
+import { ProfileLink } from "@/components/profile/ProfileLink";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
@@ -20,7 +21,7 @@ function ProfilePage() {
   const { user, isArtist, isAdmin, signOut, loading: authLoading } = useAuth();
   const { playTrack } = usePlayer();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null; is_certified: boolean } | null>(null);
+  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null; is_certified: boolean; slug: string | null } | null>(null);
   const [myTracks, setMyTracks] = useState<TrackWithArtist[]>([]);
   const [myShorts, setMyShorts] = useState<ShortWithAuthor[]>([]);
   const [archivedShorts, setArchivedShorts] = useState<ShortWithAuthor[]>([]);
@@ -29,7 +30,7 @@ function ProfilePage() {
 
   const loadProfile = async (userId: string) => {
     const [{ data }, allTracks, recentShorts, oldShorts] = await Promise.all([
-      supabase.from("profiles").select("display_name, avatar_url, bio, is_certified").eq("user_id", userId).maybeSingle(),
+      supabase.from("profiles").select("display_name, avatar_url, bio, is_certified, slug").eq("user_id", userId).maybeSingle(),
       fetchTracksWithArtists(100),
       fetchShorts({ scope: "feed", userId, limit: 100 }),
       fetchShorts({ scope: "archive", userId, limit: 100 }),
