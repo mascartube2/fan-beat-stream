@@ -15,6 +15,7 @@ import { Route as ShortsRouteImport } from './routes/shorts'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as MusiquesRouteImport } from './routes/musiques'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LibraryRouteImport } from './routes/library'
@@ -69,6 +70,11 @@ const PricingRoute = PricingRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MusiquesRoute = MusiquesRouteImport.update({
+  id: '/musiques',
+  path: '/musiques',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MembersRoute = MembersRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/library': typeof LibraryRoute
   '/mcp': typeof McpRoute
   '/members': typeof MembersRoute
+  '/musiques': typeof MusiquesRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRouteWithChildren
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/library': typeof LibraryRoute
   '/mcp': typeof McpRoute
   '/members': typeof MembersRoute
+  '/musiques': typeof MusiquesRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRouteWithChildren
@@ -281,6 +289,7 @@ export interface FileRoutesById {
   '/library': typeof LibraryRoute
   '/mcp': typeof McpRoute
   '/members': typeof MembersRoute
+  '/musiques': typeof MusiquesRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/profile': typeof ProfileRouteWithChildren
@@ -316,6 +325,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/mcp'
     | '/members'
+    | '/musiques'
     | '/notifications'
     | '/pricing'
     | '/profile'
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/mcp'
     | '/members'
+    | '/musiques'
     | '/notifications'
     | '/pricing'
     | '/profile'
@@ -382,6 +393,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/mcp'
     | '/members'
+    | '/musiques'
     | '/notifications'
     | '/pricing'
     | '/profile'
@@ -416,6 +428,7 @@ export interface RootRouteChildren {
   LibraryRoute: typeof LibraryRoute
   McpRoute: typeof McpRoute
   MembersRoute: typeof MembersRoute
+  MusiquesRoute: typeof MusiquesRoute
   NotificationsRoute: typeof NotificationsRoute
   PricingRoute: typeof PricingRoute
   ProfileRoute: typeof ProfileRouteWithChildren
@@ -477,6 +490,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/musiques': {
+      id: '/musiques'
+      path: '/musiques'
+      fullPath: '/musiques'
+      preLoaderRoute: typeof MusiquesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/members': {
@@ -682,6 +702,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRoute,
   McpRoute: McpRoute,
   MembersRoute: MembersRoute,
+  MusiquesRoute: MusiquesRoute,
   NotificationsRoute: NotificationsRoute,
   PricingRoute: PricingRoute,
   ProfileRoute: ProfileRouteWithChildren,
