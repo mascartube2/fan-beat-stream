@@ -43,8 +43,7 @@ export const Route = createRootRoute({
       { name: "twitter:title", content: "Mascartube— Music & Community" },
       { name: "description", content: "Fan Connect Studio is a mobile-first web app that merges music streaming with social networking for fan engagement." },
       { name: "twitter:description", content: "Fan Connect Studio is a mobile-first web app that merges music streaming with social networking for fan engagement." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/RkQMEWEKixeeCLAWkGgiQ3mBaEl1/social-images/social-1776534253216-IMG_20260328_103707.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/RkQMEWEKixeeCLAWkGgiQ3mBaEl1/social-images/social-1776534253216-IMG_20260328_103707.webp" },
+      { property: "og:site_name", content: "Mascartube" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -65,7 +64,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <HeadContent />
       </head>
