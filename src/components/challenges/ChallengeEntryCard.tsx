@@ -1,5 +1,6 @@
 import { Heart, Trash2, Play, Medal } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { ProfileLink } from "@/components/profile/ProfileLink";
+import { profilePath } from "@/lib/links";
 import { usePlayer } from "@/components/player/PlayerContext";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { ShareMenu } from "@/components/share/ShareMenu";
@@ -41,7 +42,7 @@ export function ChallengeEntryCard({
           {medal ? <Medal className="h-4 w-4" /> : rank}
         </div>
 
-        <Link to="/u/$userId" params={{ userId: entry.userId }} className="flex min-w-0 flex-1 items-center gap-2">
+        <ProfileLink userId={entry.userId} slug={entry.authorSlug} className="flex min-w-0 flex-1 items-center gap-2">
           {entry.authorAvatar ? (
             <img src={entry.authorAvatar} alt={entry.authorName} className="h-8 w-8 rounded-full object-cover" />
           ) : (
@@ -56,12 +57,12 @@ export function ChallengeEntryCard({
             </p>
             <p className="truncate text-[10px] text-muted-foreground">#{rank} au classement</p>
           </div>
-        </Link>
+        </ProfileLink>
         <ShareMenu
           url={shareUrl}
           title={shareText}
           text={shareText}
-          authorUrl={`/u/${entry.userId}`}
+          authorUrl={profilePath(entry.authorSlug, entry.userId)}
           authorName={entry.authorName}
           coverUrl={entry.track?.coverUrl ?? null}
           cardBadge={challengeTitle ? `Défi ${challengeTitle}` : "Défi Mascartube"}

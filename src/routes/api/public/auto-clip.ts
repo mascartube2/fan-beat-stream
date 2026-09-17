@@ -120,7 +120,7 @@ async function handle() {
     `🎤 ${artistName}\n` +
     (track.genre ? `🎼 Genre : ${track.genre}\n` : "") +
     `\n🔥 Découvre le clip complet sur Mascartube\n` +
-    `👉 /track/${track.id}\n\n` +
+    `👉 ${track.slug ? `/titre/${track.slug}` : `/track/${track.id}`}\n\n` +
     `#ClipDuMois #Mascartube #Musique ${hashtag}`;
 
   const { data: post, error: postErr } = await admin

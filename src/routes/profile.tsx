@@ -9,6 +9,7 @@ import { uploadProfileAvatar } from "@/lib/avatar";
 import { fetchTracksWithArtists, toPlayable, type TrackWithArtist, publicUrl } from "@/lib/tracks";
 import { fetchShorts, type ShortWithAuthor } from "@/lib/shorts";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
+import { ProfileLink } from "@/components/profile/ProfileLink";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
@@ -20,7 +21,7 @@ function ProfilePage() {
   const { user, isArtist, isAdmin, signOut, loading: authLoading } = useAuth();
   const { playTrack } = usePlayer();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null; is_certified: boolean } | null>(null);
+  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; bio: string | null; is_certified: boolean; slug: string | null } | null>(null);
   const [myTracks, setMyTracks] = useState<TrackWithArtist[]>([]);
   const [myShorts, setMyShorts] = useState<ShortWithAuthor[]>([]);
   const [archivedShorts, setArchivedShorts] = useState<ShortWithAuthor[]>([]);
@@ -29,7 +30,7 @@ function ProfilePage() {
 
   const loadProfile = async (userId: string) => {
     const [{ data }, allTracks, recentShorts, oldShorts] = await Promise.all([
-      supabase.from("profiles").select("display_name, avatar_url, bio, is_certified").eq("user_id", userId).maybeSingle(),
+      supabase.from("profiles").select("display_name, avatar_url, bio, is_certified, slug").eq("user_id", userId).maybeSingle(),
       fetchTracksWithArtists(100),
       fetchShorts({ scope: "feed", userId, limit: 100 }),
       fetchShorts({ scope: "archive", userId, limit: 100 }),
@@ -140,13 +141,13 @@ function ProfilePage() {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link
-            to="/u/$userId"
-            params={{ userId: user.id }}
+          <ProfileLink
+            userId={user.id}
+            slug={profile?.slug}
             className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-bold"
           >
             Voir mon mur
-          </Link>
+          </ProfileLink>
           <label className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-bold">
             {uploadingAvatar ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
             Modifier la photo

@@ -2,6 +2,7 @@ import { Heart, MessageCircle, Repeat2, Trash2, Pencil, Check, X, Play } from "l
 import { ShareMenu } from "@/components/share/ShareMenu";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { ProfileLink } from "@/components/profile/ProfileLink";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
@@ -23,6 +24,7 @@ export type FeedPost = {
   authorAvatar: string | null;
   mediaUrl: string | null;
   authorIsArtist?: boolean;
+  authorSlug?: string | null;
 };
 
 function timeAgo(iso: string) {
@@ -118,7 +120,7 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
   return (
     <article className="bg-gradient-card mb-3 rounded-2xl border border-border/50 p-4 shadow-soft">
       <header className="mb-3 flex items-center gap-3">
-        <Link to="/u/$userId" params={{ userId: post.user_id }} className="shrink-0">
+        <ProfileLink userId={post.user_id} slug={post.authorSlug} className="shrink-0">
           {post.authorAvatar ? (
             <img src={post.authorAvatar} alt={post.authorName} className="h-10 w-10 rounded-full object-cover" />
           ) : (
@@ -126,12 +128,12 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
               {post.authorName.slice(0, 2).toUpperCase()}
             </span>
           )}
-        </Link>
+        </ProfileLink>
         <div className="min-w-0 flex-1">
-          <Link to="/u/$userId" params={{ userId: post.user_id }} className="flex items-center gap-1 truncate text-sm font-semibold hover:underline">
+          <ProfileLink userId={post.user_id} slug={post.authorSlug} className="flex items-center gap-1 truncate text-sm font-semibold hover:underline">
             {post.authorName}
             {post.authorIsArtist && <CertifiedBadge />}
-          </Link>
+          </ProfileLink>
           <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
         </div>
         {(user?.id === post.user_id || isAdmin) && (
