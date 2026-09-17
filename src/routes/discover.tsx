@@ -11,21 +11,45 @@ import { fetchTracksWithArtists, toPlayable, TRACK_GENRES, type TrackWithArtist 
 import { fetchFreeAlbums, type AlbumForSale } from "@/lib/albums";
 
 
+const SITE = "https://fan-beat-stream.lovable.app";
+
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
-  head: () => ({ meta: [{ title: "Discover — Mascartube" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : undefined,
+  }),
+  head: () => ({
+    meta: [
+      { title: "Découvrir la musique malgache — Mascartube" },
+      {
+        name: "description",
+        content:
+          "Recherche et écoute gratuitement les titres des artistes malgaches : nouveautés, genres, albums gratuits et défis musicaux sur Mascartube.",
+      },
+      { property: "og:title", content: "Découvrir la musique malgache — Mascartube" },
+      {
+        property: "og:description",
+        content: "Recherche un titre, un artiste ou un genre et écoute gratuitement sur Mascartube.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: `${SITE}/discover` },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: `${SITE}/discover` }],
+  }),
 });
 
 const ALL = "Tous";
 
 function DiscoverPage() {
   const { playTrack } = usePlayer();
+  const { q: initialQuery } = Route.useSearch();
   const [tracks, setTracks] = useState<TrackWithArtist[]>([]);
   const [freeAlbums, setFreeAlbums] = useState<AlbumForSale[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [challengeCounts, setChallengeCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery ?? "");
   const [selectedGenre, setSelectedGenre] = useState<string>(ALL);
 
   useEffect(() => {
