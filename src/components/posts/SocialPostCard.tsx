@@ -1,6 +1,7 @@
 import { Heart, MessageCircle, Repeat2, Trash2, Pencil, Check, X, Play } from "lucide-react";
 import { ShareMenu } from "@/components/share/ShareMenu";
 import { useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { ProfileLink } from "@/components/profile/ProfileLink";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -127,12 +128,12 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
               {post.authorName.slice(0, 2).toUpperCase()}
             </span>
           )}
-        </Link>
+        </ProfileLink>
         <div className="min-w-0 flex-1">
           <ProfileLink userId={post.user_id} slug={post.authorSlug} className="flex items-center gap-1 truncate text-sm font-semibold hover:underline">
             {post.authorName}
             {post.authorIsArtist && <CertifiedBadge />}
-          </Link>
+          </ProfileLink>
           <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
         </div>
         {(user?.id === post.user_id || isAdmin) && (
