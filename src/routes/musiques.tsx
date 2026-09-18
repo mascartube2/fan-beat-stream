@@ -93,13 +93,9 @@ function MusiquesPage() {
       )}
 
       <ul className="mt-4 divide-y divide-border/50">
-        {rows.map((t) => (
-          <li key={t.id} className="py-2">
-            <Link
-              to={t.slug ? "/titre/$slug" : "/track/$trackId"}
-              params={t.slug ? ({ slug: t.slug } as never) : ({ trackId: t.id } as never)}
-              className="flex items-center gap-3"
-            >
+        {rows.map((t) => {
+          const inner = (
+            <>
               {t.coverUrl ? (
                 <img
                   src={t.coverUrl}
@@ -119,10 +115,24 @@ function MusiquesPage() {
                   {t.genre ? ` · ${t.genre}` : ""} · {t.plays} écoutes
                 </span>
               </span>
-            </Link>
-          </li>
-        ))}
+            </>
+          );
+          return (
+            <li key={t.id} className="py-2">
+              {t.slug ? (
+                <Link to="/titre/$slug" params={{ slug: t.slug }} className="flex items-center gap-3">
+                  {inner}
+                </Link>
+              ) : (
+                <Link to="/track/$trackId" params={{ trackId: t.id }} className="flex items-center gap-3">
+                  {inner}
+                </Link>
+              )}
+            </li>
+          );
+        })}
       </ul>
+
 
       {rows.length === 0 && (
         <p className="mt-6 text-xs text-muted-foreground">Aucun morceau publié pour le moment.</p>
