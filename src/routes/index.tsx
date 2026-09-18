@@ -39,6 +39,27 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: SITE }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Mascartube",
+          alternateName: "Mascartube — musique malgache",
+          url: SITE,
+          inLanguage: "fr",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: `${SITE}/discover?q={search_term_string}`,
+            },
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
+    ],
   }),
 });
 
@@ -209,7 +230,7 @@ function HomePage() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-muted-foreground">Nouveautés musique</h2>
-          <Link to="/discover" className="text-xs font-semibold text-primary-glow">
+          <Link to="/musiques" className="text-xs font-semibold text-primary-glow">
             Voir tout
           </Link>
         </div>
