@@ -44,6 +44,7 @@ export const Route = createRootRoute({
       { name: "description", content: "Fan Connect Studio is a mobile-first web app that merges music streaming with social networking for fan engagement." },
       { name: "twitter:description", content: "Fan Connect Studio is a mobile-first web app that merges music streaming with social networking for fan engagement." },
       { property: "og:site_name", content: "Mascartube" },
+      { name: "google-site-verification", content: "AHuFLz9xJm3vRUAGn3-vmSZNnlL4IGUduFZwxMqUNw4" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
