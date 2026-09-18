@@ -15,9 +15,8 @@ const SITE = "https://fan-beat-stream.lovable.app";
 
 export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    q: typeof search.q === "string" ? search.q : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { q?: string } =>
+    typeof search.q === "string" && search.q ? { q: search.q } : {},
   head: () => ({
     meta: [
       { title: "Découvrir la musique malgache — Mascartube" },
