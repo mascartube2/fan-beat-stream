@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { resolveTrackPlaybackUrl } from "@/lib/tracks";
+import { SAVED_ESTIMATE, addSavedBytes, isDataSaverEnabled } from "@/lib/data-saver";
 import { supabase } from "@/integrations/supabase/client";
 
 export type PlayableTrack = {
@@ -114,7 +115,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const a = new Audio();
-    a.preload = "metadata";
+    // Mode data-light : aucun préchargement, l'audio se charge pendant l'écoute.
+    a.preload = isDataSaverEnabled() ? "none" : "metadata";
     audioRef.current = a;
 
     const onTime = () => {
