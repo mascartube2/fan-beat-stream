@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck, Trophy } from "lucide-react";
+import { Bell, Search, Play, Loader2, Upload, Music, ShieldCheck, Trophy, Gauge } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { fetchActiveChallenges, type Challenge } from "@/lib/challenges";
@@ -17,6 +17,7 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { DataImage } from "@/components/data/DataImage";
 import { useDataSaver } from "@/components/data/DataSaverContext";
+import { isDataSaverEnabled } from "@/lib/data-saver";
 import logoSquare from "@/assets/logo-square.png";
 
 const SITE = "https://fan-beat-stream.lovable.app";
@@ -147,6 +148,13 @@ function HomePage() {
           <button className="rounded-full p-2.5 hover:bg-white/5" aria-label="Search">
             <Search className="h-5 w-5" />
           </button>
+          <Link
+            to="/data-saver"
+            aria-label="Mode data-light"
+            className={`rounded-full p-2.5 hover:bg-white/5 ${dataSaver ? "text-primary-glow" : ""}`}
+          >
+            <Gauge className="h-5 w-5" />
+          </Link>
           {user ? (
             <Link to="/notifications" className="relative rounded-full p-2.5 hover:bg-white/5" aria-label="Notifications">
               <Bell className="h-5 w-5" />
@@ -245,7 +253,7 @@ function HomePage() {
           <p className="text-xs text-muted-foreground">Aucun morceau pour le moment — sois le premier artiste !</p>
         ) : (
           <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 scrollbar-hide">
-            {tracks.slice(0, 12).map((t) => (
+            {tracks.slice(0, dataSaver ? 6 : 12).map((t) => (
               <div
                 key={t.id}
                 className="bg-gradient-card group w-36 shrink-0 snap-start rounded-xl border border-border/50 p-2"
