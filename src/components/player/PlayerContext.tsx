@@ -169,6 +169,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const a = audioRef.current;
     if (!a) return;
     void recordListen(track, reason);
+    if (isDataSaverEnabled()) {
+      a.preload = "none";
+      addSavedBytes(SAVED_ESTIMATE.audioPrefetch);
+    } else {
+      a.preload = "metadata";
+    }
     const preferredUrl = await resolveTrackPlaybackUrl(track);
     if (a.src !== preferredUrl) {
       a.src = preferredUrl;
