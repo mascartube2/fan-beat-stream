@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Loader2, Heart, Trash2, Plus, Upload, X, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
@@ -8,6 +8,8 @@ import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { ShortMediaMenu } from "@/components/player/ShortMediaMenu";
 import { toast } from "sonner";
 import { MediaViewsChart } from "@/components/analytics/MediaViewsChart";
+import { useDataSaver } from "@/components/data/DataSaverContext";
+import { SAVED_ESTIMATE } from "@/lib/data-saver";
 
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20 Mo
 const MAX_VIDEO_SECONDS = 60;
