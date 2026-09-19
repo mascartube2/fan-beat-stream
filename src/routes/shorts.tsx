@@ -141,6 +141,15 @@ function ShortCard({
 }) {
   const [videoSrc, setVideoSrc] = useState(short.videoUrl);
   const [views, setViews] = useState(short.views_count);
+  const { enabled: dataSaver, recordSaving } = useDataSaver();
+  const savedOnce = useRef(false);
+
+  useEffect(() => {
+    if (dataSaver && !savedOnce.current) {
+      savedOnce.current = true;
+      recordSaving(SAVED_ESTIMATE.videoAutoplay);
+    }
+  }, [dataSaver, recordSaving]);
 
   useEffect(() => {
     let mounted = true;
