@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { publicUrl } from "@/lib/tracks";
+import { DataImage } from "@/components/data/DataImage";
+import { useDataSaver } from "@/components/data/DataSaverContext";
+import { useState } from "react";
 
 const SITE = "https://fan-beat-stream.lovable.app";
 
@@ -97,13 +100,12 @@ function MusiquesPage() {
           const inner = (
             <>
               {t.coverUrl ? (
-                <img
+                <DataImage
                   src={t.coverUrl}
                   alt={`Pochette de ${t.title}`}
                   width={48}
                   height={48}
-                  loading="lazy"
-                  className="h-12 w-12 rounded-lg object-cover"
+                  className="h-12 w-12 shrink-0 rounded-lg object-cover"
                 />
               ) : (
                 <span className="h-12 w-12 rounded-lg bg-surface" />

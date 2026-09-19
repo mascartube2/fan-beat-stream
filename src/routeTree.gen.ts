@@ -21,6 +21,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as DownloadsRouteImport } from './routes/downloads'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as DataSaverRouteImport } from './routes/data-saver'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as ChallengesRouteImport } from './routes/challenges'
 import { Route as BecomeArtistRouteImport } from './routes/become-artist'
@@ -100,6 +101,11 @@ const DownloadsRoute = DownloadsRouteImport.update({
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataSaverRoute = DataSaverRouteImport.update({
+  id: '/data-saver',
+  path: '/data-saver',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/become-artist': typeof BecomeArtistRoute
   '/challenges': typeof ChallengesRoute
   '/chat': typeof ChatRoute
+  '/data-saver': typeof DataSaverRoute
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
   '/library': typeof LibraryRoute
@@ -249,6 +256,7 @@ export interface FileRoutesByTo {
   '/become-artist': typeof BecomeArtistRoute
   '/challenges': typeof ChallengesRoute
   '/chat': typeof ChatRoute
+  '/data-saver': typeof DataSaverRoute
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
   '/library': typeof LibraryRoute
@@ -284,6 +292,7 @@ export interface FileRoutesById {
   '/become-artist': typeof BecomeArtistRoute
   '/challenges': typeof ChallengesRoute
   '/chat': typeof ChatRoute
+  '/data-saver': typeof DataSaverRoute
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
   '/library': typeof LibraryRoute
@@ -320,6 +329,7 @@ export interface FileRouteTypes {
     | '/become-artist'
     | '/challenges'
     | '/chat'
+    | '/data-saver'
     | '/discover'
     | '/downloads'
     | '/library'
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
     | '/become-artist'
     | '/challenges'
     | '/chat'
+    | '/data-saver'
     | '/discover'
     | '/downloads'
     | '/library'
@@ -388,6 +399,7 @@ export interface FileRouteTypes {
     | '/become-artist'
     | '/challenges'
     | '/chat'
+    | '/data-saver'
     | '/discover'
     | '/downloads'
     | '/library'
@@ -423,6 +435,7 @@ export interface RootRouteChildren {
   BecomeArtistRoute: typeof BecomeArtistRoute
   ChallengesRoute: typeof ChallengesRoute
   ChatRoute: typeof ChatRoute
+  DataSaverRoute: typeof DataSaverRoute
   DiscoverRoute: typeof DiscoverRoute
   DownloadsRoute: typeof DownloadsRoute
   LibraryRoute: typeof LibraryRoute
@@ -532,6 +545,13 @@ declare module '@tanstack/react-router' {
       path: '/discover'
       fullPath: '/discover'
       preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-saver': {
+      id: '/data-saver'
+      path: '/data-saver'
+      fullPath: '/data-saver'
+      preLoaderRoute: typeof DataSaverRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat': {
@@ -697,6 +717,7 @@ const rootRouteChildren: RootRouteChildren = {
   BecomeArtistRoute: BecomeArtistRoute,
   ChallengesRoute: ChallengesRoute,
   ChatRoute: ChatRoute,
+  DataSaverRoute: DataSaverRoute,
   DiscoverRoute: DiscoverRoute,
   DownloadsRoute: DownloadsRoute,
   LibraryRoute: LibraryRoute,
