@@ -97,13 +97,12 @@ function MusiquesPage() {
           const inner = (
             <>
               {t.coverUrl ? (
-                <img
+                <DataImage
                   src={t.coverUrl}
                   alt={`Pochette de ${t.title}`}
                   width={48}
                   height={48}
-                  loading="lazy"
-                  className="h-12 w-12 rounded-lg object-cover"
+                  className="h-12 w-12 shrink-0 rounded-lg object-cover"
                 />
               ) : (
                 <span className="h-12 w-12 rounded-lg bg-surface" />
