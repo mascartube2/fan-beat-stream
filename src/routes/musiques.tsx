@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { publicUrl } from "@/lib/tracks";
+import { DataImage } from "@/components/data/DataImage";
+import { useDataSaver } from "@/components/data/DataSaverContext";
+import { useState } from "react";
 
 const SITE = "https://fan-beat-stream.lovable.app";
 
