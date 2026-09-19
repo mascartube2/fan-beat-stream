@@ -74,11 +74,14 @@ function HomePage() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [challengeCounts, setChallengeCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const { enabled: dataSaver } = useDataSaver();
 
-  const reloadPosts = () => fetchFeedPosts(50).then(setPosts);
+  // Mode data-light : listes courtes pour s'afficher vite en 3G.
+  const feedLimit = () => (isDataSaverEnabled() ? 15 : 50);
+  const reloadPosts = () => fetchFeedPosts(feedLimit()).then(setPosts);
 
   useEffect(() => {
-    Promise.all([fetchTracksWithArtists(50), fetchFeedPosts(50)]).then(([t, p]) => {
+    Promise.all([fetchTracksWithArtists(feedLimit()), fetchFeedPosts(feedLimit())]).then(([t, p]) => {
       setTracks(t);
       setPosts(p);
       setLoading(false);
