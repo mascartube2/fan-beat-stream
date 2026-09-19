@@ -182,12 +182,18 @@ function ShortCard({
           poster={short.thumbnailUrl ?? undefined}
           controls
           playsInline
-          autoPlay
+          autoPlay={!dataSaver}
+          preload={dataSaver ? "none" : "metadata"}
           muted
           loop
           onPointerDown={recordView}
           className="aspect-[9/16] w-full bg-black object-cover"
         />
+        {dataSaver && (
+          <span className="pointer-events-none absolute bottom-12 left-2 rounded-full bg-black/60 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur">
+            Mode data-light · touchez pour lancer
+          </span>
+        )}
         <div className={`pointer-events-none absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur transition-transform ${pulse ? "scale-110" : "scale-100"}`}>
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
