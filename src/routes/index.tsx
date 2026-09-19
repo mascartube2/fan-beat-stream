@@ -15,6 +15,8 @@ import { fetchTracksWithArtists, toPlayable, type TrackWithArtist } from "@/lib/
 import { usePlayer } from "@/components/player/PlayerContext";
 import { useAuth } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { DataImage } from "@/components/data/DataImage";
+import { useDataSaver } from "@/components/data/DataSaverContext";
 import logoSquare from "@/assets/logo-square.png";
 
 const SITE = "https://fan-beat-stream.lovable.app";
@@ -247,12 +249,11 @@ function HomePage() {
               >
                 <button onClick={() => playTrack(toPlayable(t), queue)} className="w-full text-left">
                   <div className="relative mb-2 overflow-hidden rounded-lg">
-                    <img
+                    <DataImage
                       src={t.coverUrl}
                       alt={t.title}
                       width={144}
                       height={144}
-                      loading="lazy"
                       className="aspect-square w-full object-cover"
                     />
                     <span className="absolute bottom-1.5 right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-primary opacity-0 shadow-glow transition group-hover:opacity-100">
