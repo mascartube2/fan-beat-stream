@@ -185,7 +185,12 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
           {post.media_type === "video" ? (
             <VideoWithViews src={post.mediaUrl} postId={post.id} />
           ) : (
-            <img src={post.mediaUrl} alt="" loading="lazy" className="w-full object-cover" />
+            <DataImage
+              src={post.mediaUrl}
+              alt={`Image de la publication de ${post.authorName}`}
+              estimatedBytes={180_000}
+              className="min-h-32 w-full object-cover"
+            />
           )}
         </div>
       )}
