@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Film, Search, Library } from "lucide-react";
+import { Settings, Play, Upload, ShieldCheck, LogOut, Music, Loader2, Film, Search, Library, Gauge } from "lucide-react";
 import { useEffect, useState } from "react";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { usePlayer } from "@/components/player/PlayerContext";
@@ -105,9 +105,14 @@ function ProfilePage() {
     <div className="pb-24">
       <div className="bg-gradient-hero relative h-40 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-glow" />
-        <Link to="/profile/edit" className="absolute right-4 top-4 rounded-full glass p-2.5" aria-label="Edit profile">
-          <Settings className="h-5 w-5" />
-        </Link>
+        <div className="absolute right-4 top-4 flex gap-2">
+          <Link to="/data-saver" className="rounded-full glass p-2.5" aria-label="Mode data-light">
+            <Gauge className="h-5 w-5" />
+          </Link>
+          <Link to="/profile/edit" className="rounded-full glass p-2.5" aria-label="Edit profile">
+            <Settings className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
 
       <div className="relative px-4 pb-6">
