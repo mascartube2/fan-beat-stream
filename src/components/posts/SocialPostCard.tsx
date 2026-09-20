@@ -231,6 +231,7 @@ export function SocialPostCard({ post, onChange }: { post: FeedPost; onChange?: 
 function VideoWithViews({ src, postId }: { src: string; postId: string }) {
   const [views, setViews] = useState<number>(0);
   const [pulse, setPulse] = useState(false);
+  const { enabled: dataSaver } = useDataSaver();
 
   useEffect(() => {
     let mounted = true;
@@ -272,7 +273,13 @@ function VideoWithViews({ src, postId }: { src: string; postId: string }) {
 
   return (
     <div className="relative">
-      <video src={src} controls onPointerDown={recordView} className="w-full" />
+      <video
+        src={src}
+        controls
+        preload={dataSaver ? "none" : "metadata"}
+        onPointerDown={recordView}
+        className="w-full"
+      />
       <div
         className={`pointer-events-none absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur transition-transform ${pulse ? "scale-110" : "scale-100"}`}
       >
