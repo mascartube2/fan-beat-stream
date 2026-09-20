@@ -8,6 +8,8 @@ import { useAuth } from "@/components/auth/AuthContext";
 import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { MediaViewsChart } from "@/components/analytics/MediaViewsChart";
 import { toast } from "sonner";
+import { DataImage } from "@/components/data/DataImage";
+import { useDataSaver } from "@/components/data/DataSaverContext";
 
 export type FeedPost = {
   id: string;
