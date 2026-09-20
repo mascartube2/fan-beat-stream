@@ -1,0 +1,122 @@
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft, Loader2, Play, ShoppingBag } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { publicUrl, toPlayable, type TrackWithArtist } from "@/lib/tracks";
+import { usePlayer } from "@/components/player/PlayerContext";
+import { ShareMenu } from "@/components/share/ShareMenu";
+import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
+import { BuyDialog } from "@/components/purchase/BuyDialog";
+
+type Props = {
+  trackId: string;
+  /** Chemin utilisé pour le partage (ex. /titre/mon-titre ou /track/<id>). */
+  sharePath: string;
+  artistSlug: string | null;
+  artistUserId?: string | null;
+};
+
+/** Page détail d'un morceau — partagée par /titre/:slug et /track/:id. */
+export function TrackDetail({ trackId, sharePath, artistSlug, artistUserId }: Props) {
+  const { playTrack } = usePlayer();
+  const [track, setTrack] = useState<(TrackWithArtist & { price_ar?: number; is_for_sale?: boolean }) | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [buyOpen, setBuyOpen] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const { data: t } = await supabase.from("tracks").select("*").eq("id", trackId).maybeSingle();
+      if (!t) return setLoading(false);
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", t.user_id)
+        .maybeSingle();
+      setTrack({
+        ...t,
+        artistName: prof?.display_name ?? "Unknown",
+        audioUrl: publicUrl("audio-tracks", t.audio_path),
+        coverUrl: publicUrl("track-covers", t.cover_path),
+      });
+      setLoading(false);
+    })();
+  }, [trackId]);
+
+  if (loading) return <Loader2 className="mx-auto mt-10 h-5 w-5 animate-spin text-muted-foreground" />;
+  if (!track)
+    return (
+      <div className="px-4 pt-10 text-center">
+        <p className="text-sm text-muted-foreground">Morceau introuvable.</p>
+        <Link to="/" className="mt-3 inline-block text-sm text-primary-glow">
+          Retour
+        </Link>
+      </div>
+    );
+
+  return (
+    <div className="px-4 pt-3 pb-32">
+      <Link to="/" className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <ArrowLeft className="h-4 w-4" /> Retour
+      </Link>
+      <div className="bg-gradient-card rounded-2xl border border-border/50 p-4 shadow-soft">
+        <img
+          src={track.coverUrl}
+          alt={`Pochette de ${track.title}`}
+          className="mb-3 aspect-square w-full rounded-xl object-cover"
+        />
+        <h1 className="text-lg font-bold">{track.title}</h1>
+        {artistSlug ? (
+          <Link to="/artiste/$slug" params={{ slug: artistSlug }} className="text-sm text-primary-glow">
+            {track.artistName}
+          </Link>
+        ) : artistUserId ? (
+          <Link to="/u/$userId" params={{ userId: artistUserId }} className="text-sm text-primary-glow">
+            {track.artistName}
+          </Link>
+        ) : (
+          <p className="text-sm text-muted-foreground">{track.artistName}</p>
+        )}
+        <p className="mt-1 text-xs text-muted-foreground">{track.plays} écoutes</p>
+        <div className="mt-4 flex items-center gap-2">
+          <button
+            onClick={() => playTrack(toPlayable(track), [toPlayable(track)])}
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-primary px-4 py-3 text-sm font-bold shadow-glow"
+          >
+            <Play className="h-4 w-4 fill-current" /> Écouter
+          </button>
+          <ShareMenu
+            url={sharePath}
+            title={track.title}
+            text={`${track.title} — ${track.artistName}`}
+            coverUrl={track.coverUrl}
+            cardBadge={track.genre ?? "Mascartube"}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-border"
+          />
+          <OfflineTrackButton track={track} />
+        </div>
+        {track.is_for_sale && (
+          <button
+            onClick={() => setBuyOpen(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-3 text-sm font-bold text-primary-glow transition hover:bg-primary/20"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Acheter · {(track.price_ar ?? 500).toLocaleString()} Ar
+          </button>
+        )}
+        <Link to="/pricing" className="mt-2 block text-center text-[11px] text-muted-foreground underline">
+          Voir la répartition 85 % artiste / 15 % plateforme
+        </Link>
+      </div>
+      {buyOpen && (
+        <BuyDialog
+          itemType="track"
+          itemId={track.id}
+          priceAr={track.price_ar ?? 500}
+          title={track.title}
+          onClose={() => setBuyOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
