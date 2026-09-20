@@ -83,6 +83,11 @@ export const Route = createFileRoute("/musiques")({
 function MusiquesPage() {
   const rows = Route.useLoaderData();
   const genres = [...new Set(rows.map((r) => r.genre).filter(Boolean))] as string[];
+  const { enabled: dataSaver } = useDataSaver();
+  const [extra, setExtra] = useState(0);
+  // Mode data-light : page courte, on charge la suite à la demande.
+  const limit = dataSaver ? 20 + extra : rows.length;
+  const visible = rows.slice(0, limit);
 
   return (
     <div className="px-4 pt-4 pb-32">
