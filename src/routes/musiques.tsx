@@ -101,7 +101,7 @@ function MusiquesPage() {
       )}
 
       <ul className="mt-4 divide-y divide-border/50">
-        {rows.map((t) => {
+        {visible.map((t) => {
           const inner = (
             <>
               {t.coverUrl ? (
@@ -140,6 +140,14 @@ function MusiquesPage() {
         })}
       </ul>
 
+      {visible.length < rows.length && (
+        <button
+          onClick={() => setExtra((n) => n + 20)}
+          className="mt-4 w-full rounded-full border border-border px-4 py-2.5 text-xs font-bold"
+        >
+          Afficher plus de titres ({rows.length - visible.length} restants)
+        </button>
+      )}
 
       {rows.length === 0 && (
         <p className="mt-6 text-xs text-muted-foreground">Aucun morceau publié pour le moment.</p>
