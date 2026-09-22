@@ -1,12 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, Play, ShoppingBag } from "lucide-react";
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { publicUrl, toPlayable, type TrackWithArtist } from "@/lib/tracks";
-import { usePlayer } from "@/components/player/PlayerContext";
-import { ShareMenu } from "@/components/share/ShareMenu";
-import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
-import { BuyDialog } from "@/components/purchase/BuyDialog";
+import { publicUrl } from "@/lib/tracks";
+import { TrackDetail } from "@/components/pages/TrackDetail";
 
 const SITE = "https://fan-beat-stream.lovable.app";
 
