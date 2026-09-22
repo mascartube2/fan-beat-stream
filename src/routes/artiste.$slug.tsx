@@ -1,18 +1,9 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchUserPosts } from "@/lib/posts";
-import { SocialPostCard, type FeedPost } from "@/components/posts/SocialPostCard";
-import { CertifiedBadge } from "@/components/brand/CertifiedBadge";
 import { publicUrl } from "@/lib/tracks";
+import { ArtistWall, resolveAvatar } from "@/components/pages/ArtistWall";
 
 const SITE = "https://fan-beat-stream.lovable.app";
-
-function resolveAvatar(avatar: string | null) {
-  if (!avatar) return null;
-  return avatar.startsWith("http") ? avatar : publicUrl("avatars", avatar);
-}
 
 export const Route = createFileRoute("/artiste/$slug")({
   component: ArtistPage,
