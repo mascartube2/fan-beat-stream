@@ -1,0 +1,20 @@
+{
+  "name": "Mascartube — Musique & Réseau Social Malgache",
+  "short_name": "Mascartube",
+  "description": "Écoutez gratuitement les artistes malgaches, partagez des réels et discutez avec la communauté.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#141432",
+  "theme_color": "#141432",
+  "lang": "fr",
+  "categories": ["music", "social", "entertainment"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
