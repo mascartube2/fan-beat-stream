@@ -21,7 +21,7 @@ export function InstallBanner() {
   };
 
   return (
-    <div className="mx-4 mt-3 flex items-center gap-3 rounded-2xl border border-primary/30 bg-card p-3 shadow-glow">
+    <div className="mb-3 flex items-center gap-3 rounded-2xl border border-primary/30 bg-card p-3 shadow-glow">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-primary">
         <Download className="h-5 w-5 text-primary-foreground" />
       </div>
