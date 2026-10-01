@@ -19,6 +19,7 @@ import { Route as MusiquesRouteImport } from './routes/musiques'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as InstallerRouteImport } from './routes/installer'
 import { Route as DownloadsRouteImport } from './routes/downloads'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as DataSaverRouteImport } from './routes/data-saver'
@@ -91,6 +92,11 @@ const McpRoute = McpRouteImport.update({
 const LibraryRoute = LibraryRouteImport.update({
   id: '/library',
   path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstallerRoute = InstallerRouteImport.update({
+  id: '/installer',
+  path: '/installer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DownloadsRoute = DownloadsRouteImport.update({
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/data-saver': typeof DataSaverRoute
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
+  '/installer': typeof InstallerRoute
   '/library': typeof LibraryRoute
   '/mcp': typeof McpRoute
   '/members': typeof MembersRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/data-saver': typeof DataSaverRoute
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
+  '/installer': typeof InstallerRoute
   '/library': typeof LibraryRoute
   '/mcp': typeof McpRoute
   '/members': typeof MembersRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/data-saver': typeof DataSaverRoute
   '/discover': typeof DiscoverRoute
   '/downloads': typeof DownloadsRoute
+  '/installer': typeof InstallerRoute
   '/library': typeof LibraryRoute
   '/mcp': typeof McpRoute
   '/members': typeof MembersRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/data-saver'
     | '/discover'
     | '/downloads'
+    | '/installer'
     | '/library'
     | '/mcp'
     | '/members'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/data-saver'
     | '/discover'
     | '/downloads'
+    | '/installer'
     | '/library'
     | '/mcp'
     | '/members'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/data-saver'
     | '/discover'
     | '/downloads'
+    | '/installer'
     | '/library'
     | '/mcp'
     | '/members'
@@ -438,6 +450,7 @@ export interface RootRouteChildren {
   DataSaverRoute: typeof DataSaverRoute
   DiscoverRoute: typeof DiscoverRoute
   DownloadsRoute: typeof DownloadsRoute
+  InstallerRoute: typeof InstallerRoute
   LibraryRoute: typeof LibraryRoute
   McpRoute: typeof McpRoute
   MembersRoute: typeof MembersRoute
@@ -531,6 +544,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/library'
       preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/installer': {
+      id: '/installer'
+      path: '/installer'
+      fullPath: '/installer'
+      preLoaderRoute: typeof InstallerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/downloads': {
@@ -720,6 +740,7 @@ const rootRouteChildren: RootRouteChildren = {
   DataSaverRoute: DataSaverRoute,
   DiscoverRoute: DiscoverRoute,
   DownloadsRoute: DownloadsRoute,
+  InstallerRoute: InstallerRoute,
   LibraryRoute: LibraryRoute,
   McpRoute: McpRoute,
   MembersRoute: MembersRoute,

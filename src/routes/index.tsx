@@ -5,6 +5,7 @@ import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { fetchActiveChallenges, type Challenge } from "@/lib/challenges";
 import { StoriesRow } from "@/components/feed/StoriesRow";
 import { UsersPanel } from "@/components/feed/UsersPanel";
+import { InstallBanner } from "@/components/layout/InstallBanner";
 import { VisitorCounter } from "@/components/feed/VisitorCounter";
 import { OfflineTrackButton } from "@/components/player/OfflineTrackButton";
 import { ShareMenu } from "@/components/share/ShareMenu";
@@ -140,6 +141,7 @@ function HomePage() {
 
   return (
     <div className="px-4 pt-4">
+      <InstallBanner />
       <header className="mb-4 flex items-center justify-between">
         <Link to="/" aria-label="Mascartube home" className="flex items-center gap-2">
           <img src={logoSquare} alt="Mascartube" width={48} height={48} className="h-12 w-12 rounded-xl shadow-glow" />
