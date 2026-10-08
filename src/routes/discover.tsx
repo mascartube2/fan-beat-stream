@@ -220,7 +220,7 @@ function DiscoverPage() {
                   />
                   <p className="truncate text-xs font-semibold">{a.title}</p>
                   <p className="truncate text-[10px] text-muted-foreground">
-                    {a.artistName} · {a.trackCount} titres
+                    {a.artistName} · {a.trackCount} titres · ⬇ {a.downloads_count ?? 0}
                   </p>
                   <span className="mt-0.5 inline-block rounded-full bg-gradient-primary px-2 py-0.5 text-[9px] font-bold">
                     Gratuit

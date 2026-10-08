@@ -20,7 +20,16 @@ export type AlbumForSale = {
   coverUrl: string;
   previewUrl: string | null;
   trackCount: number;
+  downloads_count: number;
 };
+
+/** Counts one album download and notifies the UI with the new total. */
+export async function recordAlbumDownload(albumId: string) {
+  const { data } = await supabase.rpc("increment_album_download" as never, { _album_id: albumId } as never);
+  if (typeof data === "number" && typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("album-downloaded", { detail: { albumId, count: data } }));
+  }
+}
 
 /** Reads the real duration of an audio file in the browser. */
 export function readAudioDuration(file: File): Promise<number> {

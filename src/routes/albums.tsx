@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Disc3, Loader2, ShoppingBag, Music2, Download, CheckCircle2, Gift } from "lucide-react";
-import { fetchAlbumsForSale, fetchFreeAlbums, fetchPurchasedAlbumIds, fetchAlbumTracks, type AlbumForSale, type AlbumTrackFile } from "@/lib/albums";
+import { fetchAlbumsForSale, fetchFreeAlbums, fetchPurchasedAlbumIds, fetchAlbumTracks, recordAlbumDownload, type AlbumForSale, type AlbumTrackFile } from "@/lib/albums";
+import { AlbumDownloadCount } from "@/components/album/AlbumDownloadCount";
 import { downloadTrack } from "@/lib/tracks";
 import { useAuth } from "@/components/auth/AuthContext";
 import { PreviewPlayer } from "@/components/album/PreviewPlayer";
@@ -87,7 +88,7 @@ function AlbumsPage() {
                       {a.artistName}
                     </ProfileLink>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      {a.trackCount} morceaux · <span className="font-bold text-primary-glow">Gratuit</span>
+                      {a.trackCount} morceaux · <span className="font-bold text-primary-glow">Gratuit</span> · <AlbumDownloadCount albumId={a.id} initial={a.downloads_count} />
                     </p>
                     {a.description && <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{a.description}</p>}
                   </div>
@@ -122,7 +123,7 @@ function AlbumsPage() {
                     {a.artistName}
                   </ProfileLink>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    {a.trackCount} morceaux · <span className="font-bold text-primary-glow">{a.price_ar.toLocaleString()} Ar</span>
+                    {a.trackCount} morceaux · <span className="font-bold text-primary-glow">{a.price_ar.toLocaleString()} Ar</span> · <AlbumDownloadCount albumId={a.id} initial={a.downloads_count} />
                   </p>
                   {a.description && <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{a.description}</p>}
                 </div>
@@ -186,6 +187,7 @@ function AlbumDownloads({ albumId, title, free }: { albumId: string; title: stri
 
   const downloadAll = async () => {
     setBusy(true);
+    void recordAlbumDownload(albumId);
     for (const t of tracks) {
       await downloadTrack({ title: t.title, audioUrl: t.audioUrl, audio_path: t.audio_path });
     }

@@ -19,6 +19,7 @@ export type Database = {
           cover_path: string | null
           created_at: string
           description: string | null
+          downloads_count: number
           id: string
           is_published: boolean
           preview_duration_seconds: number | null
@@ -32,6 +33,7 @@ export type Database = {
           cover_path?: string | null
           created_at?: string
           description?: string | null
+          downloads_count?: number
           id?: string
           is_published?: boolean
           preview_duration_seconds?: number | null
@@ -45,6 +47,7 @@ export type Database = {
           cover_path?: string | null
           created_at?: string
           description?: string | null
+          downloads_count?: number
           id?: string
           is_published?: boolean
           preview_duration_seconds?: number | null
@@ -1071,6 +1074,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_album_download: { Args: { _album_id: string }; Returns: number }
       increment_daily_visit: { Args: never; Returns: number }
       increment_short_view: { Args: { _short_id: string }; Returns: undefined }
       increment_track_play:
