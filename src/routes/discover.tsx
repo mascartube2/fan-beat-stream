@@ -9,6 +9,7 @@ import { usePlayer } from "@/components/player/PlayerContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchTracksWithArtists, toPlayable, TRACK_GENRES, type TrackWithArtist } from "@/lib/tracks";
 import { fetchFreeAlbums, type AlbumForSale } from "@/lib/albums";
+import { AlbumDownloadCount } from "@/components/album/AlbumDownloadCount";
 
 
 const SITE = "https://fan-beat-stream.lovable.app";
@@ -220,7 +221,10 @@ function DiscoverPage() {
                   />
                   <p className="truncate text-xs font-semibold">{a.title}</p>
                   <p className="truncate text-[10px] text-muted-foreground">
-                    {a.artistName} · {a.trackCount} titres · ⬇ {a.downloads_count ?? 0}
+                    {a.artistName} · {a.trackCount} titres
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    <AlbumDownloadCount albumId={a.id} initial={a.downloads_count} />
                   </p>
                   <span className="mt-0.5 inline-block rounded-full bg-gradient-primary px-2 py-0.5 text-[9px] font-bold">
                     Gratuit
