@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/post/$postId")({
   component: PostDetail,
-  head: () => ({ meta: [{ title: "Publication — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Publication — Mascartube" }] }),
 });
 
 type Comment = {

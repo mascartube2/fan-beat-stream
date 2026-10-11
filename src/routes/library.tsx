@@ -8,7 +8,7 @@ import { useAuth } from "@/components/auth/AuthContext";
 
 export const Route = createFileRoute("/library")({
   component: LibraryPage,
-  head: () => ({ meta: [{ title: "Library — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Library — Mascartube" }] }),
 });
 
 const shortcuts = [

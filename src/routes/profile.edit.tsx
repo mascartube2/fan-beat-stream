@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile/edit")({
   component: EditProfilePage,
-  head: () => ({ meta: [{ title: "Edit profile — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Edit profile — Mascartube" }] }),
 });
 
 function EditProfilePage() {

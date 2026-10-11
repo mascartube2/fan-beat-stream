@@ -6,7 +6,7 @@ import { Loader2, Music, CheckCircle2, Clock, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/become-artist")({
   component: BecomeArtistPage,
-  head: () => ({ meta: [{ title: "Become an artist — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Become an artist — Mascartube" }] }),
 });
 
 type Status = "pending" | "approved" | "rejected";

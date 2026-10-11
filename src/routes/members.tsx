@@ -7,7 +7,7 @@ import { isOnline } from "@/hooks/use-presence";
 
 export const Route = createFileRoute("/members")({
   component: MembersPage,
-  head: () => ({ meta: [{ title: "Membres — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Membres — Mascartube" }] }),
 });
 
 type Member = {
