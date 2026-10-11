@@ -8,7 +8,7 @@ import { Loader2, Upload as UploadIcon, Music } from "lucide-react";
 
 export const Route = createFileRoute("/upload")({
   component: UploadPage,
-  head: () => ({ meta: [{ title: "Upload — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Upload — Mascartube" }] }),
 });
 
 function UploadPage() {
