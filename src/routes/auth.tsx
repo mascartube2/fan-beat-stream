@@ -13,7 +13,7 @@ export const Route = createFileRoute("/auth")({
       ? s.next
       : undefined,
   }),
-  head: () => ({ meta: [{ title: "Sign in — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Mascartube" }] }),
 });
 
 function AuthPage() {

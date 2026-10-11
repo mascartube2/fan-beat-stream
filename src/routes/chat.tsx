@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
   component: ChatPage,
-  head: () => ({ meta: [{ title: "Messages — Pulse" }] }),
+  head: () => ({ meta: [{ title: "Messages — Mascartube" }] }),
 });
 
 type Msg = {
