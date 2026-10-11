@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         const [tracks, profiles, challenges] = await Promise.all([
           supabase.from("tracks").select("id, slug, created_at").order("created_at", { ascending: false }).limit(5000),
-          supabase.from("profiles").select("user_id, slug, updated_at").limit(5000),
+          publicProfiles().select("user_id, slug, updated_at").limit(5000),
           supabase.from("challenges").select("id, created_at").limit(1000),
         ]);
 

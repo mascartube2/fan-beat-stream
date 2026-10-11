@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -18,15 +19,14 @@ export function ArtistWall({ userId }: { userId: string }) {
     display_name: string | null;
     avatar_url: string | null;
     bio: string | null;
-    is_certified: boolean;
+    is_certified: boolean | null;
   } | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     const [{ data: prof }, all] = await Promise.all([
-      supabase
-        .from("profiles")
+      publicProfiles()
         .select("display_name, avatar_url, bio, is_certified")
         .eq("user_id", userId)
         .maybeSingle(),

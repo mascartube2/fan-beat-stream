@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { supabase } from "@/integrations/supabase/client";
 import type { PlayableTrack } from "@/components/player/PlayerContext";
 import { downloadOfflineMedia, getPreferredMediaUrl, hasOfflineMedia } from "@/lib/offline-media";
@@ -67,8 +68,7 @@ export async function fetchTracksWithArtists(limit = 50): Promise<TrackWithArtis
   if (error || !tracks) return [];
 
   const userIds = [...new Set(tracks.map((t) => t.user_id))];
-  const { data: profiles } = await supabase
-    .from("profiles")
+  const { data: profiles } = await publicProfiles()
     .select("user_id, display_name")
     .in("user_id", userIds);
   const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));

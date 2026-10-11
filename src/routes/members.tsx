@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, Users } from "lucide-react";
@@ -23,7 +24,7 @@ function MembersPage() {
 
   const load = async () => {
     const [{ data: profs }, { data: pres }] = await Promise.all([
-      supabase.from("profiles").select("user_id,display_name,avatar_url").order("created_at", { ascending: false }),
+      publicProfiles().select("user_id,display_name,avatar_url").order("created_at", { ascending: false }),
       supabase.from("user_presence").select("user_id,last_seen_at"),
     ]);
     const presMap = new Map((pres ?? []).map((p) => [p.user_id, p.last_seen_at as string]));

@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { Plus, Loader2, X, Send, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,7 +46,7 @@ export function StoriesRow() {
     }
     const ids = Array.from(new Set(rows.map((r) => r.user_id)));
     const { data: profs } = ids.length
-      ? await supabase.from("profiles").select("user_id,display_name,avatar_url").in("user_id", ids)
+      ? await publicProfiles().select("user_id,display_name,avatar_url").in("user_id", ids)
       : { data: [] as { user_id: string; display_name: string | null; avatar_url: string | null }[] };
     const map = new Map(profs?.map((p) => [p.user_id, p]));
     setStories(

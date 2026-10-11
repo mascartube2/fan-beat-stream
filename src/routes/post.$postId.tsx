@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Loader2, Send } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -34,8 +35,7 @@ function PostDetail() {
       setLoading(false);
       return;
     }
-    const { data: prof } = await supabase
-      .from("profiles")
+    const { data: prof } = await publicProfiles()
       .select("user_id,display_name,avatar_url")
       .eq("user_id", p.user_id)
       .maybeSingle();
@@ -53,7 +53,7 @@ function PostDetail() {
       .order("created_at", { ascending: true });
     const ids = Array.from(new Set((cs ?? []).map((c) => c.user_id)));
     const { data: profs } = ids.length
-      ? await supabase.from("profiles").select("user_id,display_name,avatar_url").in("user_id", ids)
+      ? await publicProfiles().select("user_id,display_name,avatar_url").in("user_id", ids)
       : { data: [] as any[] };
     const map = new Map((profs ?? []).map((p) => [p.user_id, p]));
     setComments(

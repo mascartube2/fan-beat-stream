@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Loader2, Play, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -28,8 +29,7 @@ export function TrackDetail({ trackId, sharePath, artistSlug, artistUserId }: Pr
       setLoading(true);
       const { data: t } = await supabase.from("tracks").select("*").eq("id", trackId).maybeSingle();
       if (!t) return setLoading(false);
-      const { data: prof } = await supabase
-        .from("profiles")
+      const { data: prof } = await publicProfiles()
         .select("display_name")
         .eq("user_id", t.user_id)
         .maybeSingle();
