@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { publicUrl } from "@/lib/tracks";
@@ -14,8 +15,7 @@ export const Route = createFileRoute("/titre/$slug")({
       .eq("slug", params.slug)
       .maybeSingle();
     if (!t) throw notFound();
-    const { data: prof } = await supabase
-      .from("profiles")
+    const { data: prof } = await publicProfiles()
       .select("display_name, slug")
       .eq("user_id", t.user_id)
       .maybeSingle();

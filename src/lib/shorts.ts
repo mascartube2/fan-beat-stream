@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadOfflineMedia, getPreferredMediaUrl, hasOfflineMedia } from "@/lib/offline-media";
 
@@ -56,7 +57,7 @@ export async function fetchShorts(
   if (!rows || rows.length === 0) return [];
   const ids = Array.from(new Set(rows.map((r) => r.user_id)));
   const [{ data: profs }, { data: roles }, { data: { user } }] = await Promise.all([
-    supabase.from("profiles").select("user_id,display_name,avatar_url,is_certified").in("user_id", ids),
+    publicProfiles().select("user_id,display_name,avatar_url,is_certified").in("user_id", ids),
     supabase.from("user_roles").select("user_id,role").in("user_id", ids),
     supabase.auth.getUser(),
   ]);

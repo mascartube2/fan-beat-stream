@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { publicUrl } from "@/lib/tracks";
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/musiques")({
       .limit(500);
     const ids = [...new Set((tracks ?? []).map((t) => t.user_id))];
     const { data: profiles } = ids.length
-      ? await supabase.from("profiles").select("user_id, display_name, slug").in("user_id", ids)
+      ? await publicProfiles().select("user_id, display_name, slug").in("user_id", ids)
       : { data: [] as { user_id: string; display_name: string | null; slug: string | null }[] };
     const map = new Map((profiles ?? []).map((p) => [p.user_id, p]));
     return (tracks ?? []).map((t) => ({

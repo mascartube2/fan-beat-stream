@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { supabase } from "@/integrations/supabase/client";
 import { publicUrl } from "@/lib/tracks";
 
@@ -73,7 +74,7 @@ export async function fetchAlbumsForSale(mode: "paid" | "free" | "all" = "paid")
   const ids = albums.map((a) => a.id);
   const userIds = [...new Set(albums.map((a) => a.user_id))];
   const [{ data: profiles }, { data: tracks }] = await Promise.all([
-    supabase.from("profiles").select("user_id, display_name, slug").in("user_id", userIds),
+    publicProfiles().select("user_id, display_name, slug").in("user_id", userIds),
     supabase.from("tracks").select("id, album_id").in("album_id", ids),
   ]);
   const nameMap = new Map((profiles ?? []).map((p) => [p.user_id, p.display_name ?? "Artiste"]));

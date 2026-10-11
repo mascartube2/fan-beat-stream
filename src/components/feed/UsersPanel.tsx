@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Users } from "lucide-react";
@@ -21,8 +22,7 @@ export function UsersPanel() {
     let alive = true;
     const load = async () => {
       const [{ data: profs }, { data: pres }] = await Promise.all([
-        supabase
-          .from("profiles")
+        publicProfiles()
           .select("user_id,display_name,avatar_url,country")
           .order("created_at", { ascending: false })
           .limit(80),

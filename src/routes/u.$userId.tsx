@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { publicUrl } from "@/lib/tracks";
@@ -9,8 +10,7 @@ const SITE = "https://fan-beat-stream.lovable.app";
 export const Route = createFileRoute("/u/$userId")({
   component: ArtistByIdPage,
   loader: async ({ params }) => {
-    const { data } = await supabase
-      .from("profiles")
+    const { data } = await publicProfiles()
       .select("user_id, display_name, bio, avatar_url, slug")
       .eq("user_id", params.userId)
       .maybeSingle();

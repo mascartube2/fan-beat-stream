@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { supabase } from "@/integrations/supabase/client";
 import { publicUrl } from "@/lib/tracks";
 
@@ -90,7 +91,7 @@ export async function fetchChallengeEntries(challengeId: string): Promise<Challe
   const trackIds = Array.from(new Set(data.map((e) => e.track_id).filter((id): id is string => !!id)));
 
   const [{ data: profiles }, { data: tracks }] = await Promise.all([
-    supabase.from("profiles").select("user_id, display_name, avatar_url, is_certified, slug").in("user_id", userIds),
+    publicProfiles().select("user_id, display_name, avatar_url, is_certified, slug").in("user_id", userIds),
     trackIds.length
       ? supabase.from("tracks").select("id, title, slug, audio_path, cover_path, user_id").in("id", trackIds)
       : { data: [] },
@@ -100,7 +101,7 @@ export async function fetchChallengeEntries(challengeId: string): Promise<Challe
   const trackRows = tracks ?? [];
   const trackArtistIds = Array.from(new Set(trackRows.map((t) => t.user_id)));
   const { data: trackArtists } = trackArtistIds.length
-    ? await supabase.from("profiles").select("user_id, display_name").in("user_id", trackArtistIds)
+    ? await publicProfiles().select("user_id, display_name").in("user_id", trackArtistIds)
     : { data: [] };
   const trackArtistMap = new Map((trackArtists ?? []).map((p) => [p.user_id, p.display_name ?? "Unknown"]));
 

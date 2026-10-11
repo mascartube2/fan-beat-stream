@@ -1,3 +1,4 @@
+import { publicProfiles } from "@/lib/public-profiles";
 import { supabase } from "@/integrations/supabase/client";
 import type { FeedPost } from "@/components/posts/SocialPostCard";
 
@@ -20,8 +21,7 @@ export async function fetchFeedPosts(limit = 50): Promise<FeedPost[]> {
   if (!filteredRows.length) return [];
 
   const userIds = Array.from(new Set(filteredRows.map((r) => r.user_id)));
-  const { data: profs } = await supabase
-    .from("profiles")
+  const { data: profs } = await publicProfiles()
     .select("user_id,display_name,avatar_url,is_certified,slug")
     .in("user_id", userIds);
   const profMap = new Map((profs ?? []).map((p) => [p.user_id, p]));
@@ -59,8 +59,7 @@ export async function fetchUserPosts(userId: string, limit = 100): Promise<FeedP
     .limit(limit);
   if (!rows?.length) return [];
 
-  const { data: prof } = await supabase
-    .from("profiles")
+  const { data: prof } = await publicProfiles()
     .select("user_id,display_name,avatar_url,is_certified,slug")
     .eq("user_id", userId)
     .maybeSingle();
