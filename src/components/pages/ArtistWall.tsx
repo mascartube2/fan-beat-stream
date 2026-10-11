@@ -19,7 +19,7 @@ export function ArtistWall({ userId }: { userId: string }) {
     display_name: string | null;
     avatar_url: string | null;
     bio: string | null;
-    is_certified: boolean;
+    is_certified: boolean | null;
   } | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
