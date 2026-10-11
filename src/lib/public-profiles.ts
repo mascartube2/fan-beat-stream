@@ -6,3 +6,5 @@ import { supabase } from "@/integrations/supabase/client";
  * restricted to signed-in users; this view powers public pages and SEO.
  */
 export const publicProfiles = () => (supabase.from as any)("public_profiles");
+
+// rebuild trigger
