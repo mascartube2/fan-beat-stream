@@ -192,7 +192,7 @@ function HomePage() {
             search={{ next: undefined }}
             className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-primary px-4 py-3 text-sm font-bold shadow-glow"
           >
-            <Music className="h-4 w-4" /> Rejoindre Pulse
+            <Music className="h-4 w-4" /> Rejoindre Mascartube
           </Link>
         )}
         {isAdmin && (
