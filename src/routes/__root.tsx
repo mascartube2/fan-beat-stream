@@ -38,15 +38,23 @@ export const Route = createRootRoute({
       { title: "Mascartube— Music & Community" },
       {
         name: "description",
-        content: "Stream music and connect with your favorite artists. Pulse fuses streaming with social to bring fans and artists closer.",
+        content:
+          "Mascartube est une application gratuite qui réunit streaming musical malgache et réseau social : écoutez les artistes, partagez des réels et échangez avec la communauté.",
       },
       { property: "og:title", content: "Mascartube— Music & Community" },
-      { property: "og:description", content: "Fan Connect Studio is a mobile-first web app that merges music streaming with social networking for fan engagement." },
+      {
+        property: "og:description",
+        content:
+          "Mascartube est une application gratuite qui réunit streaming musical malgache et réseau social : écoutez les artistes, partagez des réels et échangez avec la communauté.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Mascartube— Music & Community" },
-      { name: "description", content: "Fan Connect Studio is a mobile-first web app that merges music streaming with social networking for fan engagement." },
-      { name: "twitter:description", content: "Fan Connect Studio is a mobile-first web app that merges music streaming with social networking for fan engagement." },
+      {
+        name: "twitter:description",
+        content:
+          "Mascartube est une application gratuite qui réunit streaming musical malgache et réseau social : écoutez les artistes, partagez des réels et échangez avec la communauté.",
+      },
       { property: "og:site_name", content: "Mascartube" },
       { name: "google-site-verification", content: "AHuFLz9xJm3vRUAGn3-vmSZNnlL4IGUduFZwxMqUNw4" },
     ],
