@@ -18,13 +18,14 @@ export async function uploadMediaWithProgress(
   const { data, error } = await supabase.auth.getSession();
   if (error) throw error;
   if (!data.session) throw new Error("Reconnecte-toi pour publier.");
+  const session = data.session;
 
   const objectPath = path.split("/").map(encodeURIComponent).join("/");
   const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/${encodeURIComponent(bucket)}/${objectPath}`;
   await new Promise<void>((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open("POST", url);
-    request.setRequestHeader("Authorization", `Bearer ${data.session.access_token}`);
+    request.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
     request.setRequestHeader("apikey", import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
     request.setRequestHeader("Content-Type", file.type || "application/octet-stream");
     request.setRequestHeader("Cache-Control", "max-age=3600");
