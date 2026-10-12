@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthContext";
 import { toast } from "sonner";
+import { PublicationProgress } from "@/components/posts/PublicationProgress";
+import { uploadMediaWithProgress, type PublicationStatus } from "@/lib/media-upload";
 
 type StoryRow = {
   id: string;
@@ -30,6 +32,7 @@ export function StoriesRow() {
   const [stories, setStories] = useState<StoryWithAuthor[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [status, setStatus] = useState<PublicationStatus | null>(null);
   const [viewing, setViewing] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -82,25 +85,30 @@ export function StoriesRow() {
   const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !user) return;
+    if (!file || !user || uploading) return;
     if (file.size > 25 * 1024 * 1024) {
       toast.error("Fichier trop lourd (max 25 Mo)");
       return;
     }
     const isVideo = file.type.startsWith("video/");
     setUploading(true);
+    setStatus({ stage: "preparing", fileName: file.name, receivedBytes: 0, totalBytes: file.size });
     try {
       const ext = file.name.split(".").pop() ?? "bin";
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const up = await supabase.storage.from("stories").upload(path, file, { contentType: file.type });
-      if (up.error) throw up.error;
+      await uploadMediaWithProgress("stories", path, file, (receivedBytes) => {
+        setStatus({ stage: "uploading", fileName: file.name, receivedBytes, totalBytes: file.size });
+      });
+      setStatus((previous) => previous ? { ...previous, stage: "publishing" } : previous);
       const ins = await supabase
         .from("stories")
         .insert({ user_id: user.id, media_path: path, media_type: isVideo ? "video" : "image" });
       if (ins.error) throw ins.error;
+      setStatus((previous) => previous ? { ...previous, stage: "success" } : previous);
       toast.success("Story publiée — visible 48h");
       load();
     } catch (err) {
+      setStatus((previous) => previous ? { ...previous, stage: "error", error: (err as Error).message } : previous);
       toast.error((err as Error).message);
     } finally {
       setUploading(false);
@@ -182,11 +190,13 @@ export function StoriesRow() {
         )}
       </div>
 
+      <PublicationProgress status={status} />
       <input
         ref={fileRef}
         type="file"
         accept="image/*,video/*"
         onChange={onUpload}
+        disabled={uploading}
         className="hidden"
       />
 
