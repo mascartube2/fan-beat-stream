@@ -10,13 +10,23 @@ import { toast } from "sonner";
 import { MediaViewsChart } from "@/components/analytics/MediaViewsChart";
 import { useDataSaver } from "@/components/data/DataSaverContext";
 import { SAVED_ESTIMATE } from "@/lib/data-saver";
+import { Button } from "@/components/ui/button";
+import { PublicationProgress } from "@/components/posts/PublicationProgress";
+import { uploadMediaWithProgress, type PublicationStatus } from "@/lib/media-upload";
 
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20 Mo
 const MAX_VIDEO_SECONDS = 60;
 
 export const Route = createFileRoute("/shorts")({
   component: ShortsPage,
-  head: () => ({ meta: [{ title: "Réels — Mascartube" }] }),
+  head: () => ({ meta: [
+    { title: "Réels — Mascartube" },
+    { name: "description", content: "Découvre les réels vidéo et les artistes de la communauté malgache sur Mascartube." },
+    { property: "og:title", content: "Réels — Mascartube" },
+    { property: "og:description", content: "Les réels vidéo de la communauté malgache sur Mascartube." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
 });
 
 function ShortsPage() {
@@ -264,8 +274,10 @@ function ShortComposer({ onClose, onCreated }: { onClose: () => void; onCreated:
   const [duration, setDuration] = useState<number | null>(null);
   const [caption, setCaption] = useState("");
   const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState<PublicationStatus | null>(null);
 
   const onFile = async (file: File | null) => {
+    setStatus(null);
     setVideo(null);
     setDuration(null);
     if (!file) return;
@@ -294,23 +306,28 @@ function ShortComposer({ onClose, onCreated }: { onClose: () => void; onCreated:
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!user || !video) return;
+    if (!user || !video || busy) return;
     setBusy(true);
+    setStatus({ stage: "preparing", fileName: video.name, receivedBytes: 0, totalBytes: video.size });
     try {
       const ext = video.name.split(".").pop() ?? "mp4";
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const up = await supabase.storage.from("shorts").upload(path, video, { contentType: video.type });
-      if (up.error) throw up.error;
+      await uploadMediaWithProgress("shorts", path, video, (receivedBytes) => {
+        setStatus({ stage: "uploading", fileName: video.name, receivedBytes, totalBytes: video.size });
+      });
+      setStatus((previous) => previous ? { ...previous, stage: "publishing" } : previous);
       const ins = await supabase.from("shorts").insert({
         user_id: user.id,
         video_path: path,
         caption: caption.trim() || null,
       });
       if (ins.error) throw ins.error;
+      setStatus((previous) => previous ? { ...previous, stage: "success" } : previous);
       toast.success("Réel publié !");
       onCreated();
       onClose();
     } catch (err) {
+      setStatus((previous) => previous ? { ...previous, stage: "error", error: (err as Error).message } : previous);
       toast.error((err as Error).message);
     } finally {
       setBusy(false);
@@ -318,20 +335,21 @@ function ShortComposer({ onClose, onCreated }: { onClose: () => void; onCreated:
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/90 p-4 sm:items-center" onClick={() => { if (!busy) onClose(); }}>
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border border-border bg-background p-4"
+        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-background p-4"
       >
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-bold">Nouveau réel</h2>
-          <button type="button" onClick={onClose} className="rounded-full p-1 hover:bg-white/5"><X className="h-4 w-4" /></button>
+          <Button type="button" variant="ghost" size="icon" disabled={busy} onClick={onClose} aria-label="Fermer"><X className="h-4 w-4" /></Button>
         </div>
         <p className="mb-2 text-[11px] text-muted-foreground">Max 60 secondes • 20 Mo</p>
         <input
           type="file"
           accept="video/*"
+          disabled={busy}
           onChange={(e) => onFile(e.target.files?.[0] ?? null)}
           className="mb-3 w-full rounded-lg border border-border bg-input px-3 py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:font-bold file:text-primary-foreground"
           required
@@ -341,20 +359,22 @@ function ShortComposer({ onClose, onCreated }: { onClose: () => void; onCreated:
         )}
         <textarea
           value={caption}
+          disabled={busy}
           onChange={(e) => setCaption(e.target.value)}
           placeholder="Légende (optionnel)"
           maxLength={280}
           rows={2}
           className="mb-3 w-full rounded-lg border border-border bg-input px-3 py-2 text-sm"
         />
-        <button
+        <PublicationProgress status={status} />
+        <Button
           type="submit"
           disabled={busy || !video}
           className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-2.5 text-xs font-bold shadow-glow disabled:opacity-60"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-          {busy ? "Upload…" : "Publier"}
-        </button>
+          {busy ? status?.stage === "publishing" ? "Publication…" : "Envoi…" : "Publier"}
+        </Button>
       </form>
     </div>
   );
